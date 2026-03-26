@@ -438,30 +438,6 @@
     <input type="time" id="timeInput" />
   </div>
 
-  <!-- Zone B -->
-  <div class="card">
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <div class="toggle-name">Zone B</div>
-        <div class="toggle-detail">14 required when open</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="tbToggle" />
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-    <div class="toggle-row skelly-row" id="tbSkellyRow" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:none;">
-      <div class="toggle-info">
-        <div class="toggle-name skelly-label">Skelly Gang</div>
-        <div class="toggle-detail">7 minimum</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="tbSkellyToggle" />
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-  </div>
-
   <!-- Lanes -->
   <div class="card">
     <div class="card-label">Zone A — Open Lanes</div>
@@ -497,6 +473,30 @@
       <div class="lane-btn" data-lane="3" onclick="toggleLane(this)">
         <span class="lane-num">3</span>
       </div>
+    </div>
+  </div>
+
+  <!-- Zone B -->
+  <div class="card">
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name">Zone B</div>
+        <div class="toggle-detail">14 required when open</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tbToggle" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row skelly-row" id="tbSkellyRow" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:none;">
+      <div class="toggle-info">
+        <div class="toggle-name skelly-label">Skelly Gang</div>
+        <div class="toggle-detail">7 minimum</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tbSkellyToggle" />
+        <span class="toggle-slider"></span>
+      </label>
     </div>
   </div>
 
@@ -703,19 +703,19 @@
       const openLanes = [...activeLanes].sort((a, b) => a - b);
       let html = '';
 
-      let tbRows;
-      if (!tbOpen)      tbRows = bRow('Closed', 0);
-      else if (tbSkelly) tbRows = bRow('Skelly Gang', 7);
-      else               tbRows = bRow('Station', 13) + bRow('O/S', 1);
-      html += bSection('Zone B', tbCount, tbRows);
-
-      html += '<hr class="b-divider">';
-
       let domRows;
       if (activeLanes.size === 0)  domRows = bRow('No lanes open', 0);
       else if (domSkelly)           domRows = bRow('Skelly Gang', 9);
       else                          domRows = bRow('Baseline — S1, Table, Randomizer', 3) + openLanes.map(l => bRow(laneLabels[l], laneCounts[l])).join('');
       html += bSection('Zone A', domCount, domRows);
+
+      html += '<hr class="b-divider">';
+
+      let tbRows;
+      if (!tbOpen)      tbRows = bRow('Closed', 0);
+      else if (tbSkelly) tbRows = bRow('Skelly Gang', 7);
+      else               tbRows = bRow('Station', 13) + bRow('O/S', 1);
+      html += bSection('Zone B', tbCount, tbRows);
 
       html += '<hr class="b-divider">';
 
