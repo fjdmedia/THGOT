@@ -424,7 +424,7 @@
     <div class="header-left">
       <a href="index.html" class="back-link">← Tools</a>
       <div class="title">Staffing Calculator</div>
-      <div class="subtitle">Minimum officers required</div>
+      <div class="subtitle">Minimum staff required</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
@@ -438,11 +438,11 @@
     <input type="time" id="timeInput" />
   </div>
 
-  <!-- Transborder -->
+  <!-- Zone B -->
   <div class="card">
     <div class="toggle-row">
       <div class="toggle-info">
-        <div class="toggle-name">TB</div>
+        <div class="toggle-name">Zone B</div>
         <div class="toggle-detail">14 required when open</div>
       </div>
       <label class="toggle">
@@ -452,7 +452,7 @@
     </div>
     <div class="toggle-row skelly-row" id="tbSkellyRow" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:none;">
       <div class="toggle-info">
-        <div class="toggle-name skelly-label">Skelly Crew</div>
+        <div class="toggle-name skelly-label">Skelly Gang</div>
         <div class="toggle-detail">7 minimum</div>
       </div>
       <label class="toggle">
@@ -464,11 +464,11 @@
 
   <!-- Lanes -->
   <div class="card">
-    <div class="card-label">Dom / Int — Open Lanes</div>
+    <div class="card-label">Zone A — Open Lanes</div>
     <div class="toggle-row" style="margin-bottom:14px;">
       <div class="toggle-info">
-        <div class="toggle-name skelly-label">Skelly Crew</div>
-        <div class="toggle-detail">5 minimum</div>
+        <div class="toggle-name skelly-label">Skelly Gang</div>
+        <div class="toggle-detail">9 minimum</div>
       </div>
       <label class="toggle">
         <input type="checkbox" id="domSkellyToggle" />
@@ -478,38 +478,31 @@
     <div class="lanes-grid">
       <div class="lane-btn" data-lane="6" onclick="toggleLane(this)">
         <span class="lane-num">6</span>
-        <span class="lane-type">FBS</span>
       </div>
       <div class="lane-btn" data-lane="1" onclick="toggleLane(this)">
         <span class="lane-num">1</span>
-        <span class="lane-type">VT</span>
       </div>
       <div class="lane-btn" data-lane="4" onclick="toggleLane(this)">
         <span class="lane-num">4</span>
-        <span class="lane-type">CT</span>
       </div>
       <div class="lane-btn" data-lane="2" onclick="toggleLane(this)">
         <span class="lane-num">2</span>
-        <span class="lane-type">ETD</span>
       </div>
       <div class="lane-btn" data-lane="5" onclick="toggleLane(this)">
         <span class="lane-num">5</span>
-        <span class="lane-type">FBS</span>
       </div>
       <div class="lane-btn" data-lane="7" onclick="toggleLane(this)">
         <span class="lane-num">7</span>
-        <span class="lane-type">STD</span>
       </div>
       <div class="lane-btn" data-lane="3" onclick="toggleLane(this)">
         <span class="lane-num">3</span>
-        <span class="lane-type">STD</span>
       </div>
     </div>
   </div>
 
-  <!-- HBS Skelly -->
+  <!-- H Skelly -->
   <div class="card" id="hbsSkellyCard" style="display:none;">
-    <div class="card-label">HBS — Skelly</div>
+    <div class="card-label">H — Skelly</div>
     <div class="toggle-row" style="margin-bottom:12px;">
       <div class="toggle-info">
         <div class="toggle-name">CR</div>
@@ -541,11 +534,10 @@
 
   <!-- Results -->
   <div class="card">
-    <div class="card-label">Required Officers</div>
+    <div class="card-label">Required</div>
     <div class="result-hero">
       <div class="big-num" id="totalCount">--</div>
       <div class="num-meta">
-        <div class="num-label">Officers</div>
         <div class="num-sub" id="timeDisplay">--:--</div>
       </div>
     </div>
@@ -606,8 +598,8 @@
       [1155, 1, 1, 1], [1170, 1, 1, 1], [1185, 1, 1, 1],
       [1200, 1, 1, 1], [1215, 1, 1, 1], [1230, 1, 1, 1],
       [1245, 1, 1, 1], [1260, 1, 1, 1], [1275, 1, 1, 1],
-      [1290, 1, 1, 1], [1305, 1, 1, 1], [1320, 1, 1, 1],
-      [1335, 1, 1, 1], [1350, 1, 1, 1],
+      [1290, 1, 1, 1], [1305, 1, 1, 1], [1320, 0, 1, 1],
+      [1335, 0, 1, 1], [1350, 0, 1, 1],
     ];
 
     const laneCounts = {
@@ -641,7 +633,7 @@
     function getNPS(min) {
       const l0 = (min >= 300 && min < 1320) ? 2 : 0;
       const l2 = (min >= 180 && min < 1320) ? 3 : 0;
-      return { l0, l1: 2, l2, gse: 3, npsv: 4 };
+      return { l0, l1: 2, l2, g: 3, v: 4 };
     }
 
     function calculate() {
@@ -658,13 +650,11 @@
 
       const domSkelly = document.getElementById('domSkellyToggle').checked;
       let domCount = 0;
-      if (activeLanes.size > 0) {
-        if (domSkelly) {
-          domCount = 5;
-        } else {
-          domCount = 3;
-          activeLanes.forEach(l => { domCount += laneCounts[l]; });
-        }
+      if (domSkelly) {
+        domCount = 9;
+      } else if (activeLanes.size > 0) {
+        domCount = 3;
+        activeLanes.forEach(l => { domCount += laneCounts[l]; });
       }
 
       const anySkelly = tbSkelly || domSkelly;
@@ -683,7 +673,7 @@
       }
 
       const nps = getNPS(minutes);
-      const npsCount = nps.l0 + nps.l1 + nps.l2 + nps.gse + nps.npsv;
+      const npsCount = nps.l0 + nps.l1 + nps.l2 + nps.g + nps.v;
 
       const total = tbCount + domCount + hbsCount + npsCount;
 
@@ -715,28 +705,28 @@
 
       let tbRows;
       if (!tbOpen)      tbRows = bRow('Closed', 0);
-      else if (tbSkelly) tbRows = bRow('Skelly Crew', 7);
-      else               tbRows = bRow('Checkpoint', 13) + bRow('O/S', 1);
-      html += bSection('TB', tbCount, tbRows);
+      else if (tbSkelly) tbRows = bRow('Skelly Gang', 7);
+      else               tbRows = bRow('Station', 13) + bRow('O/S', 1);
+      html += bSection('Zone B', tbCount, tbRows);
 
       html += '<hr class="b-divider">';
 
       let domRows;
       if (activeLanes.size === 0)  domRows = bRow('No lanes open', 0);
-      else if (domSkelly)           domRows = bRow('Skelly Crew', 5);
+      else if (domSkelly)           domRows = bRow('Skelly Gang', 9);
       else                          domRows = bRow('Baseline — S1, Table, Randomizer', 3) + openLanes.map(l => bRow(laneLabels[l], laneCounts[l])).join('');
-      html += bSection('Dom / Int', domCount, domRows);
+      html += bSection('Zone A', domCount, domRows);
 
       html += '<hr class="b-divider">';
 
-      html += bSection('HBS', hbsCount,
+      html += bSection('H', hbsCount,
         bRow('CR', hbs.cr) + bRow('L3', hbs.l3) + bRow('O/S', hbs.domOs)
       );
 
       html += '<hr class="b-divider">';
 
-      html += bSection('NPS', nps.l0 + nps.l1 + nps.l2 + nps.gse + nps.npsv,
-        bRow('L0', nps.l0) + bRow('L1', nps.l1) + bRow('L2', nps.l2) + bRow('GSE', nps.gse) + bRow('NPSV', nps.npsv)
+      html += bSection('NPS', nps.l0 + nps.l1 + nps.l2 + nps.g + nps.v,
+        bRow('L0', nps.l0) + bRow('L1', nps.l1) + bRow('L2', nps.l2) + bRow('G', nps.g) + bRow('V', nps.v)
       );
 
       document.getElementById('breakdown').innerHTML = html;
