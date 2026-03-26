@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PASS — Field Tools</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e4e8ee;
+      --border: rgba(0,0,0,0.1);
+      --accent: #4a6fa5;
+      --accent-dim: rgba(74,111,165,0.12);
+      --text: #1e2a3a;
+      --muted: rgba(30,42,58,0.45);
+      --faint: rgba(30,42,58,0.25);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0d14;
+      --surface: #12172a;
+      --surface2: #1a1f30;
+      --border: rgba(255,255,255,0.09);
+      --accent: #fb923c;
+      --accent-dim: rgba(251,146,60,0.10);
+      --text: #e8e2d9;
+      --muted: rgba(232,226,217,0.35);
+      --faint: rgba(232,226,217,0.12);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px 18px 40px;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .header {
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .header .title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--text);
+    }
+
+    .header .subtitle {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+      letter-spacing: 0.03em;
+    }
+
+    .section-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 12px;
+    }
+
+    .tool-card {
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .tool-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .tool-card:active {
+      opacity: 0.8;
+    }
+
+    .tool-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .tool-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .tool-arrow {
+      color: var(--accent);
+      font-size: 1rem;
+      margin-top: 1px;
+    }
+
+    .tool-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .tool-tag {
+      display: inline-block;
+      margin-top: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(59,127,245,0.2);
+      border-radius: 5px;
+      padding: 3px 8px;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      line-height: 1;
+      margin-top: 2px;
+    }
+    .theme-btn:hover { border-color: var(--accent); }
+  </style>
+
+  <script>
+    (function() {
+      const saved = localStorage.getItem('passTheme') || 'dark';
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+      });
+    })();
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+      localStorage.setItem('passTheme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div class="title">Field Tools</div>
+      <div class="subtitle">PASS — Airport Operations</div>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
+
+  <div class="section-label">Tools</div>
+
+<a class="tool-card" href="staffing-calculator.html">
+    <div class="tool-top">
+      <div class="tool-name">Staffing Calculator</div>
+      <div class="tool-arrow">→</div>
+    </div>
+    <div class="tool-desc">Calculate the minimum number of officers required to run an operation based on open checkpoints, lanes, and time of day.</div>
+    <div class="tool-tag">Checkpoint</div>
+  </a>
+
+  <a class="tool-card" href="hours-calculator.html">
+    <div class="tool-top">
+      <div class="tool-name">Weekly Hours</div>
+      <div class="tool-arrow">→</div>
+    </div>
+    <div class="tool-desc">Paste a weekly schedule from Excel to calculate total working hours per day and per employee, including overnight shifts.</div>
+    <div class="tool-tag">Scheduling</div>
+  </a>
+
+</body>
+</html>

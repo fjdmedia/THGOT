@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Hours Calculator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e4e8ee;
+      --border: rgba(0,0,0,0.1);
+      --accent: #4a6fa5;
+      --accent-dim: rgba(74,111,165,0.12);
+      --text: #1e2a3a;
+      --muted: rgba(30,42,58,0.55);
+      --faint: rgba(30,42,58,0.3);
+      --green: #16a34a;
+      --green-dim: rgba(22,163,74,0.12);
+      --yellow: #d97706;
+      --yellow-dim: rgba(217,119,6,0.12);
+      --nav-bg: rgba(240,242,245,0.92);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0d14;
+      --surface: #12172a;
+      --surface2: #1a1f30;
+      --border: rgba(255,255,255,0.09);
+      --accent: #fb923c;
+      --accent-dim: rgba(251,146,60,0.12);
+      --text: #e8e2d9;
+      --muted: rgba(232,226,217,0.6);
+      --faint: rgba(232,226,217,0.3);
+      --green: #34d399;
+      --green-dim: rgba(52,211,153,0.12);
+      --yellow: #fbbf24;
+      --yellow-dim: rgba(251,191,36,0.12);
+      --nav-bg: rgba(10,13,20,0.92);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .page-header {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 24px 18px 0;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0;
+      align-items: stretch;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    .col-paste {
+      width: 440px;
+      padding: 16px 18px;
+    }
+
+    .col-sat {
+      width: 440px;
+      padding: 16px 18px;
+    }
+
+    .actions-section {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 16px 18px;
+    }
+
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .back-link {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 6px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--accent); }
+    .header-left .title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--text);
+    }
+    .header-left .subtitle {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Paste Area ── */
+    .section-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .paste-area {
+      width: 100%;
+      min-height: 140px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .paste-area:focus { border-color: rgba(59,127,245,0.4); }
+    .paste-area::placeholder { color: var(--faint); }
+
+    .hint {
+      font-size: 0.62rem;
+      color: var(--faint);
+      margin-top: 7px;
+      line-height: 1.5;
+    }
+
+    /* ── Button ── */
+    .calc-btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .calc-btn:hover { opacity: 0.88; }
+    .calc-btn:active { opacity: 0.75; }
+
+    /* ── Results ── */
+    #results { margin-top: 28px; display: none; }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 14px;
+      text-align: center;
+    }
+    .summary-card .s-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .summary-card .s-val.green { color: var(--green); }
+    .summary-card .s-label {
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Day Section ── */
+    .days-section {
+      padding: 16px 18px 90px;
+    }
+
+    .days-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .days-table-wrap {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .days-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .days-table th, .days-table td {
+      text-align: center;
+      padding: 0;
+      border-right: 1px solid var(--border);
+    }
+    .days-table th:last-child, .days-table td:last-child { border-right: none; }
+
+    .days-table .row-dayname th {
+      background: var(--surface2);
+      padding: 7px 2px 5px;
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .days-table .row-divider td {
+      height: 1px;
+      background: var(--border);
+      padding: 0;
+    }
+    .days-table .row-emp td {
+      background: var(--surface);
+      padding: 3px 2px;
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      border-top: 1px solid rgba(255,255,255,0.03);
+      word-break: break-all;
+    }
+    .days-table .row-emp td.active { color: var(--text); }
+    .days-table .row-emp td.off    { color: rgba(212,218,232,0.15); }
+    .days-table .row-total td {
+      background: var(--surface2);
+      border-top: 2px solid var(--accent);
+      padding: 12px 4px;
+    }
+    .days-table .row-total .t-hrs {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: var(--accent);
+      display: block;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .days-table .row-total .t-count {
+      font-size: 0.55rem;
+      color: var(--muted);
+      display: block;
+    }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px 18px;
+      z-index: 100;
+    }
+    .nav-btn {
+      flex: 1; max-width: 200px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 7px; padding: 10px 14px;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted);
+      text-decoration: none; font-size: 0.78rem; font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--text); }
+    .nav-btn.active {
+      background: var(--accent-dim); border-color: var(--accent); color: var(--text);
+    }
+
+    /* ── Sat Overnight ── */
+    .sat-input-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .sat-input-row input[type="time"] {
+      flex: 1;
+      font-size: 0.85rem;
+      padding: 8px 8px;
+      min-width: 0;
+    }
+    .sat-add-btn {
+      padding: 8px 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .sat-add-btn:hover { opacity: 0.88; }
+    #satOvernightList {
+      margin-top: 8px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .sat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-top: 1px solid var(--border);
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .sat-hrs { color: var(--accent); }
+    .sat-remove {
+      background: none;
+      border: none;
+      color: var(--faint);
+      cursor: pointer;
+      font-size: 0.65rem;
+      padding: 2px 4px;
+    }
+    .sat-remove:hover { color: #f87171; }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .theme-btn:hover { border-color: var(--accent); }
+
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.72rem;
+      color: #f87171;
+      margin-top: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header">
+      <div class="header-left">
+        <a class="back-link" href="index.html">← Back</a>
+        <div class="title">Weekly Hours</div>
+        <div class="subtitle">Paste schedule from Excel</div>
+      </div>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    </div>
+  </div>
+
+  <!-- INPUT ROW -->
+  <div class="input-row">
+    <div class="col-paste">
+      <div class="section-label">Paste Schedule</div>
+      <textarea class="paste-area" id="pasteInput" placeholder="Paste your Excel schedule here (Ctrl+V)..." style="min-height:160px;"></textarea>
+      <div class="hint">Sun to Sat — one row per employee.</div>
+    </div>
+
+    <div class="col-sat">
+      <div class="section-label">Sat Overnight — Prev Week</div>
+      <div class="hint">Enter each end time — counted from midnight to end.</div>
+      <div class="sat-input-row">
+        <input type="time" id="satEndTime" />
+        <button class="sat-add-btn" onclick="addSatOvernight()">Add</button>
+      </div>
+      <div id="satOvernightList"></div>
+    </div>
+  </div>
+
+  <!-- ACTIONS + RESULTS -->
+  <div class="actions-section">
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="calc-btn" onclick="calculate()">Calculate Hours</button>
+
+    <div id="results">
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="s-val" id="totalHrs">—</div>
+          <div class="s-label">Total Hours</div>
+        </div>
+        <div class="summary-card">
+          <div class="s-val green" id="totalEmps">—</div>
+          <div class="s-label">Employees</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="days-section" id="daysSection" style="display:none;">
+    <div class="days-label">Hours by Day</div>
+    <div class="days-table-wrap">
+      <table class="days-table" id="daysTable"></table>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="staffing-calculator.html">👮 Staffing</a>
+    <a class="nav-btn active" href="hours-calculator.html">🕐 Hours</a>
+  </nav>
+
+  <script>
+    // ── Theme ────────────────────────────────────────────────────────────
+    (function() {
+      const saved = localStorage.getItem('passTheme') || 'dark';
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+      });
+    })();
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+      localStorage.setItem('passTheme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+
+    const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const SKIP = /^(x|vac|vacation|personal|lieu|stat|off|)$/i;
+
+    function parseTime(s) {
+      const p = s.trim().padStart(4, '0');
+      return parseInt(p.slice(0,2)) + parseInt(p.slice(2)) / 60;
+    }
+
+    function parseShift(cell, truncateAtMidnight = false) {
+      const t = cell.trim();
+      if (!t || SKIP.test(t)) return null;
+      if (/\bRLP\b|\bRTW\b/i.test(t)) return null;
+      const m = t.match(/^(\d{3,4})-(\d{3,4})/);
+      if (!m) return null;
+      let start = parseTime(m[1]);
+      let end   = parseTime(m[2]);
+      if (end <= start) {
+        if (truncateAtMidnight) return 24 - start;
+        end += 24;
+      }
+      return end - start;
+    }
+
+    function fmtHrs(h) {
+      const hrs = Math.floor(h);
+      const mins = Math.round((h - hrs) * 60);
+      return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
+    }
+
+    const satOvernights = []; // hours from midnight to end (prev-Sat overnights carrying into Sunday)
+
+    function addSatOvernight() {
+      const input = document.getElementById('satEndTime');
+      const val = input.value;
+      if (!val) return;
+      const [h, m] = val.split(':').map(Number);
+      const endHr = h + m / 60;
+      if (endHr <= 0) return;
+      satOvernights.push(endHr);
+      input.value = '';
+      renderSatList();
+      input.focus();
+    }
+
+    function removeSatOvernight(i) {
+      satOvernights.splice(i, 1);
+      renderSatList();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('satEndTime').addEventListener('keydown', e => {
+        if (e.key === 'Enter') addSatOvernight();
+      });
+    });
+
+    function renderSatList() {
+      const list = document.getElementById('satOvernightList');
+      list.innerHTML = satOvernights.map((hrs, i) => {
+        const h = Math.floor(hrs), m = Math.round((hrs - h) * 60);
+        const endStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        return `<div class="sat-item">
+          <span>0000 → ${endStr} &nbsp;<span class="sat-hrs">${fmtHrs(hrs)}</span></span>
+          <button class="sat-remove" onclick="removeSatOvernight(${i})">✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    function calculate() {
+      const raw = document.getElementById('pasteInput').value.trim();
+      const errEl = document.getElementById('errorMsg');
+      errEl.style.display = 'none';
+
+      if (!raw) {
+        errEl.textContent = 'Please paste a schedule first.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      const lines = raw.split(/\r?\n/);
+      const empRows = [];
+
+      for (const line of lines) {
+        const cells = line.split('\t');
+        if (!cells.some(c => c.trim())) continue;
+        empRows.push(cells);
+      }
+
+      if (empRows.length === 0) {
+        errEl.textContent = 'No employee rows found. Make sure you copied the full schedule including headers.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      // Calculate per-column (day) and per-employee
+      const dayHours  = [0,0,0,0,0,0,0];
+      const dayCount  = [0,0,0,0,0,0,0];
+      const empData   = [];
+
+      for (let r = 0; r < empRows.length; r++) {
+        const row = empRows[r];
+        let empTotal = 0;
+        let empDays  = 0;
+        const shifts = [];
+
+        for (let d = 0; d < 7; d++) {
+          const cell = row[d] || '';
+          const hrs  = parseShift(cell, d === 6); // truncate Sat overnights at midnight
+          if (hrs !== null) {
+            dayHours[d] += hrs;
+            dayCount[d]++;
+            empTotal += hrs;
+            empDays++;
+            shifts.push({ day: d, hrs, raw: cell.trim() });
+          }
+        }
+
+        if (empTotal > 0) {
+          empData.push({ num: r + 1, total: empTotal, days: empDays, shifts });
+        }
+      }
+
+      // Add sat overnight (prev week) into Sunday
+      satOvernights.forEach(endHr => {
+        dayHours[0] += endHr; // 0000 to end time = endHr hours
+        dayCount[0]++;
+      });
+
+      const totalHrs  = dayHours.reduce((a,b) => a+b, 0);
+      const totalEmps = empData.length;
+
+      // Summary
+      document.getElementById('totalHrs').textContent  = fmtHrs(totalHrs);
+      document.getElementById('totalEmps').textContent = totalEmps;
+
+      // Day table
+      const table = document.getElementById('daysTable');
+      table.innerHTML = '';
+
+      // Header row — day names
+      const headRow = document.createElement('tr');
+      headRow.className = 'row-dayname';
+      DAYS.forEach(d => { const th = document.createElement('th'); th.textContent = d; headRow.appendChild(th); });
+      table.appendChild(headRow);
+
+      // Divider
+      const divRow = document.createElement('tr');
+      divRow.className = 'row-divider';
+      for (let d = 0; d < 7; d++) divRow.appendChild(document.createElement('td'));
+      table.appendChild(divRow);
+
+      // Employee shift rows
+      for (const emp of empData) {
+        const tr = document.createElement('tr');
+        tr.className = 'row-emp';
+        for (let d = 0; d < 7; d++) {
+          const td = document.createElement('td');
+          const shift = emp.shifts.find(s => s.day === d);
+          if (shift) { td.textContent = `${shift.raw} = ${fmtHrs(shift.hrs)}`; td.className = 'active'; }
+          else { td.textContent = 'x'; td.className = 'off'; }
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+
+      // Totals row
+      const totRow = document.createElement('tr');
+      totRow.className = 'row-total';
+      for (let d = 0; d < 7; d++) {
+        const td = document.createElement('td');
+        td.innerHTML = dayHours[d] > 0
+          ? `<span class="t-hrs">${fmtHrs(dayHours[d])}</span><span class="t-count">${dayCount[d]} emp</span>`
+          : `<span class="t-hrs" style="color:var(--faint)">—</span>`;
+        totRow.appendChild(td);
+      }
+      table.appendChild(totRow);
+
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('daysSection').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

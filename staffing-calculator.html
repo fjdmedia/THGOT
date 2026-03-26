@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staffing Calculator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e4e8ee;
+      --border: rgba(0,0,0,0.1);
+      --accent: #4a6fa5;
+      --accent-dim: rgba(74,111,165,0.12);
+      --text: #1e2a3a;
+      --muted: rgba(30,42,58,0.55);
+      --faint: rgba(30,42,58,0.3);
+      --toggle-knob: rgba(30,42,58,0.2);
+      --nav-bg: rgba(240,242,245,0.92);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0d14;
+      --surface: #12172a;
+      --surface2: #1a1f30;
+      --border: rgba(255,255,255,0.09);
+      --accent: #fb923c;
+      --accent-dim: rgba(251,146,60,0.12);
+      --text: #e8e2d9;
+      --muted: rgba(232,226,217,0.6);
+      --faint: rgba(232,226,217,0.3);
+      --toggle-knob: rgba(255,255,255,0.2);
+      --nav-bg: rgba(10,13,20,0.92);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px 18px 90px;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-link {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 6px;
+      transition: color 0.15s;
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    .header-left .title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--text);
+    }
+
+    .header-left .subtitle {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+      letter-spacing: 0.03em;
+    }
+
+    .live-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .live-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 10px;
+    }
+
+    .card-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Time ── */
+    .time-wrapper {
+      position: relative;
+    }
+
+    input[type="time"] {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: 300;
+      padding: 12px 16px;
+      width: 100%;
+      letter-spacing: 0.06em;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="time"]:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) opacity(0.2);
+    }
+
+    /* ── Toggle ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-info .toggle-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .toggle-info .toggle-detail {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { display: none; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+      background: var(--accent);
+    }
+
+    /* ── Lanes ── */
+    .lanes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+
+    .lane-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      padding: 12px 4px 10px;
+      text-align: center;
+      transition: all 0.15s;
+      user-select: none;
+      position: relative;
+    }
+
+    .lane-btn .lane-num {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .lane-btn .lane-type {
+      display: block;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .lane-btn.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+    }
+
+    .lane-btn.active .lane-num { color: var(--accent); }
+    .lane-btn.active .lane-type { color: var(--accent); }
+
+    .lanes-grid.disabled .lane-btn {
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    /* ── Results ── */
+    .result-hero {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 8px 0 20px;
+    }
+
+    .result-hero .big-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 5.5rem;
+      font-weight: 300;
+      line-height: 1;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .result-hero .num-meta {
+      padding-bottom: 10px;
+    }
+
+    .result-hero .num-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .result-hero .num-sub {
+      font-size: 0.6rem;
+      color: var(--faint);
+      margin-top: 3px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Breakdown */
+    .breakdown {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .b-section {
+      margin-bottom: 14px;
+    }
+
+    .b-section:last-child { margin-bottom: 0; }
+
+    .b-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .b-header-name {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .b-header-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .b-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0 5px 10px;
+      border-left: 1px solid rgba(251,146,60,0.3);
+      font-size: 0.85rem;
+    }
+
+    .b-row .b-name { color: var(--text); }
+
+    .b-row .b-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.83rem;
+      color: var(--text);
+    }
+
+    .b-row .b-count.zero { color: var(--faint); }
+
+    .b-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0;
+    }
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px 18px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      flex: 1;
+      max-width: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .nav-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    .nav-btn.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .nav-icon { font-size: 0.9rem; }
+
+    .skelly-label {
+      color: var(--accent);
+      font-size: 0.85rem;
+    }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .theme-btn:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <a href="index.html" class="back-link">← Tools</a>
+      <div class="title">Staffing Calculator</div>
+      <div class="subtitle">Minimum officers required</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      <div class="live-dot">LIVE</div>
+    </div>
+  </div>
+
+  <!-- Time -->
+  <div class="card">
+    <div class="card-label">Shift Time</div>
+    <input type="time" id="timeInput" />
+  </div>
+
+  <!-- Transborder -->
+  <div class="card">
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name">TB</div>
+        <div class="toggle-detail">14 required when open</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tbToggle" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row skelly-row" id="tbSkellyRow" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:none;">
+      <div class="toggle-info">
+        <div class="toggle-name skelly-label">Skelly Crew</div>
+        <div class="toggle-detail">7 minimum</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tbSkellyToggle" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Lanes -->
+  <div class="card">
+    <div class="card-label">Dom / Int — Open Lanes</div>
+    <div class="toggle-row" style="margin-bottom:14px;">
+      <div class="toggle-info">
+        <div class="toggle-name skelly-label">Skelly Crew</div>
+        <div class="toggle-detail">5 minimum</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="domSkellyToggle" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="lanes-grid">
+      <div class="lane-btn" data-lane="6" onclick="toggleLane(this)">
+        <span class="lane-num">6</span>
+        <span class="lane-type">FBS</span>
+      </div>
+      <div class="lane-btn" data-lane="1" onclick="toggleLane(this)">
+        <span class="lane-num">1</span>
+        <span class="lane-type">VT</span>
+      </div>
+      <div class="lane-btn" data-lane="4" onclick="toggleLane(this)">
+        <span class="lane-num">4</span>
+        <span class="lane-type">CT</span>
+      </div>
+      <div class="lane-btn" data-lane="2" onclick="toggleLane(this)">
+        <span class="lane-num">2</span>
+        <span class="lane-type">ETD</span>
+      </div>
+      <div class="lane-btn" data-lane="5" onclick="toggleLane(this)">
+        <span class="lane-num">5</span>
+        <span class="lane-type">FBS</span>
+      </div>
+      <div class="lane-btn" data-lane="7" onclick="toggleLane(this)">
+        <span class="lane-num">7</span>
+        <span class="lane-type">STD</span>
+      </div>
+      <div class="lane-btn" data-lane="3" onclick="toggleLane(this)">
+        <span class="lane-num">3</span>
+        <span class="lane-type">STD</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HBS Skelly -->
+  <div class="card" id="hbsSkellyCard" style="display:none;">
+    <div class="card-label">HBS — Skelly</div>
+    <div class="toggle-row" style="margin-bottom:12px;">
+      <div class="toggle-info">
+        <div class="toggle-name">CR</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="hbsCR" onchange="calculate()" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row" style="margin-bottom:12px;">
+      <div class="toggle-info">
+        <div class="toggle-name">L3</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="hbsL3" onchange="calculate()" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name">O/S</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="hbsDomOs" onchange="calculate()" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="card">
+    <div class="card-label">Required Officers</div>
+    <div class="result-hero">
+      <div class="big-num" id="totalCount">--</div>
+      <div class="num-meta">
+        <div class="num-label">Officers</div>
+        <div class="num-sub" id="timeDisplay">--:--</div>
+      </div>
+    </div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn active" href="staffing-calculator.html">
+      <span class="nav-icon">👮</span> Staffing
+    </a>
+    <a class="nav-btn" href="hours-calculator.html">
+      <span class="nav-icon">🕐</span> Hours
+    </a>
+  </nav>
+
+  <script>
+    // ── Theme ────────────────────────────────────────────────────────────
+    (function() {
+      const saved = localStorage.getItem('passTheme') || 'dark';
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+      });
+    })();
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+      localStorage.setItem('passTheme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+
+    // ── HBS Schedule [startMinutes, CR, L3, DOM_OS] ──────────────────
+    const hbsSchedule = [
+      [165, 0, 1, 1],  [180, 1, 1, 1],  [195, 1, 1, 1],
+      [210, 1, 1, 1],  [225, 1, 1, 1],  [240, 1, 2, 1],
+      [255, 1, 2, 1],  [270, 2, 2, 2],  [285, 2, 2, 2],
+      [300, 2, 2, 2],  [315, 2, 2, 2],  [330, 2, 2, 2],
+      [345, 2, 2, 2],  [360, 2, 2, 2],  [375, 2, 2, 2],
+      [390, 2, 2, 2],  [405, 2, 2, 2],  [420, 2, 2, 2],
+      [435, 1, 2, 2],  [450, 1, 2, 2],  [465, 1, 2, 2],
+      [480, 1, 2, 1],  [495, 1, 2, 1],  [510, 1, 2, 1],
+      [525, 1, 2, 1],  [540, 1, 2, 1],  [555, 1, 2, 1],
+      [570, 1, 2, 1],  [585, 1, 2, 1],  [600, 1, 2, 1],
+      [615, 1, 2, 1],  [630, 1, 2, 1],  [645, 1, 2, 1],
+      [660, 1, 2, 1],  [675, 1, 2, 1],  [690, 1, 2, 1],
+      [705, 1, 2, 1],  [720, 1, 2, 1],  [735, 1, 2, 1],
+      [750, 1, 2, 1],  [765, 1, 2, 1],  [780, 1, 2, 1],
+      [795, 1, 2, 1],  [810, 1, 2, 1],  [825, 1, 2, 1],
+      [840, 2, 2, 1],  [855, 2, 2, 1],  [870, 2, 2, 1],
+      [885, 2, 2, 1],  [900, 2, 2, 1],  [915, 2, 2, 1],
+      [930, 2, 2, 1],  [945, 2, 2, 1],  [960, 2, 2, 1],
+      [975, 2, 2, 1],  [990, 2, 2, 1],  [1005, 1, 2, 1],
+      [1020, 1, 2, 1], [1035, 1, 1, 1], [1050, 1, 1, 1],
+      [1065, 1, 1, 1], [1080, 1, 1, 1], [1095, 1, 1, 1],
+      [1110, 1, 1, 1], [1125, 1, 1, 1], [1140, 1, 1, 1],
+      [1155, 1, 1, 1], [1170, 1, 1, 1], [1185, 1, 1, 1],
+      [1200, 1, 1, 1], [1215, 1, 1, 1], [1230, 1, 1, 1],
+      [1245, 1, 1, 1], [1260, 1, 1, 1], [1275, 1, 1, 1],
+      [1290, 1, 1, 1], [1305, 1, 1, 1], [1320, 1, 1, 1],
+      [1335, 1, 1, 1], [1350, 1, 1, 1],
+    ];
+
+    const laneCounts = {
+      1: 5, 2: 5, 3: 4, 4: 8, 5: 3, 6: 7, 7: 4
+    };
+
+    const laneLabels = {
+      1: 'Lane 1 — VT',    2: 'Lane 2 — ETD',
+      3: 'Lane 3',          4: 'Lane 4 — CT',
+      5: 'Lane 5 — FBS',   6: 'Lane 6 — FBS',
+      7: 'Lane 7',
+    };
+
+    const activeLanes = new Set();
+
+    function toggleLane(el) {
+      const lane = parseInt(el.dataset.lane);
+      activeLanes.has(lane) ? activeLanes.delete(lane) : activeLanes.add(lane);
+      el.classList.toggle('active');
+      calculate();
+    }
+
+    function getHBS(min) {
+      let row = null;
+      for (const r of hbsSchedule) {
+        if (min >= r[0]) row = r; else break;
+      }
+      return row ? { cr: row[1], l3: row[2], domOs: row[3] } : { cr: 0, l3: 0, domOs: 0 };
+    }
+
+    function getNPS(min) {
+      const l0 = (min >= 300 && min < 1320) ? 2 : 0;
+      const l2 = (min >= 180 && min < 1320) ? 3 : 0;
+      return { l0, l1: 2, l2, gse: 3, npsv: 4 };
+    }
+
+    function calculate() {
+      const val = document.getElementById('timeInput').value;
+      if (!val) return;
+
+      const [h, m] = val.split(':').map(Number);
+      const minutes = h * 60 + m;
+      const timeStr = val;
+
+      const tbOpen    = document.getElementById('tbToggle').checked;
+      const tbSkelly  = tbOpen && document.getElementById('tbSkellyToggle').checked;
+      const tbCount   = tbOpen ? (tbSkelly ? 7 : 14) : 0;
+
+      const domSkelly = document.getElementById('domSkellyToggle').checked;
+      let domCount = 0;
+      if (activeLanes.size > 0) {
+        if (domSkelly) {
+          domCount = 5;
+        } else {
+          domCount = 3;
+          activeLanes.forEach(l => { domCount += laneCounts[l]; });
+        }
+      }
+
+      const anySkelly = tbSkelly || domSkelly;
+      document.getElementById('hbsSkellyCard').style.display = anySkelly ? 'block' : 'none';
+
+      let hbs, hbsCount;
+      if (anySkelly) {
+        const cr    = document.getElementById('hbsCR').checked ? 1 : 0;
+        const l3    = document.getElementById('hbsL3').checked ? 1 : 0;
+        const domOs = document.getElementById('hbsDomOs').checked ? 1 : 0;
+        hbs = { cr, l3, domOs };
+        hbsCount = cr + l3 + domOs;
+      } else {
+        hbs = getHBS(minutes);
+        hbsCount = hbs.cr + hbs.l3 + hbs.domOs;
+      }
+
+      const nps = getNPS(minutes);
+      const npsCount = nps.l0 + nps.l1 + nps.l2 + nps.gse + nps.npsv;
+
+      const total = tbCount + domCount + hbsCount + npsCount;
+
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('timeDisplay').textContent = timeStr;
+      renderBreakdown({ tbOpen, tbSkelly, tbCount, domSkelly, domCount, hbs, hbsCount, nps, npsCount });
+    }
+
+    function bRow(name, count) {
+      return `<div class="b-row">
+        <span class="b-name">${name}</span>
+        <span class="b-count${count === 0 ? ' zero' : ''}">${count}</span>
+      </div>`;
+    }
+
+    function bSection(name, count, rows) {
+      return `<div class="b-section">
+        <div class="b-header">
+          <span class="b-header-name">${name}</span>
+          <span class="b-header-count">${count}</span>
+        </div>
+        ${rows}
+      </div>`;
+    }
+
+    function renderBreakdown({ tbOpen, tbSkelly, tbCount, domSkelly, domCount, hbs, hbsCount, nps, npsCount }) {
+      const openLanes = [...activeLanes].sort((a, b) => a - b);
+      let html = '';
+
+      let tbRows;
+      if (!tbOpen)      tbRows = bRow('Closed', 0);
+      else if (tbSkelly) tbRows = bRow('Skelly Crew', 7);
+      else               tbRows = bRow('Checkpoint', 13) + bRow('O/S', 1);
+      html += bSection('TB', tbCount, tbRows);
+
+      html += '<hr class="b-divider">';
+
+      let domRows;
+      if (activeLanes.size === 0)  domRows = bRow('No lanes open', 0);
+      else if (domSkelly)           domRows = bRow('Skelly Crew', 5);
+      else                          domRows = bRow('Baseline — S1, Table, Randomizer', 3) + openLanes.map(l => bRow(laneLabels[l], laneCounts[l])).join('');
+      html += bSection('Dom / Int', domCount, domRows);
+
+      html += '<hr class="b-divider">';
+
+      html += bSection('HBS', hbsCount,
+        bRow('CR', hbs.cr) + bRow('L3', hbs.l3) + bRow('O/S', hbs.domOs)
+      );
+
+      html += '<hr class="b-divider">';
+
+      html += bSection('NPS', nps.l0 + nps.l1 + nps.l2 + nps.gse + nps.npsv,
+        bRow('L0', nps.l0) + bRow('L1', nps.l1) + bRow('L2', nps.l2) + bRow('GSE', nps.gse) + bRow('NPSV', nps.npsv)
+      );
+
+      document.getElementById('breakdown').innerHTML = html;
+    }
+
+    function init() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('timeInput').value = `${h}:${m}`;
+    }
+
+    document.getElementById('timeInput').addEventListener('input', calculate);
+    document.getElementById('tbToggle').addEventListener('change', function() {
+      document.getElementById('tbSkellyRow').style.display = this.checked ? 'flex' : 'none';
+      if (!this.checked) document.getElementById('tbSkellyToggle').checked = false;
+      calculate();
+    });
+    document.getElementById('tbSkellyToggle').addEventListener('change', function() {
+      if (!this.checked && !document.getElementById('domSkellyToggle').checked) resetHBSSkelly();
+      calculate();
+    });
+    document.getElementById('domSkellyToggle').addEventListener('change', function() {
+      const grid = document.querySelector('.lanes-grid');
+      if (this.checked) {
+        grid.classList.add('disabled');
+        activeLanes.forEach(lane => {
+          grid.querySelector(`[data-lane="${lane}"]`).classList.remove('active');
+        });
+        activeLanes.clear();
+      } else {
+        grid.classList.remove('disabled');
+      }
+      if (!this.checked && !document.getElementById('tbSkellyToggle').checked) resetHBSSkelly();
+      calculate();
+    });
+
+    function resetHBSSkelly() {
+      ['hbsCR', 'hbsL3', 'hbsDomOs'].forEach(id => document.getElementById(id).checked = false);
+    }
+
+    init();
+    calculate();
+  </script>
+</body>
+</html>
