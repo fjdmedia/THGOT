@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>H Coverage</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e4e8ee;
+      --border: rgba(0,0,0,0.1);
+      --accent: #4a6fa5;
+      --accent-dim: rgba(74,111,165,0.12);
+      --text: #1e2a3a;
+      --muted: rgba(30,42,58,0.55);
+      --faint: rgba(30,42,58,0.3);
+      --toggle-knob: rgba(30,42,58,0.2);
+      --nav-bg: rgba(240,242,245,0.92);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0d14;
+      --surface: #12172a;
+      --surface2: #1a1f30;
+      --border: rgba(255,255,255,0.09);
+      --accent: #fb923c;
+      --accent-dim: rgba(251,146,60,0.12);
+      --text: #e8e2d9;
+      --muted: rgba(232,226,217,0.6);
+      --faint: rgba(232,226,217,0.3);
+      --toggle-knob: rgba(255,255,255,0.2);
+      --nav-bg: rgba(10,13,20,0.92);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px 18px 90px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .back-link {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 6px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--accent); }
+    .header-left .title { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .header-left .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .theme-btn:hover { border-color: var(--accent); }
+
+    /* Two-column layout */
+    .layout {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .layout-left {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    .layout-right {
+      flex: 1;
+      min-width: 0;
+    }
+
+    @media (max-width: 620px) {
+      .layout { flex-direction: column; }
+      .layout-left { width: 100%; }
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 10px;
+    }
+    .card-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* Shift input */
+    .shift-input-row { display: flex; gap: 8px; }
+    .shift-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 0;
+    }
+    .shift-input:focus { border-color: var(--accent); }
+    .shift-input::placeholder { color: var(--faint); }
+    .add-btn {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 1.4rem;
+      padding: 0 14px;
+      line-height: 1;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .add-btn:hover { background: var(--accent); color: #fff; }
+
+    .shift-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .shift-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      padding: 4px 8px;
+      color: var(--text);
+    }
+    .chip-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .chip-remove:hover { color: var(--text); }
+
+    /* Toggle */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .toggle-info .toggle-name { font-size: 0.88rem; font-weight: 500; }
+    .toggle-info .toggle-detail { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { display: none; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      top: 2px; left: 2px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent-dim); border-color: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--accent); }
+
+    /* Tabs */
+    .tab-row {
+      display: flex;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      border-radius: 14px 14px 0 0;
+      overflow: hidden;
+    }
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 11px 8px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Table */
+    .card.table-card { padding: 0; overflow: hidden; }
+    .cov-table { width: 100%; border-collapse: collapse; }
+    .cov-table thead tr { background: var(--surface2); }
+    .cov-table th {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 9px 14px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    .cov-table th:first-child { text-align: left; }
+    .cov-table td {
+      padding: 5px 14px;
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      border-bottom: 1px solid var(--faint);
+      color: var(--text);
+    }
+    .cov-table td:first-child {
+      text-align: left;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+    .cov-table tr:last-child td { border-bottom: none; }
+    .cov-table td.var-cell { font-weight: 500; }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px 18px;
+      z-index: 100;
+    }
+    .nav-btn {
+      flex: 1;
+      max-width: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.72rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--text); }
+    .nav-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
+    .nav-icon { font-size: 0.85rem; }
+  </style>
+
+  <script>
+    (function() {
+      const saved = localStorage.getItem('passTheme') || 'dark';
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+      });
+    })();
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+      localStorage.setItem('passTheme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <a href="index.html" class="back-link">← Tools</a>
+      <div class="title">H Coverage</div>
+      <div class="subtitle">Schedule vs. requirement</div>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
+
+  <div class="layout">
+
+    <!-- Left: controls -->
+    <div class="layout-left">
+      <div class="card">
+        <div class="card-label">Add Shifts</div>
+        <div class="shift-input-row">
+          <input class="shift-input" id="shiftInput" type="text" placeholder="0400-1400" maxlength="9" />
+          <button class="add-btn" onclick="addShift()">+</button>
+        </div>
+        <div class="shift-chips" id="shiftChips"></div>
+      </div>
+
+      <div class="card">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Zone B after 18:00</div>
+            <div class="toggle-detail">Adds O/S to req after 18:00</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="zoneBLateToggle" onchange="renderTable()" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: table -->
+    <div class="layout-right">
+      <div class="card table-card">
+        <div class="tab-row">
+          <button class="tab-btn active" id="tabAM" onclick="setTab('AM')">AM · 03:00–11:45</button>
+          <button class="tab-btn" id="tabPM" onclick="setTab('PM')">PM · 12:00–23:00</button>
+        </div>
+        <table class="cov-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Req</th>
+              <th>Total</th>
+              <th>Variance</th>
+            </tr>
+          </thead>
+          <tbody id="covBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="staffing-calculator.html"><span class="nav-icon">👮</span> Staffing</a>
+    <a class="nav-btn active" href="coverage-calculator.html"><span class="nav-icon">📋</span> Coverage</a>
+    <a class="nav-btn" href="hours-calculator.html"><span class="nav-icon">🕐</span> Hours</a>
+  </nav>
+
+  <script>
+    // H schedule: [startMinutes, CR, L3, OS]
+    const hbsSchedule = [
+      [165, 0, 1, 1],  [180, 1, 1, 1],  [195, 1, 1, 1],
+      [210, 1, 1, 1],  [225, 1, 1, 1],  [240, 1, 2, 1],
+      [255, 1, 2, 1],  [270, 2, 2, 2],  [285, 2, 2, 2],
+      [300, 2, 2, 2],  [315, 2, 2, 2],  [330, 2, 2, 2],
+      [345, 2, 2, 2],  [360, 2, 2, 2],  [375, 2, 2, 2],
+      [390, 2, 2, 2],  [405, 2, 2, 2],  [420, 2, 2, 2],
+      [435, 1, 2, 2],  [450, 1, 2, 2],  [465, 1, 2, 2],
+      [480, 1, 2, 1],  [495, 1, 2, 1],  [510, 1, 2, 1],
+      [525, 1, 2, 1],  [540, 1, 2, 1],  [555, 1, 2, 1],
+      [570, 1, 2, 1],  [585, 1, 2, 1],  [600, 1, 2, 1],
+      [615, 1, 2, 1],  [630, 1, 2, 1],  [645, 1, 2, 1],
+      [660, 1, 2, 1],  [675, 1, 2, 1],  [690, 1, 2, 1],
+      [705, 1, 2, 1],  [720, 1, 2, 1],  [735, 1, 2, 1],
+      [750, 1, 2, 1],  [765, 1, 2, 1],  [780, 1, 2, 1],
+      [795, 1, 2, 1],  [810, 1, 2, 1],  [825, 1, 2, 1],
+      [840, 2, 2, 1],  [855, 2, 2, 1],  [870, 2, 2, 1],
+      [885, 2, 2, 1],  [900, 2, 2, 1],  [915, 2, 2, 1],
+      [930, 2, 2, 1],  [945, 2, 2, 1],  [960, 2, 2, 1],
+      [975, 2, 2, 1],  [990, 2, 2, 1],  [1005, 1, 2, 1],
+      [1020, 1, 2, 1], [1035, 1, 1, 1], [1050, 1, 1, 1],
+      [1065, 1, 1, 1], [1080, 1, 1, 1], [1095, 1, 1, 1],
+      [1110, 1, 1, 1], [1125, 1, 1, 1], [1140, 1, 1, 1],
+      [1155, 1, 1, 1], [1170, 1, 1, 1], [1185, 1, 1, 1],
+      [1200, 1, 1, 1], [1215, 1, 1, 1], [1230, 1, 1, 1],
+      [1245, 1, 1, 1], [1260, 1, 1, 1], [1275, 1, 1, 1],
+      [1290, 1, 1, 1], [1305, 1, 1, 1], [1320, 0, 1, 1],
+      [1335, 0, 1, 1], [1350, 0, 1, 1],
+    ];
+
+    const shifts = [];
+    let activeTab = 'AM';
+
+    function getHBSTotal(min) {
+      let row = null;
+      for (const r of hbsSchedule) {
+        if (min >= r[0]) row = r; else break;
+      }
+      return row ? (row[1] + row[2] + row[3]) : 0;
+    }
+
+    function getReq(min) {
+      const hbs = getHBSTotal(min);
+      // Zone B O/S always included before 18:00; after 18:00 only if toggle is on
+      const zoneBOS = min < 1080 ? 1 : (document.getElementById('zoneBLateToggle').checked ? 1 : 0);
+      return hbs + zoneBOS;
+    }
+
+    function parseShiftStr(str) {
+      const m = str.trim().match(/^(\d{3,4})-(\d{3,4})$/);
+      if (!m) return null;
+      const toMin = t => {
+        t = t.padStart(4, '0');
+        return parseInt(t.slice(0, 2)) * 60 + parseInt(t.slice(2));
+      };
+      const start = toMin(m[1]);
+      const end = toMin(m[2]);
+      return { start, end, overnight: end <= start, raw: str.trim() };
+    }
+
+    function coversSlot(shift, slotMin) {
+      if (!shift.overnight) return slotMin >= shift.start && slotMin < shift.end;
+      return slotMin >= shift.start || slotMin < shift.end;
+    }
+
+    function fmtTime(min) {
+      return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+    }
+
+    function varColor(v) {
+      if (v === 0) return '';
+      const intensity = Math.min(Math.abs(v) / 4, 1);
+      const alpha = (0.18 + intensity * 0.52).toFixed(2);
+      return v < 0 ? `rgba(239,68,68,${alpha})` : `rgba(34,197,94,${alpha})`;
+    }
+
+    function addShift() {
+      const input = document.getElementById('shiftInput');
+      const shift = parseShiftStr(input.value);
+      if (!shift) {
+        input.style.borderColor = 'rgba(239,68,68,0.6)';
+        setTimeout(() => input.style.borderColor = '', 800);
+        input.focus();
+        return;
+      }
+      shifts.push(shift);
+      input.value = '';
+      input.focus();
+      renderChips();
+      renderTable();
+    }
+
+    function removeShift(i) {
+      shifts.splice(i, 1);
+      renderChips();
+      renderTable();
+    }
+
+    function renderChips() {
+      document.getElementById('shiftChips').innerHTML = shifts.map((s, i) =>
+        `<div class="shift-chip">${s.raw}<button class="chip-remove" onclick="removeShift(${i})">×</button></div>`
+      ).join('');
+    }
+
+    function setTab(tab) {
+      activeTab = tab;
+      document.getElementById('tabAM').classList.toggle('active', tab === 'AM');
+      document.getElementById('tabPM').classList.toggle('active', tab === 'PM');
+      renderTable();
+    }
+
+    function renderTable() {
+      const start = activeTab === 'AM' ? 180 : 720;   // 03:00 or 12:00
+      const end   = activeTab === 'AM' ? 705 : 1380;  // 11:45 or 23:00
+      let html = '';
+
+      for (let m = start; m <= end; m += 15) {
+        const req = getReq(m);
+        const total = shifts.filter(s => coversSlot(s, m)).length;
+        const variance = total - req;
+        const bg = varColor(variance);
+        const varText = variance > 0 ? `+${variance}` : `${variance}`;
+
+        html += `<tr>
+          <td>${fmtTime(m)}</td>
+          <td>${req}</td>
+          <td>${total}</td>
+          <td class="var-cell" style="${bg ? `background:${bg}` : ''}">${varText}</td>
+        </tr>`;
+      }
+
+      document.getElementById('covBody').innerHTML = html;
+    }
+
+    document.getElementById('shiftInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addShift();
+    });
+
+    renderTable();
+  </script>
+</body>
+</html>
