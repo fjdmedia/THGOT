@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OT Tracking</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0d1b2e;
+    --navy2:  #071520;
+    --gold:   #c9a84c;
+    --bg:     #f4f6f9;
+    --white:  #ffffff;
+    --gray:   #f2f2f2;
+    --border: #dde1e7;
+    --text:   #1a1a2e;
+    --muted:  #6b7280;
+    --nav-bg: rgba(240,242,245,0.92);
+  }
+
+  [data-theme="dark"] {
+    --bg:     #0a0d14;
+    --white:  #12172a;
+    --gray:   #1a1f30;
+    --border: rgba(255,255,255,0.09);
+    --text:   #e8e2d9;
+    --muted:  rgba(232,226,217,0.5);
+    --nav-bg: rgba(10,13,20,0.92);
+  }
+
+  body {
+    font-family: 'Calibri', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--navy);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header h1 {
+    color: var(--gold);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  header p {
+    color: #8ca0b8;
+    font-size: 0.8rem;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 190px 340px 1fr 220px;
+    gap: 1.2rem;
+    padding: 1.2rem 1.2rem;
+  }
+
+  /* ── Panel shared ── */
+  .panel {
+    background: var(--white);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .panel-header {
+    background: var(--navy);
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.2rem;
+  }
+  .panel-body { padding: 1.2rem; }
+
+  /* ── Search ── */
+  .search-wrap { position: relative; margin-bottom: 1rem; }
+  .search-wrap input {
+    width: 100%;
+    padding: 0.65rem 1rem 0.65rem 2.4rem;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: var(--white);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--gold); }
+  .search-wrap .icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 1rem;
+    pointer-events: none;
+  }
+  .search-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── Results table ── */
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .results-table thead tr {
+    background: var(--navy);
+    color: var(--gold);
+  }
+  .results-table thead th {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  .results-table thead th:first-child { width: 52px; text-align: center; }
+  .results-table thead th:last-child  { width: 60px; text-align: center; }
+
+  .results-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .results-table tbody tr:nth-child(even) { background: var(--gray); }
+  .results-table tbody tr:hover { background: #e8f0fb; }
+
+  .results-table td {
+    padding: 0.55rem 0.75rem;
+    vertical-align: middle;
+  }
+  .results-table td:first-child { text-align: center; font-weight: 700; color: var(--navy); }
+  .results-table td:last-child  { text-align: center; }
+
+  .no-results {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 2rem 0;
+  }
+
+  /* ── Add button ── */
+  .btn-add {
+    background: var(--navy);
+    color: var(--gold);
+    border: none;
+    border-radius: 5px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-add:hover  { background: #1a3050; }
+  .btn-add:active { transform: scale(0.95); }
+
+  /* ── Log panel ── */
+  .log-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .log-count {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .btn-clear {
+    background: transparent;
+    border: 1.5px solid #e74c3c;
+    color: #e74c3c;
+    border-radius: 6px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-clear:hover { background: #e74c3c; color: #fff; }
+
+  .log-table-wrap { overflow: hidden; }
+  .log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    table-layout: fixed;
+  }
+  .log-table thead tr { background: var(--navy); color: var(--gold); }
+  .log-table thead th {
+    padding: 0.5rem 0.5rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  /* col widths: Rank | Name | EE | Date | OT Shift | Total | Result | Notes | × */
+  .log-table colgroup col:nth-child(1) { width: 48px; }
+  .log-table colgroup col:nth-child(2) { width: 13%; }
+  .log-table colgroup col:nth-child(3) { width: 62px; }
+  .log-table colgroup col:nth-child(4) { width: 96px; }
+  .log-table colgroup col:nth-child(5) { width: 80px; }
+  .log-table colgroup col:nth-child(6) { width: 52px; }
+  .log-table colgroup col:nth-child(7) { width: 13%; }
+  .log-table colgroup col:nth-child(8) { }
+  .log-table colgroup col:nth-child(9) { width: 28px; }
+
+  .log-table thead th:first-child { text-align: center; cursor: pointer; user-select: none; }
+  .log-table thead th:first-child:hover { background: #1a3050; }
+  .sort-indicator { margin-left: 4px; font-size: 0.7rem; opacity: 0.8; }
+
+  .log-table tbody tr { border-bottom: 1px solid var(--border); }
+  .log-table tbody tr:nth-child(even) { background: var(--gray); }
+
+  .log-table td { padding: 0.4rem 0.5rem; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-table td:first-child { text-align: center; font-weight: 700; color: var(--navy); }
+
+  .log-table td input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: var(--text);
+    outline: none;
+    padding: 0.15rem 0.3rem;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .log-table td input:focus { background: #e8f4ff; }
+
+  .btn-remove {
+    background: transparent;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0.3rem;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .btn-remove:hover { color: #e74c3c; }
+
+  .log-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 3rem 0;
+  }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--navy);
+    color: var(--gold);
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Info panel ── */
+  .info-panel {
+    background: var(--navy);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    align-self: start;
+  }
+  .info-panel .panel-header { font-size: 0.8rem; }
+  .info-panel .panel-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .info-field label {
+    display: block;
+    color: #8ca0b8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+  .info-field input {
+    width: 100%;
+    background: #0a1829;
+    border: 1.5px solid #2e4a6a;
+    border-radius: 6px;
+    color: var(--gold);
+    font-size: 0.88rem;
+    font-family: inherit;
+    padding: 0.45rem 0.6rem;
+    outline: none;
+    transition: border-color 0.2s;
+    color-scheme: dark;
+  }
+  .info-field input:focus { border-color: var(--gold); }
+
+  /* ── Summary panel ── */
+  .summary-panel {
+    background: var(--navy);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    align-self: start;
+  }
+  .summary-panel .panel-header { font-size: 0.8rem; }
+  .summary-panel .panel-body { padding: 1rem; }
+  .summary-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #1e3350;
+  }
+  .summary-stat:last-child { border-bottom: none; }
+  .summary-stat .s-label {
+    color: #8ca0b8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  .summary-stat .s-val {
+    color: var(--gold);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .summary-divider {
+    border: none;
+    border-top: 1px solid #2e4a6a;
+    margin: 0.6rem 0;
+  }
+  .breakdown-title {
+    color: #8ca0b8;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.25rem 0;
+  }
+  .breakdown-row .br-shift { color: #c8d6e8; font-size: 0.8rem; font-weight: 600; }
+  .breakdown-row .br-detail { color: var(--muted); font-size: 0.75rem; }
+  .breakdown-row .br-hrs { color: var(--gold); font-size: 0.82rem; font-weight: 700; }
+  .summary-empty { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 1rem 0; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px 18px;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    max-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { border-color: var(--gold); color: var(--text); }
+  .nav-btn.active {
+    background: rgba(201,168,76,0.12);
+    border-color: var(--gold);
+    color: var(--text);
+  }
+  .nav-icon { font-size: 0.9rem; }
+
+  /* ── Theme button ── */
+  .theme-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 8px;
+    color: var(--gold);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    line-height: 1;
+  }
+  .theme-btn:hover { border-color: var(--gold); }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* ── Password Gate ── */
+  #pw-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0a1220;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pw-box {
+    background: #0d1b2e;
+    border: 1px solid #c9a84c;
+    border-radius: 14px;
+    padding: 2.5rem 2.8rem;
+    text-align: center;
+    min-width: 300px;
+  }
+  .pw-lock { font-size: 2rem; margin-bottom: 0.6rem; }
+  .pw-title { color: #c9a84c; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+  .pw-sub { color: #8ca0b8; font-size: 0.82rem; margin-bottom: 1.4rem; }
+  .pw-box input[type="password"] {
+    width: 100%; padding: 0.6rem 0.9rem;
+    background: #0a1829; border: 1.5px solid #2e4a6a;
+    border-radius: 7px; color: #e8e2d9;
+    font-size: 0.95rem; font-family: inherit;
+    outline: none; text-align: center;
+    letter-spacing: 0.05em; margin-bottom: 0.9rem;
+    transition: border-color 0.2s;
+  }
+  .pw-box input[type="password"]:focus { border-color: #c9a84c; }
+  .pw-btn {
+    width: 100%; padding: 0.6rem;
+    background: #c9a84c; color: #0d1b2e;
+    border: none; border-radius: 7px;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.05em;
+    transition: background 0.15s;
+  }
+  .pw-btn:hover { background: #e0bc6a; }
+  .pw-error { color: #e74c3c; font-size: 0.8rem; margin-top: 0.7rem; min-height: 1.1em; }
+  @keyframes pw-shake {
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-8px); }
+    40%{ transform: translateX(8px); }
+    60%{ transform: translateX(-5px); }
+    80%{ transform: translateX(5px); }
+  }
+  .pw-shake { animation: pw-shake 0.4s ease; }
+
+</style>
+</head>
+<body>
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-lock">🔒</div>
+    <div class="pw-title">THGOT</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="off">
+    <button class="pw-btn" onclick="checkPW()">Enter</button>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+
+<header>
+  <div>
+    <h1>OT Tracking</h1>
+    <p>Search by last 3 EE digits or first name — add to log in seniority order</p>
+  </div>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+</header>
+
+<div class="layout">
+
+  <!-- INFO: Date + OT Shift -->
+  <div class="info-panel panel">
+    <div class="panel-header">Shift Info</div>
+    <div class="panel-body">
+      <div class="info-field">
+        <label for="sessionDate">Date</label>
+        <input type="date" id="sessionDate">
+      </div>
+      <div class="info-field">
+        <label for="sessionShift">OT Shift</label>
+        <input type="text" id="sessionShift" placeholder="e.g. 0700-1500">
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDLE: Search -->
+  <div class="panel">
+    <div class="panel-header">Search Employees</div>
+    <div class="panel-body">
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Last 3 EE digits or first name..." autocomplete="off">
+      </div>
+      <p class="search-hint">Showing up to 8 matches</p>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>EE</th>
+            <th>Add</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          <tr><td colspan="4" class="no-results">Start typing to search</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RIGHT: Log -->
+  <div class="panel">
+    <div class="panel-header">OT</div>
+    <div class="panel-body">
+      <div class="log-header-row">
+        <span class="log-count" id="logCount">0 employees logged</span>
+        <button class="btn-clear" onclick="clearLog()">Clear Log</button>
+      </div>
+      <div class="log-table-wrap">
+        <table class="log-table">
+          <colgroup><col><col><col><col><col><col><col><col><col></colgroup>
+          <thead>
+            <tr>
+              <th onclick="toggleSort()" title="Click to sort by rank">Rank <span class="sort-indicator" id="sortIndicator">↕</span></th>
+              <th>Name</th>
+              <th>EE</th>
+              <th>Date</th>
+              <th>OT Shift</th>
+              <th>Total</th>
+              <th>Result</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="logBody">
+            <tr><td colspan="8" class="log-empty">No employees logged yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Summary -->
+  <div class="summary-panel panel">
+    <div class="panel-header">Day Summary</div>
+    <div class="panel-body" id="summaryBody">
+      <p class="summary-empty">No entries yet</p>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const OFFICERS = [{"rank":1,"ee":"***166","name":"RAKESH"},{"rank":2,"ee":"***163","name":"SUNITI"},{"rank":3,"ee":"***026","name":"ASIF"},{"rank":4,"ee":"***702","name":"JULIO"},{"rank":5,"ee":"***407","name":"BELINDA"},{"rank":6,"ee":"***575","name":"DIANE"},{"rank":7,"ee":"***993","name":"WAYNE"},{"rank":8,"ee":"***327","name":"NAVINDRA"},{"rank":9,"ee":"***198","name":"STEVEN"},{"rank":10,"ee":"***279","name":"RAAD"},{"rank":11,"ee":"***175","name":"ZELIA"},{"rank":12,"ee":"***937","name":"ALBERTO"},{"rank":13,"ee":"***369","name":"CAROLINE"},{"rank":14,"ee":"***978","name":"JOSEFINA"},{"rank":15,"ee":"***803","name":"FRANCESCA"},{"rank":16,"ee":"***166","name":"FATLA"},{"rank":17,"ee":"***659","name":"CHRISTOPHER"},{"rank":18,"ee":"***934","name":"GABRIELA"},{"rank":19,"ee":"***380","name":"SUSANA"},{"rank":20,"ee":"***293","name":"GISELLE"},{"rank":21,"ee":"***719","name":"JUNELEY"},{"rank":22,"ee":"***490","name":"CRISTINA"},{"rank":23,"ee":"***752","name":"EVA"},{"rank":24,"ee":"***912","name":"PAULA MEDEIROS"},{"rank":25,"ee":"***924","name":"DIVINA"},{"rank":26,"ee":"***765","name":"MARIA CECILIA"},{"rank":27,"ee":"***127","name":"DARYL"},{"rank":28,"ee":"***780","name":"ARTAN"},{"rank":29,"ee":"***887","name":"INDIRA"},{"rank":30,"ee":"***919","name":"MARIA"},{"rank":31,"ee":"***543","name":"DEREK"},{"rank":32,"ee":"***990","name":"SOPHAY"},{"rank":33,"ee":"***119","name":"LY"},{"rank":34,"ee":"***040","name":"MARC"},{"rank":35,"ee":"***746","name":"DANNY"},{"rank":36,"ee":"***439","name":"NATASHA"},{"rank":37,"ee":"***280","name":"NIGEL"},{"rank":38,"ee":"***633","name":"LUCIA"},{"rank":39,"ee":"***394","name":"ERIC"},{"rank":40,"ee":"***706","name":"CHRISTIAN DOMIN"},{"rank":41,"ee":"***001","name":"ANNA"},{"rank":42,"ee":"***301","name":"PAMELA"},{"rank":43,"ee":"***982","name":"ALVIN"},{"rank":44,"ee":"***016","name":"EVAN NEAL"},{"rank":45,"ee":"***760","name":"MEERA"},{"rank":46,"ee":"***943","name":"TED"},{"rank":47,"ee":"***204","name":"ROLF"},{"rank":48,"ee":"***592","name":"CATHERINE GRACE"},{"rank":49,"ee":"***571","name":"REMAR"},{"rank":50,"ee":"***671","name":"EDUARDO"},{"rank":51,"ee":"***319","name":"BENEDICTO"},{"rank":52,"ee":"***806","name":"JEANETTE"},{"rank":53,"ee":"***953","name":"RANJIT"},{"rank":54,"ee":"***671","name":"RODILLO"},{"rank":55,"ee":"***724","name":"JACQUELINE"},{"rank":56,"ee":"***465","name":"MARIA"},{"rank":57,"ee":"***835","name":"MELISSA"},{"rank":58,"ee":"***274","name":"VERA LISSETTE"},{"rank":59,"ee":"***159","name":"GORDON ALLAN"},{"rank":60,"ee":"***936","name":"JOHN"},{"rank":61,"ee":"***123","name":"PARRISH"},{"rank":62,"ee":"***301","name":"LISA"},{"rank":63,"ee":"***928","name":"PAMELA"},{"rank":64,"ee":"***843","name":"JENNIFER R."},{"rank":65,"ee":"***788","name":"MICHELLE M."},{"rank":66,"ee":"***275","name":"STEVEN C."},{"rank":67,"ee":"***167","name":"ALAN J."},{"rank":68,"ee":"***867","name":"THOMSON SANDRA"},{"rank":69,"ee":"***736","name":"JAMIE"},{"rank":70,"ee":"***826","name":"KATERINA"},{"rank":71,"ee":"***913","name":"JULIET"},{"rank":72,"ee":"***905","name":"JOANNE"},{"rank":73,"ee":"***526","name":"KARINNE"},{"rank":74,"ee":"***775","name":"SONIA"},{"rank":75,"ee":"***052","name":"ARNOLD"},{"rank":76,"ee":"***480","name":"GRANT"},{"rank":77,"ee":"***924","name":"KATHLEEN"},{"rank":78,"ee":"***805","name":"TAMMY"},{"rank":79,"ee":"***773","name":"JESSICA"},{"rank":80,"ee":"***976","name":"BRYAN"},{"rank":81,"ee":"***730","name":"MARIEBREACH"},{"rank":82,"ee":"***149","name":"WILFREDO"},{"rank":83,"ee":"***242","name":"KRISTINE"},{"rank":84,"ee":"***580","name":"DEAN"},{"rank":85,"ee":"***677","name":"ASHLEY"},{"rank":86,"ee":"***608","name":"TARUNA"},{"rank":87,"ee":"***144","name":"MICHAEL"},{"rank":88,"ee":"***761","name":"PAOLO"},{"rank":89,"ee":"***617","name":"JASON"},{"rank":90,"ee":"***946","name":"MICHELLE"},{"rank":91,"ee":"***242","name":"CLAUDIA"},{"rank":92,"ee":"***987","name":"CHRISTOPHER"},{"rank":93,"ee":"***003","name":"EILEEN"},{"rank":94,"ee":"***666","name":"OLIVER"},{"rank":95,"ee":"***682","name":"VEDRANA"},{"rank":96,"ee":"***134","name":"WENDY NICOLE"},{"rank":97,"ee":"***770","name":"RYAN CHAD"},{"rank":98,"ee":"***803","name":"JEREMY"},{"rank":99,"ee":"***640","name":"JORDAN THOMAS"},{"rank":100,"ee":"***381","name":"ZACHARY THOMAS"},{"rank":101,"ee":"***541","name":"ERWIN MARK"},{"rank":102,"ee":"***092","name":"MICHAEL"},{"rank":103,"ee":"***044","name":"ROBERT ANDREW"},{"rank":104,"ee":"***066","name":"MARY JANE FLORES"},{"rank":105,"ee":"***850","name":"REINA"},{"rank":106,"ee":"***764","name":"ROBERT"},{"rank":107,"ee":"***073","name":"LIANNE ELIZABETH"},{"rank":108,"ee":"***391","name":"JAMES ROBERT"},{"rank":109,"ee":"***046","name":"FRANCIS LLOYD"},{"rank":110,"ee":"***182","name":"OLIVER MARTINEZ"},{"rank":111,"ee":"***556","name":"FRANCIS JOHN"},{"rank":112,"ee":"***359","name":"KEARSTIN"},{"rank":113,"ee":"***324","name":"ERNA JEAN"},{"rank":114,"ee":"***470","name":"JEANO LOPEZ"},{"rank":115,"ee":"***694","name":"HAROLD HOMBER"},{"rank":116,"ee":"***841","name":"JOSHUA"},{"rank":117,"ee":"***385","name":"AKHILESH"},{"rank":118,"ee":"***947","name":"CATHERINE"},{"rank":119,"ee":"***159","name":"CHRISTINE FAYE"},{"rank":120,"ee":"***599","name":"DREW JILLIAN"},{"rank":121,"ee":"***880","name":"CHERRY LYN"},{"rank":122,"ee":"***323","name":"DYLAN"},{"rank":123,"ee":"***304","name":"LESTER JOHN"},{"rank":124,"ee":"***124","name":"CHRISTIAAN KENNETH"},{"rank":125,"ee":"***987","name":"CATHERINE BELLEZA"},{"rank":126,"ee":"***647","name":"LUIGI DELA CRUZ"},{"rank":127,"ee":"***069","name":"MEGAN ROSE-MARIE"},{"rank":128,"ee":"***210","name":"MATTHEW MICHAEL"},{"rank":129,"ee":"***274","name":"VERONICA"},{"rank":130,"ee":"***812","name":"MANUELA"},{"rank":131,"ee":"***981","name":"DANIELLE PECSON"},{"rank":132,"ee":"***214","name":"BRENDA RAE"},{"rank":"","ee":"***256","name":"TIFFANY"},{"rank":133,"ee":"***011","name":"JOSUE JASPER"},{"rank":134,"ee":"***170","name":"CHRISTIAN EDUARDO"},{"rank":135,"ee":"***822","name":"JAY PATRYCK"},{"rank":136,"ee":"***527","name":"SAMIR"},{"rank":137,"ee":"***925","name":"JENNIFER"},{"rank":138,"ee":"***035","name":"CLARO"},{"rank":139,"ee":"***109","name":"JESSE-PHILLIP"},{"rank":140,"ee":"***276","name":"MARNE RENE"},{"rank":141,"ee":"***818","name":"JERIC ESTRADA"},{"rank":142,"ee":"***079","name":"MARIA PAMELA"},{"rank":143,"ee":"***520","name":"KYRA DAWNE"},{"rank":144,"ee":"***304","name":"RACHEL"},{"rank":145,"ee":"***257","name":"MARLOW CHRISTOPHER"},{"rank":146,"ee":"***106","name":"RAYMART"},{"rank":147,"ee":"***839","name":"JOSHUA JENUEL"},{"rank":148,"ee":"***001","name":"DE DE DIVINA"},{"rank":149,"ee":"***994","name":"MACKENZIE"},{"rank":150,"ee":"***811","name":"JENNIFER"},{"rank":151,"ee":"***849","name":"KAYLA"},{"rank":152,"ee":"***022","name":"BELINDA"},{"rank":153,"ee":"***933","name":"THALIA"},{"rank":"","ee":"***660","name":"JALAIRE"},{"rank":154,"ee":"***173","name":"RAPHAEL"},{"rank":155,"ee":"***820","name":"AMANPREET"},{"rank":156,"ee":"***728","name":"TORIA"},{"rank":157,"ee":"***836","name":"GABRIEL"},{"rank":158,"ee":"***865","name":"ARSON"},{"rank":159,"ee":"***935","name":"SARAH"},{"rank":160,"ee":"***357","name":"DAVID"},{"rank":161,"ee":"***229","name":"CHRISTOPHER"},{"rank":162,"ee":"***009","name":"JAEMIE"},{"rank":163,"ee":"***178","name":"JOSHUA"},{"rank":164,"ee":"***222","name":"DARNELL"},{"rank":165,"ee":"***085","name":"ALLAIN"},{"rank":166,"ee":"***758","name":"DEVON"},{"rank":167,"ee":"***703","name":"TRACY"},{"rank":168,"ee":"***227","name":"DECLAN"},{"rank":169,"ee":"***469","name":"JORDAN"},{"rank":170,"ee":"***990","name":"QUINN"},{"rank":171,"ee":"***007","name":"ROHANPREET"},{"rank":172,"ee":"***974","name":"SEAN"},{"rank":173,"ee":"***206","name":"RAJWINDER"},{"rank":174,"ee":"***883","name":"THIEN THANH"},{"rank":175,"ee":"***874","name":"SUKHMEET"},{"rank":176,"ee":"***195","name":"CHANDANDEEP KAUR"},{"rank":177,"ee":"***933","name":"MIKE"},{"rank":178,"ee":"***014","name":"JUSTIN"},{"rank":179,"ee":"***241","name":"KIERA"},{"rank":180,"ee":"***900","name":"SYED NATIQ MEHDI"},{"rank":181,"ee":"***856","name":"ARSHDEEP"},{"rank":"","ee":"***664","name":"SPENCER"},{"rank":182,"ee":"***381","name":"CRAIG"},{"rank":183,"ee":"***216","name":"BALMEET KAUR"},{"rank":184,"ee":"***879","name":"RAMANDEEP"},{"rank":185,"ee":"***756","name":"ABRAHAM"},{"rank":186,"ee":"***880","name":"MEHTAB"},{"rank":187,"ee":"***388","name":"RUSS"},{"rank":188,"ee":"***851","name":"ROBIN"},{"rank":189,"ee":"***830","name":"NEENANPREET"},{"rank":190,"ee":"***435","name":"JERIC JOHN"},{"rank":191,"ee":"***537","name":"CHRISTOPHER"},{"rank":192,"ee":"***759","name":"MARK"},{"rank":193,"ee":"***484","name":"DYLAN"},{"rank":194,"ee":"***016","name":"MARK"},{"rank":195,"ee":"***436","name":"AHMED"},{"rank":196,"ee":"***344","name":"JUNEL"},{"rank":197,"ee":"***801","name":"PAUL"},{"rank":198,"ee":"***600","name":"KASPER"},{"rank":199,"ee":"***451","name":"ADRIEL"},{"rank":200,"ee":"***060","name":"CHASTINA"},{"rank":201,"ee":"***679","name":"MICHAELA"},{"rank":202,"ee":"***089","name":"FATIMA"},{"rank":203,"ee":"***908","name":"TUAN DAT"},{"rank":204,"ee":"***742","name":"KENAN"},{"rank":205,"ee":"***045","name":"NAVNEET"},{"rank":206,"ee":"***863","name":"PARAMVIR"},{"rank":207,"ee":"***700","name":"DYLAN"},{"rank":208,"ee":"***968","name":"DEA DOROTHY"},{"rank":209,"ee":"***891","name":"JEROME"},{"rank":210,"ee":"***823","name":"CHRISTOPHER"},{"rank":211,"ee":"***098","name":"KRIZCKA"},{"rank":212,"ee":"***228","name":"CAMILLE"},{"rank":213,"ee":"***894","name":"MUGANZA"},{"rank":214,"ee":"***656","name":"NASRIN"},{"rank":215,"ee":"***387","name":"JASWINDER SINGH"},{"rank":216,"ee":"***819","name":"NIKKO"},{"rank":217,"ee":"***932","name":"RAVNEET SIDHU"},{"rank":218,"ee":"***320","name":"VINCENT"},{"rank":219,"ee":"***722","name":"JUSTIN"},{"rank":220,"ee":"***776","name":"KAUR"},{"rank":221,"ee":"***271","name":"AMANPREET"},{"rank":222,"ee":"***371","name":"MAYDEE"},{"rank":223,"ee":"***753","name":"ELEAZAR"},{"rank":224,"ee":"***872","name":"DIMITRI"},{"rank":225,"ee":"***786","name":"BRAEDEN"},{"rank":226,"ee":"***114","name":"CHAD"},{"rank":227,"ee":"***298","name":"LALIT GUPTA"},{"rank":228,"ee":"***002","name":"WILLIAM"},{"rank":229,"ee":"***999","name":"FREEHA"},{"rank":230,"ee":"***779","name":"REGINALD"},{"rank":231,"ee":"***908","name":"HARDEPINDER KAUR"},{"rank":232,"ee":"***585","name":"KHUSDEEP"},{"rank":233,"ee":"***733","name":"AKASHDEEP"},{"rank":234,"ee":"***233","name":"MARLON"},{"rank":235,"ee":"***390","name":"JACQUELYN"},{"rank":236,"ee":"***614","name":"JANINE"},{"rank":237,"ee":"***561","name":"NIELSEN"},{"rank":238,"ee":"***918","name":"AURELIANO"},{"rank":239,"ee":"***784","name":"CAMILLE"},{"rank":240,"ee":"***737","name":"SARABJIT"},{"rank":241,"ee":"***389","name":"LOVEDEEP"},{"rank":242,"ee":"***706","name":"HAZEL"},{"rank":243,"ee":"***151","name":"VICTOR"},{"rank":244,"ee":"***811","name":"JOHN"},{"rank":245,"ee":"***524","name":"DILBAG"},{"rank":"","ee":"***128","name":"JAX"},{"rank":246,"ee":"***125","name":"JOSHUA"},{"rank":247,"ee":"***594","name":"KIMBERLEE"},{"rank":248,"ee":"***974","name":"EMMA"},{"rank":249,"ee":"***899","name":"JUNE"},{"rank":250,"ee":"***892","name":"ROXANNE"},{"rank":251,"ee":"***167","name":"DAWN"},{"rank":252,"ee":"***951","name":"SANDHU"},{"rank":253,"ee":"***451","name":"SOHALPREET"},{"rank":254,"ee":"***444","name":"ANDREA"},{"rank":255,"ee":"***429","name":"SHIV"},{"rank":256,"ee":"***424","name":"AKASH"},{"rank":257,"ee":"***420","name":"SYDNEY"},{"rank":258,"ee":"***530","name":"DAWN"},{"rank":259,"ee":"***537","name":"DONEVAN"},{"rank":260,"ee":"***123","name":"LOVEPREET"},{"rank":261,"ee":"***118","name":"SUKHLEEN"},{"rank":262,"ee":"***121","name":"DHRUV"},{"rank":263,"ee":"***125","name":"SIMARPREET"},{"rank":264,"ee":"***122","name":"PRABHJOT"},{"rank":265,"ee":"***130","name":"CAITLYNN"},{"rank":266,"ee":"***119","name":"PARNEET"},{"rank":267,"ee":"***372","name":"LOVEPREET"},{"rank":268,"ee":"***394","name":"SHIEN"},{"rank":269,"ee":"***366","name":"RAJAT"},{"rank":270,"ee":"***396","name":"PRABHJOT"},{"rank":271,"ee":"***391","name":"NAVJOT"},{"rank":272,"ee":"***367","name":"DRAKE"},{"rank":"","ee":"***537","name":"ARSHDEEP"},{"rank":273,"ee":"***719","name":"SUMANJOT"},{"rank":274,"ee":"***721","name":"KIRANDEEP"},{"rank":275,"ee":"***724","name":"DEEPANKERDEEP"},{"rank":276,"ee":"***722","name":"BHARTI"},{"rank":277,"ee":"***207","name":"Jitesh"},{"rank":278,"ee":"***196","name":"Anmolpreet"},{"rank":279,"ee":"***205","name":"Marco"},{"rank":280,"ee":"***204","name":"Gavin"},{"rank":281,"ee":"***536","name":"Harsh"},{"rank":282,"ee":"***546","name":"Diljot"},{"rank":283,"ee":"***418","name":"TIRSO"},{"rank":284,"ee":"***845","name":"Jacob"},{"rank":285,"ee":"***828","name":"Haywad"},{"rank":286,"ee":"***824","name":"Anubhav"},{"rank":287,"ee":"***832","name":"Jasmine"},{"rank":288,"ee":"***831","name":"Ekamjeet"},{"rank":289,"ee":"***830","name":"Justin"},{"rank":290,"ee":"***834","name":"Gurnoor"},{"rank":291,"ee":"***840","name":"Arashdeep"},{"rank":292,"ee":"***767","name":"Sebastien"},{"rank":293,"ee":"***257","name":"Arman"},{"rank":294,"ee":"***228","name":"Afifur"},{"rank":295,"ee":"***226","name":"Sanjam"},{"rank":296,"ee":"***256","name":"Gurleen Kaur"},{"rank":297,"ee":"***230","name":"Alex"},{"rank":298,"ee":"***732","name":"Neethu"},{"rank":299,"ee":"***282","name":"Shah"},{"rank":300,"ee":"***332","name":"Dylan"},{"rank":301,"ee":"***443","name":"Yashvy"},{"rank":302,"ee":"***429","name":"Jerome"},{"rank":303,"ee":"***432","name":"Rydham"},{"rank":304,"ee":"***793","name":"Arshdeep"},{"rank":"","ee":"***797","name":"Tommaso"},{"rank":305,"ee":"***798","name":"Ardee"},{"rank":306,"ee":"***617","name":"Simranjot"},{"rank":307,"ee":"***603","name":"Leanne"},{"rank":308,"ee":"***612","name":"Joy"},{"rank":309,"ee":"***610","name":"Arzo"},{"rank":310,"ee":"***869","name":"Rein"},{"rank":311,"ee":"***874","name":"Anton"},{"rank":312,"ee":"***196","name":"Ekaterina"},{"rank":313,"ee":"***213","name":"David"},{"rank":314,"ee":"***203","name":"Amneesh"},{"rank":315,"ee":"***204","name":"Preetpal"},{"rank":316,"ee":"***205","name":"Kirandeep"},{"rank":317,"ee":"***223","name":"Jujhar"},{"rank":318,"ee":"***841","name":"Brennan"},{"rank":319,"ee":"***853","name":"Shubpreet"},{"rank":320,"ee":"***301","name":"Pallavi"},{"rank":321,"ee":"***291","name":"Elijah"},{"rank":322,"ee":"***303","name":"Reese"},{"rank":323,"ee":"***907","name":"Gagandeep Singh"},{"rank":"","ee":"***885","name":"Manvir"},{"rank":324,"ee":"***878","name":"Reymiel"},{"rank":325,"ee":"***900","name":"Brandon"},{"rank":326,"ee":"***910","name":"Jaskomal"},{"rank":"","ee":"***898","name":"Jaspinder"},{"rank":327,"ee":"***877","name":"Kirandeep"},{"rank":328,"ee":"***895","name":"Abdulahi Issa"},{"rank":329,"ee":"***014","name":"Andrew Olamide"},{"rank":330,"ee":"***091","name":"Yvan Kurt"},{"rank":331,"ee":"***100","name":"Samir"},{"rank":332,"ee":"***098","name":"Kelsey"},{"rank":333,"ee":"***103","name":"Sukhnoor"},{"rank":334,"ee":"***099","name":"Gurpreet"},{"rank":335,"ee":"***102","name":"Prabhpreet"},{"rank":336,"ee":"***101","name":"Manpreet Kaur"},{"rank":337,"ee":"***613","name":"Jilliane Djerald"},{"rank":338,"ee":"***611","name":"Nirvair"},{"rank":339,"ee":"***631","name":"Yahya"},{"rank":340,"ee":"***612","name":"Bhagyeshkumar"},{"rank":341,"ee":"***258","name":"Jay"},{"rank":342,"ee":"***895","name":"Sachet"},{"rank":343,"ee":"***636","name":"Chantalle"},{"rank":344,"ee":"***635","name":"Cameron"}];
+
+document.getElementById('sessionDate').value = new Date().toISOString().split('T')[0];
+
+const searchInput = document.getElementById('searchInput');
+const resultsBody = document.getElementById('resultsBody');
+const logBody     = document.getElementById('logBody');
+const logCount    = document.getElementById('logCount');
+
+let logEntries = [];
+let sortDir = null; // null = insertion order, 'asc', 'desc'
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function getFirstName(name) {
+  if (name.includes(',')) return name.split(',')[1].trim();
+  return name;
+}
+function maskEE(ee) {
+  const s = String(ee);
+  return '***' + s.slice(-3);
+}
+function calcHours(shift) {
+  const m = shift && shift.match(/^(\d{4})-(\d{4})$/);
+  if (!m) return null;
+  const start = parseInt(m[1].slice(0,2)) * 60 + parseInt(m[1].slice(2));
+  const end   = parseInt(m[2].slice(0,2)) * 60 + parseInt(m[2].slice(2));
+  let diff = end - start;
+  if (diff < 0) diff += 24 * 60; // overnight
+  return diff / 60;
+}
+function fmtHrs(h) {
+  if (h === null) return '—';
+  return Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
+}
+
+// ── Search ────────────────────────────────────────────────────────────────
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toUpperCase();
+  if (!q) {
+    resultsBody.innerHTML = '<tr><td colspan="4" class="no-results">Start typing to search</td></tr>';
+    return;
+  }
+
+  const matches = OFFICERS.filter(o => {
+    const firstName = getFirstName(o.name).toUpperCase();
+    const lastThreeEE = String(o.ee).slice(-3);
+    return lastThreeEE === q || firstName.includes(q);
+  }).slice(0, 8);
+
+  if (!matches.length) {
+    resultsBody.innerHTML = '<tr><td colspan="4" class="no-results">No matches found</td></tr>';
+    return;
+  }
+
+  resultsBody.innerHTML = matches.map((o, i) => `
+    <tr>
+      <td>${o.rank !== '' ? o.rank : '—'}</td>
+      <td>${getFirstName(o.name)}</td>
+      <td>${maskEE(o.ee)}</td>
+      <td><button class="btn-add" onclick="addToLog(${OFFICERS.indexOf(o)})">ADD</button></td>
+    </tr>
+  `).join('');
+});
+
+// ── Add to log ────────────────────────────────────────────────────────────
+function addToLog(idx) {
+  const o = OFFICERS[idx];
+  // prevent duplicates
+  if (logEntries.find(e => e.ee === o.ee)) {
+    showToast(`${getFirstName(o.name)} already in log`);
+    return;
+  }
+  const date  = document.getElementById('sessionDate').value;
+  const shift = document.getElementById('sessionShift').value;
+  logEntries.push({ rank: o.rank, name: o.name, ee: o.ee, date, shift, result: '', notes: '' });
+  renderLog();
+  showToast(`${getFirstName(o.name)} added`);
+}
+
+// ── Render log ────────────────────────────────────────────────────────────
+function renderLog() {
+  logCount.textContent = `${logEntries.length} employee${logEntries.length !== 1 ? 's' : ''} logged`;
+
+  // Update sort indicator
+  const ind = document.getElementById('sortIndicator');
+  ind.textContent = sortDir === 'asc' ? '▲' : sortDir === 'desc' ? '▼' : '↕';
+
+  if (!logEntries.length) {
+    logBody.innerHTML = '<tr><td colspan="9" class="log-empty">No employees logged yet</td></tr>';
+    return;
+  }
+
+  // Build sorted view — don't mutate logEntries so insertion order is preserved
+  let view = logEntries.map((e, i) => ({ ...e, _i: i }));
+  if (sortDir === 'asc') {
+    view.sort((a, b) => {
+      if (a.rank === '' && b.rank === '') return 0;
+      if (a.rank === '') return 1;
+      if (b.rank === '') return -1;
+      return a.rank - b.rank;
+    });
+  } else if (sortDir === 'desc') {
+    view.sort((a, b) => {
+      if (a.rank === '' && b.rank === '') return 0;
+      if (a.rank === '') return 1;
+      if (b.rank === '') return -1;
+      return b.rank - a.rank;
+    });
+  }
+
+  renderSummary();
+  logBody.innerHTML = view.map(e => `
+    <tr>
+      <td>${e.rank !== '' ? e.rank : '—'}</td>
+      <td>${getFirstName(e.name)}</td>
+      <td>${maskEE(e.ee)}</td>
+      <td>${e.date || '—'}</td>
+      <td>${e.shift || '—'}</td>
+      <td>${fmtHrs(calcHours(e.shift))}</td>
+      <td><input type="text" value="${e.result}" placeholder="Yes / No" oninput="logEntries[${e._i}].result=this.value;renderSummary()"></td>
+      <td><input type="text" value="${e.notes}" placeholder="Notes..." oninput="logEntries[${e._i}].notes=this.value"></td>
+      <td><button class="btn-remove" onclick="removeFromLog(${e._i})" title="Remove">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ── Summary panel ─────────────────────────────────────────────────────────
+function renderSummary() {
+  const el = document.getElementById('summaryBody');
+  if (!logEntries.length) {
+    el.innerHTML = '<p class="summary-empty">No entries yet</p>';
+    return;
+  }
+
+  // Group by shift — only count accepted (result = yes)
+  const groups = {};
+  let grandTotal = 0;
+  logEntries.forEach(e => {
+    const accepted = e.result.trim().toLowerCase() === 'yes';
+    const key = e.shift || '(no shift)';
+    if (!groups[key]) groups[key] = { total: 0, accepted: 0, hrs: calcHours(e.shift) };
+    groups[key].total++;
+    if (accepted) {
+      groups[key].accepted++;
+      if (groups[key].hrs !== null) grandTotal += groups[key].hrs;
+    }
+  });
+
+  const breakdownRows = Object.entries(groups).map(([shift, g]) => `
+    <div class="breakdown-row">
+      <span class="br-shift">${shift}</span>
+      <span class="br-detail">${g.accepted}/${g.total}</span>
+      <span class="br-hrs">${g.hrs !== null ? fmtHrs(g.hrs * g.accepted) : '—'}</span>
+    </div>
+  `).join('');
+
+  const acceptedCount = logEntries.filter(e => e.result.trim().toLowerCase() === 'yes').length;
+  el.innerHTML = `
+    <div class="summary-stat">
+      <span class="s-label">Asked</span>
+      <span class="s-val">${logEntries.length}</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-label">Accepted</span>
+      <span class="s-val">${acceptedCount}</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-label">Grand Total</span>
+      <span class="s-val">${fmtHrs(grandTotal || null)}</span>
+    </div>
+    <hr class="summary-divider">
+    <div class="breakdown-title">Breakdown</div>
+    ${breakdownRows}
+  `;
+}
+
+// ── Sort toggle ───────────────────────────────────────────────────────────
+function toggleSort() {
+  if (sortDir === null)       sortDir = 'asc';
+  else if (sortDir === 'asc') sortDir = 'desc';
+  else                        sortDir = null;
+  renderLog();
+}
+
+// ── Remove row ────────────────────────────────────────────────────────────
+function removeFromLog(i) {
+  logEntries.splice(i, 1);
+  renderLog();
+}
+
+// ── Clear log ─────────────────────────────────────────────────────────────
+function clearLog() {
+  if (!logEntries.length) return;
+  if (confirm('Clear the entire OT log?')) {
+    logEntries = [];
+    renderLog();
+    renderSummary();
+    showToast('Log cleared');
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+(function() {
+  const saved = localStorage.getItem('passTheme') || 'dark';
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+  });
+})();
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+  localStorage.setItem('passTheme', next);
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+}
+</script>
+<nav class="bottom-nav">
+  <a class="nav-btn" href="staffing-calculator.html"><span class="nav-icon">👮</span> Staffing</a>
+  <a class="nav-btn" href="coverage-calculator.html"><span class="nav-icon">📋</span> Coverage</a>
+  <a class="nav-btn" href="hours-calculator.html"><span class="nav-icon">🕐</span> Hours</a>
+  <a class="nav-btn active" href="callout.html"><span class="nav-icon">📋</span> OT</a>
+</nav>
+
+<script>
+(function() {
+  var inp = document.getElementById('pw-input');
+  inp.focus();
+  inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
+})();
+function checkPW() {
+  var val = document.getElementById('pw-input').value;
+  if (val === '#TeamPASS204') {
+    document.getElementById('pw-gate').remove();
+  } else {
+    var box = document.querySelector('.pw-box');
+    box.classList.remove('pw-shake');
+    void box.offsetWidth;
+    box.classList.add('pw-shake');
+    document.getElementById('pw-error').textContent = 'Incorrect password';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+</script>
+</body>
+</html>

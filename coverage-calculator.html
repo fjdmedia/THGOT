@@ -296,7 +296,54 @@
     .nav-btn:hover { border-color: var(--accent); color: var(--text); }
     .nav-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
     .nav-icon { font-size: 0.85rem; }
-  </style>
+  
+  /* ── Password Gate ── */
+  #pw-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0a1220;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pw-box {
+    background: #0d1b2e;
+    border: 1px solid #c9a84c;
+    border-radius: 14px;
+    padding: 2.5rem 2.8rem;
+    text-align: center;
+    min-width: 300px;
+  }
+  .pw-lock { font-size: 2rem; margin-bottom: 0.6rem; }
+  .pw-title { color: #c9a84c; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+  .pw-sub { color: #8ca0b8; font-size: 0.82rem; margin-bottom: 1.4rem; }
+  .pw-box input[type="password"] {
+    width: 100%; padding: 0.6rem 0.9rem;
+    background: #0a1829; border: 1.5px solid #2e4a6a;
+    border-radius: 7px; color: #e8e2d9;
+    font-size: 0.95rem; font-family: inherit;
+    outline: none; text-align: center;
+    letter-spacing: 0.05em; margin-bottom: 0.9rem;
+    transition: border-color 0.2s;
+  }
+  .pw-box input[type="password"]:focus { border-color: #c9a84c; }
+  .pw-btn {
+    width: 100%; padding: 0.6rem;
+    background: #c9a84c; color: #0d1b2e;
+    border: none; border-radius: 7px;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.05em;
+    transition: background 0.15s;
+  }
+  .pw-btn:hover { background: #e0bc6a; }
+  .pw-error { color: #e74c3c; font-size: 0.8rem; margin-top: 0.7rem; min-height: 1.1em; }
+  @keyframes pw-shake {
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-8px); }
+    40%{ transform: translateX(8px); }
+    60%{ transform: translateX(-5px); }
+    80%{ transform: translateX(5px); }
+  }
+  .pw-shake { animation: pw-shake 0.4s ease; }
+
+</style>
 
   <script>
     (function() {
@@ -316,6 +363,17 @@
   </script>
 </head>
 <body>
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-lock">🔒</div>
+    <div class="pw-title">THGOT</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="off">
+    <button class="pw-btn" onclick="checkPW()">Enter</button>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
 
   <div class="header">
     <div class="header-left">
@@ -380,6 +438,7 @@
     <a class="nav-btn" href="staffing-calculator.html"><span class="nav-icon">👮</span> Staffing</a>
     <a class="nav-btn active" href="coverage-calculator.html"><span class="nav-icon">📋</span> Coverage</a>
     <a class="nav-btn" href="hours-calculator.html"><span class="nav-icon">🕐</span> Hours</a>
+      <a class="nav-btn" href="callout.html"><span class="nav-icon">📋</span> OT</a>
   </nav>
 
   <script>
@@ -524,5 +583,26 @@
 
     renderTable();
   </script>
+<script>
+(function() {
+  var inp = document.getElementById('pw-input');
+  inp.focus();
+  inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
+})();
+function checkPW() {
+  var val = document.getElementById('pw-input').value;
+  if (val === '#TeamPASS204') {
+    document.getElementById('pw-gate').remove();
+  } else {
+    var box = document.querySelector('.pw-box');
+    box.classList.remove('pw-shake');
+    void box.offsetWidth;
+    box.classList.add('pw-shake');
+    document.getElementById('pw-error').textContent = 'Incorrect password';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+</script>
 </body>
 </html>
