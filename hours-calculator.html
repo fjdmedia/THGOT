@@ -373,6 +373,16 @@
       display: none;
     }
   
+  .powered-by {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--faint);
+    padding: 28px 0 8px;
+    letter-spacing: 0.05em;
+  }
+  .powered-by a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .powered-by a:hover { text-decoration: underline; }
+
   /* ── Password Gate ── */
   #pw-gate {
     position: fixed; inset: 0; z-index: 9999;
@@ -717,5 +727,8 @@ function checkPW() {
   }
 }
 </script>
+
+<footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
+
 </body>
 </html>
