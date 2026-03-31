@@ -908,8 +908,8 @@ function renderGrid() {
           var countTxt = sentAmt > 0 ? sentAmt + '/' + row.count : '';
           html += '<td class="td-cell ' + bCls + trackCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
         } else {
-          var remTxt = sentAmt > 0 ? (isDone ? sentAmt + '/' + row.count : remaining) : '';
-          html += '<td class="td-cell ' + bCls + trackCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + remTxt + '</td>';
+          var countTxt = sentAmt > 0 ? sentAmt + '/' + row.count : '';
+          html += '<td class="td-cell ' + bCls + trackCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
         }
       }
     });
