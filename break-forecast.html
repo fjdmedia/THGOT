@@ -554,6 +554,7 @@
           Live
         </label>
       </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:0.75rem;" onclick="completeAllDue()">Complete All Due</button>
     </div>
   </div>
 
@@ -813,6 +814,18 @@ function onManualTime() {
   }
 }
 
+function completeAllDue() {
+  if (currentTimeMins === null || shiftRows.length === 0) return;
+  shiftRows.forEach(function(row) {
+    row.breaks.forEach(function(b) {
+      if (b.wStart <= currentTimeMins) {
+        row.sent[b.type] = row.count;
+      }
+    });
+  });
+  renderGrid();
+}
+
 // ── Grid ────────────────────────────────────────────────────────────────────
 var BREAK_CLASS = { '1st': 'b-1st', 'Lunch': 'b-lunch', '3rd': 'b-3rd', '4th': 'b-4th' };
 
@@ -874,9 +887,14 @@ function renderGrid() {
       if (covering.length === 0) {
         html += '<td class="td-cell' + (inShift ? ' in-shift' : '') + timeCls + '"></td>';
       } else if (covering.length > 1) {
-        // Multi-overlap: not trackable — count toward 20-min total
+        // Multi-overlap: not trackable as a single cell — but totals reflect remaining per break type
         html += '<td class="td-cell b-multi' + timeCls + '"></td>';
-        totals20[i] += row.count;
+        covering.forEach(function(b) {
+          var sentAmt   = (row.sent && row.sent[b.type]) || 0;
+          var remaining = row.count - sentAmt;
+          if (b.type === 'Lunch') totalsLunch[i] += remaining;
+          else                    totals20[i]    += remaining;
+        });
       } else {
         var bType     = covering[0].type;
         var bCls      = BREAK_CLASS[bType] || '';
@@ -884,14 +902,14 @@ function renderGrid() {
         var remaining = row.count - sentAmt;
         if (bType === 'Lunch') totalsLunch[i] += remaining;
         else                   totals20[i]    += remaining;
+        var isDone   = sentAmt >= row.count;
+        var trackCls = isDone ? ' b-done-cell' : ' b-track';
         if (isPast) {
-          var isDone   = sentAmt >= row.count;
-          var trackCls = isDone ? ' b-done-cell' : ' b-track';
           var countTxt = sentAmt > 0 ? sentAmt + '/' + row.count : '';
           html += '<td class="td-cell ' + bCls + trackCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
         } else {
-          var remTxt = (sentAmt > 0 && remaining > 0) ? remaining : '';
-          html += '<td class="td-cell ' + bCls + timeCls + (remTxt ? ' b-track' : '') + '">' + remTxt + '</td>';
+          var remTxt = sentAmt > 0 ? (isDone ? sentAmt + '/' + row.count : remaining) : '';
+          html += '<td class="td-cell ' + bCls + trackCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + remTxt + '</td>';
         }
       }
     });
