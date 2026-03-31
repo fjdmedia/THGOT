@@ -975,7 +975,7 @@ function renderGrid() {
     var row = shiftRows[rowIdx];
     if (!row || !row.sent) return;
     var cur = row.sent[bType] || 0;
-    row.sent[bType] = Math.max(0, cur - 1);
+    row.sent[bType] = cur <= 0 ? row.count : cur - 1;
     renderGrid();
   });
 }
