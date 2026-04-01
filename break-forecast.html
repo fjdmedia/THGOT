@@ -608,14 +608,27 @@ function formatTime(totalMins) {
 }
 
 function parseShiftLine(line) {
+  // Format 1: HHMM-HHMM
   var match = line.match(/(\d{3,4})\s*[-–]\s*(\d{3,4})/);
-  if (!match) return null;
-  var start = parseTime(match[1]);
-  var end   = parseTime(match[2]);
-  if (start === null || end === null) return null;
-  var dur = end - start;
-  if (dur <= 0) dur += 1440;
-  return { start: start, duration: dur };
+  if (match) {
+    var start = parseTime(match[1]);
+    var end   = parseTime(match[2]);
+    if (start === null || end === null) return null;
+    var dur = end - start;
+    if (dur <= 0) dur += 1440;
+    return { start: start, duration: dur };
+  }
+  // Format 2: H:MM[tab]H:MM (schedule paste)
+  var parts = line.split('\t');
+  if (parts.length >= 2) {
+    var start2 = parseTime(parts[0].trim());
+    var end2   = parseTime(parts[1].trim());
+    if (start2 === null || end2 === null) return null;
+    var dur2 = end2 - start2;
+    if (dur2 <= 0) dur2 += 1440;
+    return { start: start2, duration: dur2 };
+  }
+  return null;
 }
 
 // ── Break Schedule ──────────────────────────────────────────────────────────
