@@ -211,7 +211,24 @@
       overflow: hidden;
     }
 
+    .grid-scroll-top {
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 12px;
+      margin-bottom: 4px;
+    }
+    .grid-scroll-top-inner { height: 1px; }
     .grid-wrap { overflow-x: auto; }
+
+    /* Themed scrollbar — both bars */
+    .grid-scroll-top::-webkit-scrollbar,
+    .grid-wrap::-webkit-scrollbar { height: 8px; }
+    .grid-scroll-top::-webkit-scrollbar-track,
+    .grid-wrap::-webkit-scrollbar-track { background: var(--surface2); border-radius: 4px; }
+    .grid-scroll-top::-webkit-scrollbar-thumb,
+    .grid-wrap::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+    .grid-scroll-top::-webkit-scrollbar-thumb:hover,
+    .grid-wrap::-webkit-scrollbar-thumb:hover { opacity: 0.8; }
 
     .forecast-table {
       border-collapse: collapse;
@@ -219,6 +236,11 @@
       white-space: nowrap;
     }
 
+    .forecast-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
     .forecast-table th {
       background: var(--surface2);
       color: var(--muted);
@@ -232,7 +254,7 @@
       text-align: left !important;
       position: sticky;
       left: 0;
-      z-index: 3;
+      z-index: 5;
       background: var(--surface2) !important;
       min-width: 115px;
     }
@@ -240,7 +262,7 @@
     .th-count {
       position: sticky;
       left: 115px;
-      z-index: 3;
+      z-index: 5;
       background: var(--surface2) !important;
       min-width: 48px;
     }
@@ -571,6 +593,9 @@
       </div>
       <div class="gl-hint">click to mark sent · right-click to undo</div>
     </div>
+    <div class="grid-scroll-top" id="gridScrollTop">
+      <div class="grid-scroll-top-inner" id="gridScrollTopInner"></div>
+    </div>
     <div class="grid-wrap" id="gridWrap">
       <div class="empty-state">Paste shifts and click Add Shifts to see the break forecast.</div>
     </div>
@@ -758,6 +783,11 @@ function addShifts() {
         });
       }
     }
+  });
+
+  shiftRows.sort(function(a, b) {
+    if (a.start !== b.start) return a.start - b.start;
+    return a.duration - b.duration;
   });
 
   document.getElementById('pasteArea').value = '';
@@ -978,6 +1008,7 @@ function renderGrid() {
   });
   html += '</tr></tbody></table>';
   wrap.innerHTML = html;
+  syncTopScroll();
 
   var table = document.getElementById('forecastTable');
 
@@ -1014,7 +1045,20 @@ function renderGrid() {
 // Manual mode by default — focus the time input
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('timeManual').focus();
+
+  // Sync top scrollbar ↔ grid scrollbar
+  var top  = document.getElementById('gridScrollTop');
+  var wrap = document.getElementById('gridWrap');
+  top.addEventListener('scroll',  function() { wrap.scrollLeft = top.scrollLeft; });
+  wrap.addEventListener('scroll', function() { top.scrollLeft  = wrap.scrollLeft; });
 });
+
+// Keep top scrollbar width in sync with grid content width
+function syncTopScroll() {
+  var wrap  = document.getElementById('gridWrap');
+  var inner = document.getElementById('gridScrollTopInner');
+  if (wrap && inner) inner.style.width = wrap.scrollWidth + 'px';
+}
 
 // ── Password Gate ────────────────────────────────────────────────────────────
 (function() {
