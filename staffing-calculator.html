@@ -512,7 +512,7 @@
     <div class="toggle-row" style="margin-bottom:14px;">
       <div class="toggle-info">
         <div class="toggle-name skelly-label">Skelly Gang</div>
-        <div class="toggle-detail">9 minimum</div>
+        <div class="toggle-detail">5 minimum</div>
       </div>
       <label class="toggle">
         <input type="checkbox" id="domSkellyToggle" />
@@ -718,7 +718,7 @@
       const domSkelly = document.getElementById('domSkellyToggle').checked;
       let domCount = 0;
       if (domSkelly) {
-        domCount = 9;
+        domCount = 5;
       } else if (activeLanes.size > 0) {
         domCount = 3;
         activeLanes.forEach(l => { domCount += laneCounts[l]; });
@@ -772,7 +772,7 @@
 
       let domRows;
       if (activeLanes.size === 0)  domRows = bRow('No lanes open', 0);
-      else if (domSkelly)           domRows = bRow('Skelly Gang', 9);
+      else if (domSkelly)           domRows = bRow('Skelly Gang', 5);
       else                          domRows = bRow('Baseline — S1, Table, Randomizer', 3) + openLanes.map(l => bRow(laneLabels[l], laneCounts[l])).join('');
       html += bSection('Zone A', domCount, domRows);
 
