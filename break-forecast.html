@@ -478,6 +478,9 @@
     [data-theme="dark"] .b-track { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.65); }
     .b-done-cell { opacity: 0.2 !important; cursor: pointer; }
 
+    /* Viewer mode — hide admin-only controls */
+    body.viewer-mode .admin-only { display: none !important; }
+
     @media (max-width: 800px) {
       .main { grid-template-columns: 1fr; }
       .input-panel { position: static; }
@@ -525,24 +528,26 @@
 <div class="main">
 
   <div class="input-panel">
-    <div class="section-label">Add Shifts</div>
-    <textarea class="paste-area" id="pasteArea" placeholder="Paste shifts here&#10;0300-1100&#10;0400-1200&#10;0300-1100&#10;..."></textarea>
+    <div class="admin-only">
+      <div class="section-label">Add Shifts</div>
+      <textarea class="paste-area" id="pasteArea" placeholder="Paste shifts here&#10;0300-1100&#10;0400-1200&#10;0300-1100&#10;..."></textarea>
 
-    <div class="ot-row">
-      <label class="toggle-label">
-        <input type="checkbox" class="toggle-checkbox" id="otToggle" onchange="toggleOT()">
-        OT
-      </label>
-    </div>
+      <div class="ot-row">
+        <label class="toggle-label">
+          <input type="checkbox" class="toggle-checkbox" id="otToggle" onchange="toggleOT()">
+          OT
+        </label>
+      </div>
 
-    <div class="ot-count-wrap" id="otCountWrap">
-      <div class="ot-count-label">How many are OT?</div>
-      <input type="number" class="ot-count-input" id="otCount" min="0" value="1">
-    </div>
+      <div class="ot-count-wrap" id="otCountWrap">
+        <div class="ot-count-label">How many are OT?</div>
+        <input type="number" class="ot-count-input" id="otCount" min="0" value="1">
+      </div>
 
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="addShifts()">Add Shifts</button>
-      <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="addShifts()">Add Shifts</button>
+        <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+      </div>
     </div>
 
     <div class="legend">
@@ -568,15 +573,15 @@
       <div class="section-label">Current Time</div>
       <div class="time-display-row">
         <div class="time-now-display" id="timeDisplay">--:--</div>
-        <input type="text" class="time-manual-input" id="timeManual" placeholder="HHMM" maxlength="4" oninput="onManualTime()">
+        <input type="text" class="time-manual-input admin-only" id="timeManual" placeholder="HHMM" maxlength="4" oninput="onManualTime()">
       </div>
-      <div class="ot-row">
+      <div class="ot-row admin-only">
         <label class="toggle-label">
           <input type="checkbox" class="toggle-checkbox" id="liveToggle" onchange="toggleLive()">
           Live
         </label>
       </div>
-      <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:0.75rem;" onclick="completeAllDue()">Complete All Due</button>
+      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:10px;font-size:0.75rem;" onclick="completeAllDue()">Complete All Due</button>
     </div>
   </div>
 
@@ -721,6 +726,17 @@ function getBreaks(shiftStart, durationMins, isOT) {
 // ── State ───────────────────────────────────────────────────────────────────
 var shiftRows = [];
 
+function saveShifts() {
+  localStorage.setItem('bf_shiftRows', JSON.stringify(shiftRows));
+}
+
+function loadShifts() {
+  try {
+    var saved = localStorage.getItem('bf_shiftRows');
+    if (saved) shiftRows = JSON.parse(saved);
+  } catch(e) { shiftRows = []; }
+}
+
 // ── Input ───────────────────────────────────────────────────────────────────
 function toggleOT() {
   var on = document.getElementById('otToggle').checked;
@@ -790,14 +806,15 @@ function addShifts() {
     return a.duration - b.duration;
   });
 
-  document.getElementById('pasteArea').value = '';
   document.getElementById('otToggle').checked = false;
   document.getElementById('otCountWrap').classList.remove('visible');
+  saveShifts();
   renderGrid();
 }
 
 function clearAll() {
   shiftRows = [];
+  saveShifts();
   renderGrid();
 }
 
@@ -1023,6 +1040,7 @@ function renderGrid() {
     if (!row || !row.sent) return;
     var cur = row.sent[bType] || 0;
     row.sent[bType] = cur >= row.count ? 0 : cur + 1;
+    saveShifts();
     renderGrid();
   });
 
@@ -1038,12 +1056,14 @@ function renderGrid() {
     if (!row || !row.sent) return;
     var cur = row.sent[bType] || 0;
     row.sent[bType] = cur <= 0 ? row.count : cur - 1;
+    saveShifts();
     renderGrid();
   });
 }
 
 // Manual mode by default — focus the time input
 document.addEventListener('DOMContentLoaded', function() {
+  loadShifts();
   document.getElementById('timeManual').focus();
 
   // Sync top scrollbar ↔ grid scrollbar
@@ -1061,6 +1081,8 @@ function syncTopScroll() {
 }
 
 // ── Password Gate ────────────────────────────────────────────────────────────
+var userMode = 'admin';
+
 (function() {
   var inp = document.getElementById('pw-input');
   inp.focus();
@@ -1070,7 +1092,13 @@ function syncTopScroll() {
 function checkPW() {
   var val = document.getElementById('pw-input').value;
   if (val === '1234') {
+    userMode = 'viewer';
     document.getElementById('pw-gate').remove();
+    applyMode();
+  } else if (val === '1781') {
+    userMode = 'admin';
+    document.getElementById('pw-gate').remove();
+    applyMode();
   } else {
     var box = document.querySelector('.pw-box');
     box.classList.remove('pw-shake');
@@ -1080,6 +1108,20 @@ function checkPW() {
     document.getElementById('pw-input').value = '';
     document.getElementById('pw-input').focus();
   }
+}
+
+function applyMode() {
+  if (userMode === 'viewer') {
+    document.body.classList.add('viewer-mode');
+    // Auto-enable live mode permanently
+    var liveToggle = document.getElementById('liveToggle');
+    if (!liveToggle.checked) {
+      liveToggle.checked = true;
+      toggleLive();
+    }
+  }
+  // Render whatever shifts are already saved
+  if (shiftRows.length > 0) renderGrid();
 }
 </script>
 
