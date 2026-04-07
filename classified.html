@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classified</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5; --surface: #ffffff; --surface2: #e4e8ee;
+      --border: rgba(0,0,0,0.1); --accent: #4a6fa5;
+      --accent-dim: rgba(74,111,165,0.12); --text: #1e2a3a;
+      --muted: rgba(30,42,58,0.55); --faint: rgba(30,42,58,0.3);
+      --toggle-knob: rgba(30,42,58,0.2); --nav-bg: rgba(240,242,245,0.92);
+      --red: #e74c3c; --green: #22c55e;
+    }
+    [data-theme="dark"] {
+      --bg: #0a0d14; --surface: #12172a; --surface2: #1a1f30;
+      --border: rgba(255,255,255,0.09); --accent: #fb923c;
+      --accent-dim: rgba(251,146,60,0.12); --text: #e8e2d9;
+      --muted: rgba(232,226,217,0.6); --faint: rgba(232,226,217,0.3);
+      --toggle-knob: rgba(255,255,255,0.2); --nav-bg: rgba(10,13,20,0.92);
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
+
+    /* ── Password Gate ── */
+    #pw-gate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0a1220;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pw-box {
+      background: #0d1b2e; border: 1px solid #c9a84c;
+      border-radius: 14px; padding: 2.5rem 2.8rem;
+      text-align: center; min-width: 300px;
+    }
+    .pw-lock { font-size: 2rem; margin-bottom: 0.6rem; }
+    .pw-title { color: #c9a84c; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+    .pw-sub { color: #8ca0b8; font-size: 0.82rem; margin-bottom: 1.4rem; }
+    .pw-box input[type="password"] {
+      width: 100%; padding: 0.6rem 0.9rem;
+      background: #0a1829; border: 1.5px solid #2e4a6a;
+      border-radius: 7px; color: #e8e2d9;
+      font-size: 0.95rem; font-family: inherit;
+      outline: none; text-align: center;
+      letter-spacing: 0.05em; margin-bottom: 0.9rem;
+      transition: border-color 0.2s;
+    }
+    .pw-box input[type="password"]:focus { border-color: #c9a84c; }
+    .pw-btn {
+      width: 100%; padding: 0.6rem;
+      background: #c9a84c; color: #0d1b2e;
+      border: none; border-radius: 7px;
+      font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.05em;
+    }
+    .pw-btn:hover { background: #e0bc6a; }
+    .pw-error { color: #e74c3c; font-size: 0.8rem; margin-top: 0.7rem; min-height: 1.1em; }
+    @keyframes pw-shake {
+      0%,100%{ transform: translateX(0); }
+      20%{ transform: translateX(-8px); }
+      40%{ transform: translateX(8px); }
+      60%{ transform: translateX(-5px); }
+      80%{ transform: translateX(5px); }
+    }
+    .pw-shake { animation: pw-shake 0.4s ease; }
+
+    /* ── Tool Styles (visible only after auth but CSS is harmless) ── */
+    #app { display: none; }
+    #app.active { display: block; padding: 24px 18px 90px; max-width: 600px; margin: 0 auto; }
+
+    .header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 28px; padding-bottom: 18px; border-bottom: 1px solid var(--border);
+    }
+    .back-link {
+      display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em;
+      color: var(--muted); text-decoration: none; margin-bottom: 6px;
+    }
+    .back-link:hover { color: var(--accent); }
+    .header-left .title { font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; }
+    .header-left .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
+    .header-right { display: flex; gap: 8px; align-items: center; }
+    .theme-btn, .clear-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); cursor: pointer;
+      font-size: 0.9rem; padding: 4px 8px; line-height: 1;
+    }
+    .theme-btn:hover, .clear-btn:hover { border-color: var(--accent); }
+    .clear-btn { font-size: 0.72rem; font-weight: 500; padding: 5px 10px; color: var(--muted); }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 10px;
+    }
+    .card-label {
+      font-size: 0.6rem; font-weight: 600; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--faint); margin-bottom: 12px;
+    }
+
+    .form-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .form-col { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 80px; }
+    .form-label { font-size: 0.68rem; color: var(--muted); font-weight: 500; letter-spacing: 0.03em; }
+    .form-input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 10px; color: var(--text);
+      font-family: inherit; font-size: 0.82rem; outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--faint); }
+    .form-input-sm { max-width: 90px; text-align: center; }
+
+    /* ── Pill Toggles ── */
+    .pill-group { display: flex; gap: 5px; flex-wrap: wrap; }
+    .pill {
+      padding: 6px 12px; border-radius: 8px; font-size: 0.72rem; font-weight: 500;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .pill:hover { border-color: var(--accent); color: var(--text); }
+    .pill.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
+
+    /* ── Event Chips ── */
+    .chip-group { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+    .chip {
+      padding: 4px 10px; border-radius: 6px; font-size: 0.68rem; font-weight: 500;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .chip:hover { border-color: var(--accent); }
+    .chip.active { background: rgba(231,76,60,0.12); border-color: var(--red); color: var(--red); }
+
+    /* ── Rush Cards ── */
+    .rush-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; margin-bottom: 10px; position: relative;
+    }
+    .rush-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .rush-title { font-size: 0.75rem; font-weight: 600; color: var(--accent); }
+    .rush-remove {
+      background: none; border: none; color: var(--faint); cursor: pointer;
+      font-size: 1rem; padding: 2px 6px; border-radius: 4px;
+    }
+    .rush-remove:hover { color: var(--red); background: rgba(231,76,60,0.1); }
+
+    .add-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; padding: 10px; border-radius: 8px;
+      background: var(--accent-dim); border: 1px dashed var(--accent);
+      color: var(--accent); font-size: 0.78rem; font-weight: 500;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .add-btn:hover { background: var(--accent); color: var(--bg); border-style: solid; }
+
+    /* ── Lane Actions ── */
+    .lane-action-row {
+      display: flex; gap: 6px; align-items: center; margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .lane-action-row select, .lane-action-row input {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 8px; color: var(--text);
+      font-family: inherit; font-size: 0.72rem; outline: none;
+    }
+    .lane-action-row select:focus, .lane-action-row input:focus { border-color: var(--accent); }
+    .lane-action-remove {
+      background: none; border: none; color: var(--faint); cursor: pointer; font-size: 0.85rem;
+    }
+    .lane-action-remove:hover { color: var(--red); }
+
+    .event-detail {
+      margin-top: 6px; width: 100%;
+    }
+
+    /* ── Generate / Output ── */
+    .gen-btn {
+      width: 100%; padding: 14px; border-radius: 10px;
+      background: var(--accent); border: none;
+      color: #fff; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; letter-spacing: 0.03em;
+      transition: opacity 0.15s; margin-bottom: 10px;
+    }
+    [data-theme="dark"] .gen-btn { color: #0a0d14; }
+    .gen-btn:hover { opacity: 0.85; }
+
+    .output-area {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 10px; display: none;
+    }
+    .output-area.visible { display: block; }
+    .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .output-title { font-size: 0.75rem; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; }
+    .copy-btn {
+      padding: 6px 14px; border-radius: 7px; font-size: 0.72rem; font-weight: 600;
+      background: var(--accent); border: none; color: #fff; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    [data-theme="dark"] .copy-btn { color: #0a0d14; }
+    .copy-btn:hover { opacity: 0.85; }
+    .report-text {
+      width: 100%; min-height: 280px; padding: 14px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-family: inherit; font-size: 0.82rem;
+      line-height: 1.65; resize: vertical; outline: none;
+    }
+    .report-text:focus { border-color: var(--accent); }
+
+    /* ── Nav ── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--nav-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: center; gap: 8px;
+      padding: 10px 18px 18px; z-index: 100;
+    }
+    .nav-btn {
+      flex: 1; max-width: 200px;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 10px 14px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--muted); text-decoration: none;
+      font-size: 0.78rem; font-weight: 500; transition: all 0.15s;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--text); }
+    .nav-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
+    .nav-icon { font-size: 0.9rem; }
+
+    .powered-by {
+      text-align: center; font-size: 0.65rem; color: var(--faint);
+      padding: 28px 0 8px; letter-spacing: 0.05em;
+    }
+    .powered-by a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+    #toast {
+      position: fixed; bottom: 5rem; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 20px; border-radius: 10px;
+      font-size: 0.78rem; font-weight: 500; opacity: 0; z-index: 200;
+      transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+
+  <script>
+    (function() {
+      var saved = localStorage.getItem('passTheme') || 'dark';
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+  </script>
+</head>
+<body>
+
+<!-- Password Gate — ONLY element in the DOM until auth -->
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-lock">🔒</div>
+    <div class="pw-title">CLASSIFIED</div>
+    <div class="pw-sub">Admin access required</div>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="off">
+    <button class="pw-btn" onclick="checkPW()">Enter</button>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- App container — empty until auth passes -->
+<div id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  var auth = sessionStorage.getItem('thgot_auth');
+  if (auth === 'admin') { document.getElementById('pw-gate').remove(); renderApp(); return; }
+  var inp = document.getElementById('pw-input');
+  inp.focus();
+  inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
+})();
+
+function checkPW() {
+  var val = document.getElementById('pw-input').value;
+  if (val === '1781') {
+    sessionStorage.setItem('thgot_auth', 'admin');
+    document.getElementById('pw-gate').remove();
+    renderApp();
+  } else if (val === '#TeamPASS204' || val === '1234') {
+    document.getElementById('pw-error').textContent = 'Access Denied \u2014 Admin Only';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  } else {
+    var box = document.querySelector('.pw-box');
+    box.classList.remove('pw-shake'); void box.offsetWidth; box.classList.add('pw-shake');
+    document.getElementById('pw-error').textContent = 'Incorrect password';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER APP — injects all tool HTML after auth
+// ═══════════════════════════════════════════════════════════════
+function renderApp() {
+  var today = new Date().toISOString().slice(0, 10);
+  var app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="header">
+      <div class="header-left">
+        <a href="index.html" class="back-link">\u2190 Tools</a>
+        <div class="title">Classified</div>
+        <div class="subtitle">Ops Report Generator</div>
+      </div>
+      <div class="header-right">
+        <button class="clear-btn" onclick="clearForm()">Clear</button>
+        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"></button>
+      </div>
+    </div>
+
+    <!-- Shift Info -->
+    <div class="card">
+      <div class="card-label">Shift Info</div>
+      <div class="form-row">
+        <div class="form-col">
+          <span class="form-label">Date</span>
+          <input type="date" class="form-input" id="rptDate" value="${today}">
+        </div>
+        <div class="form-col" style="max-width:130px">
+          <span class="form-label">Shift</span>
+          <div class="pill-group" id="shiftGroup">
+            <div class="pill" data-val="AM" onclick="togglePill(this)">AM</div>
+            <div class="pill active" data-val="PM" onclick="togglePill(this)">PM</div>
+          </div>
+        </div>
+        <div class="form-col" style="max-width:90px">
+          <span class="form-label">FM Initials</span>
+          <input type="text" class="form-input form-input-sm" id="rptFM" placeholder="JD" maxlength="4">
+        </div>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <div class="card">
+      <div class="card-label">Overview</div>
+      <div class="form-row">
+        <div class="form-col">
+          <span class="form-label">PAX Presentation</span>
+          <div class="pill-group" id="paxGroup">
+            <div class="pill" data-val="slow" onclick="togglePill(this)">Slow</div>
+            <div class="pill" data-val="steady" onclick="togglePill(this)">Steady</div>
+            <div class="pill" data-val="heavy" onclick="togglePill(this)">Heavy</div>
+            <div class="pill" data-val="waves" onclick="togglePill(this)">Waves</div>
+            <div class="pill" data-val="steady to heavy" onclick="togglePill(this)">Steady\u2011Heavy</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-col">
+          <span class="form-label">Ran to</span>
+          <div class="pill-group" id="planGroup">
+            <div class="pill" data-val="plan" onclick="togglePill(this)">Plan</div>
+            <div class="pill" data-val="volume" onclick="togglePill(this)">Volume</div>
+            <div class="pill" data-val="mostly" onclick="togglePill(this)">Mostly</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:6px">
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">WTSL Start %</span>
+          <input type="number" class="form-input form-input-sm" id="wtslStart" placeholder="96" min="0" max="100">
+        </div>
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">WTSL End %</span>
+          <input type="number" class="form-input form-input-sm" id="wtslEnd" placeholder="94" min="0" max="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- Highest Wait Time -->
+    <div class="card">
+      <div class="card-label">Highest Wait Time</div>
+      <div class="form-row">
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">WT (MM:SS)</span>
+          <input type="text" class="form-input form-input-sm" id="peakWT" placeholder="25:46">
+        </div>
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">At (HHMM)</span>
+          <input type="text" class="form-input form-input-sm" id="peakTime" placeholder="1530">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:6px">
+        <div class="form-col">
+          <span class="form-label">Before Peak</span>
+          <div class="pill-group" id="beforePeakGroup">
+            <div class="pill" data-val="plan" onclick="togglePill(this)">To Plan</div>
+            <div class="pill" data-val="breaks" onclick="togglePill(this)">Under for Breaks</div>
+            <div class="pill" data-val="training" onclick="togglePill(this)">Under for Training</div>
+            <div class="pill" data-val="staffing" onclick="togglePill(this)">Under for Staffing</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:6px">
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">Lanes Running</span>
+          <input type="number" class="form-input form-input-sm" id="peakLanesRun" placeholder="2" min="1" max="7">
+        </div>
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">Lanes Planned</span>
+          <input type="number" class="form-input form-input-sm" id="peakLanesPlan" placeholder="4" min="1" max="7">
+        </div>
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">Since (HHMM)</span>
+          <input type="text" class="form-input form-input-sm" id="peakSince" placeholder="1240">
+        </div>
+        <div class="form-col" style="max-width:110px">
+          <span class="form-label">TP (optional)</span>
+          <input type="number" class="form-input form-input-sm" id="peakTP" placeholder="60">
+        </div>
+      </div>
+    </div>
+
+    <!-- Rushes -->
+    <div class="card">
+      <div class="card-label">Rush Periods</div>
+      <div id="rushContainer"></div>
+      <button class="add-btn" onclick="addRush()">+ Add Rush</button>
+    </div>
+
+    <!-- Training & Downtime -->
+    <div class="card">
+      <div class="card-label">Training & Downtime</div>
+      <div class="chip-group" id="trainingChips">
+        <div class="chip" data-val="piap" onclick="toggleChip(this)">PIAP</div>
+        <div class="chip" data-val="xrt" onclick="toggleChip(this)">XRT/RLP</div>
+        <div class="chip" data-val="ojt" onclick="toggleChip(this)">OJT</div>
+        <div class="chip" data-val="rtw" onclick="toggleChip(this)">RTW</div>
+        <div class="chip" data-val="briefings" onclick="toggleChip(this)">Briefings</div>
+      </div>
+      <div id="trainingDetails" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Additional Notes -->
+    <div class="card">
+      <div class="card-label">Additional Notes</div>
+      <textarea class="form-input" id="extraNotes" rows="3" placeholder="Any other details to include..." style="width:100%;resize:vertical"></textarea>
+      <div class="form-row" style="margin-top:8px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="noConcerns" checked> No other concerns to report
+        </label>
+      </div>
+    </div>
+
+    <!-- Generate -->
+    <button class="gen-btn" onclick="generate()">Generate Report</button>
+
+    <!-- Output -->
+    <div class="output-area" id="outputArea">
+      <div class="output-header">
+        <span class="output-title">GENERATED REPORT</span>
+        <button class="copy-btn" onclick="copyReport()">Copy</button>
+      </div>
+      <textarea class="report-text" id="reportText"></textarea>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-btn" href="staffing-calculator.html"><span class="nav-icon">\ud83d\udc6e</span> Staffing</a>
+      <a class="nav-btn" href="coverage-calculator.html"><span class="nav-icon">\ud83d\udccb</span> Coverage</a>
+      <a class="nav-btn" href="hours-calculator.html"><span class="nav-icon">\ud83d\udd50</span> Hours</a>
+      <a class="nav-btn" href="callout.html"><span class="nav-icon">\ud83d\udccb</span> OT</a>
+      <a class="nav-btn" href="break-forecast.html"><span class="nav-icon">\u2615</span> Breaks</a>
+      <a class="nav-btn active" href="classified.html"><span class="nav-icon">\ud83d\udd12</span> Classified</a>
+    </nav>
+
+    <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
+    <div id="toast"></div>
+  `;
+  app.classList.add('active');
+  setupApp();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APP SETUP
+// ═══════════════════════════════════════════════════════════════
+var rushCount = 0;
+
+function setupApp() {
+  // Theme button
+  var saved = localStorage.getItem('passTheme') || 'dark';
+  document.getElementById('themeBtn').textContent = saved === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19';
+
+  // Auto-format time inputs on blur
+  document.querySelectorAll('#peakTime, #peakSince').forEach(function(el) {
+    el.addEventListener('blur', function() {
+      var v = this.value.trim();
+      if (/^\d{4}$/.test(v)) this.value = v; // keep HHMM
+    });
+  });
+
+  // Load saved state
+  loadState();
+}
+
+function toggleTheme() {
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+  localStorage.setItem('passTheme', next);
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19';
+}
+
+function togglePill(el) {
+  var siblings = el.parentElement.querySelectorAll('.pill');
+  siblings.forEach(function(s) { s.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+function toggleChip(el) {
+  el.classList.toggle('active');
+  renderTrainingDetails();
+}
+
+function renderTrainingDetails() {
+  var container = document.getElementById('trainingDetails');
+  var html = '';
+  document.querySelectorAll('#trainingChips .chip.active').forEach(function(chip) {
+    var val = chip.dataset.val;
+    var label = '', placeholder = '';
+    if (val === 'piap') { label = 'PIAP'; placeholder = 'e.g. 16 SOs trained'; }
+    else if (val === 'xrt') { label = 'XRT/RLP'; placeholder = 'e.g. 5 SOs, 1600-1715'; }
+    else if (val === 'ojt') { label = 'OJT'; placeholder = 'e.g. on floor until 1900'; }
+    else if (val === 'rtw') { label = 'RTW'; placeholder = 'e.g. conducted throughout PM'; }
+    else if (val === 'briefings') { label = 'Briefings'; placeholder = 'e.g. conducted during downtime'; }
+    html += '<div class="form-row"><div class="form-col"><span class="form-label">' + label + '</span>';
+    html += '<input type="text" class="form-input training-detail" data-type="' + val + '" placeholder="' + placeholder + '"></div></div>';
+  });
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RUSH MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function addRush() {
+  rushCount++;
+  var id = rushCount;
+  var ordinal = getOrdinal(document.querySelectorAll('.rush-card').length + 1);
+  var div = document.createElement('div');
+  div.className = 'rush-card';
+  div.id = 'rush-' + id;
+  div.innerHTML = `
+    <div class="rush-header">
+      <span class="rush-title">Rush ${ordinal}</span>
+      <button class="rush-remove" onclick="removeRush(${id})">\u2715</button>
+    </div>
+    <div class="form-row">
+      <div class="form-col" style="max-width:110px">
+        <span class="form-label">From (HHMM)</span>
+        <input type="text" class="form-input form-input-sm rush-from" placeholder="1100">
+      </div>
+      <div class="form-col" style="max-width:110px">
+        <span class="form-label">To (HHMM)</span>
+        <input type="text" class="form-input form-input-sm rush-to" placeholder="1200">
+      </div>
+      <div class="form-col" style="max-width:80px">
+        <span class="form-label">Lanes</span>
+        <input type="number" class="form-input form-input-sm rush-lanes" placeholder="3" min="1" max="7">
+      </div>
+      <div class="form-col" style="max-width:80px">
+        <span class="form-label">Plan</span>
+        <input type="number" class="form-input form-input-sm rush-plan" placeholder="4" min="1" max="7">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <span class="form-label">Reason</span>
+        <div class="pill-group rush-reason-group">
+          <div class="pill" data-val="breaks" onclick="togglePill(this)">Breaks</div>
+          <div class="pill" data-val="training" onclick="togglePill(this)">Training</div>
+          <div class="pill" data-val="staffing" onclick="togglePill(this)">Staffing</div>
+          <div class="pill" data-val="plan" onclick="togglePill(this)">To Plan</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <span class="form-label">Events</span>
+        <div class="chip-group rush-events">
+          <div class="chip" data-val="sports" onclick="toggleRushChip(this, ${id})">Sports Team</div>
+          <div class="chip" data-val="etd" onclick="toggleRushChip(this, ${id})">ETD Alarm</div>
+          <div class="chip" data-val="ct_error" onclick="toggleRushChip(this, ${id})">CT Error</div>
+          <div class="chip" data-val="bpss" onclick="toggleRushChip(this, ${id})">BPSS Down</div>
+          <div class="chip" data-val="ssss" onclick="toggleRushChip(this, ${id})">SSSS</div>
+          <div class="chip" data-val="connecting" onclick="toggleRushChip(this, ${id})">Connecting Flight</div>
+        </div>
+        <div class="rush-event-details" id="rush-events-${id}"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <span class="form-label">Lane Changes</span>
+        <div class="rush-lane-actions" id="rush-actions-${id}"></div>
+        <button class="add-btn" style="margin-top:6px;padding:6px;font-size:0.7rem" onclick="addLaneAction(${id})">+ Lane Change</button>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:6px">
+      <div class="form-col" style="max-width:110px">
+        <span class="form-label">Peak WT</span>
+        <input type="text" class="form-input form-input-sm rush-peak-wt" placeholder="21:20">
+      </div>
+      <div class="form-col" style="max-width:110px">
+        <span class="form-label">At (HHMM)</span>
+        <input type="text" class="form-input form-input-sm rush-peak-time" placeholder="1130">
+      </div>
+      <div class="form-col" style="max-width:90px">
+        <span class="form-label">TP</span>
+        <input type="number" class="form-input form-input-sm rush-tp" placeholder="154">
+      </div>
+      <div class="form-col" style="max-width:90px">
+        <span class="form-label">PAX</span>
+        <input type="number" class="form-input form-input-sm rush-pax" placeholder="305">
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:6px">
+      <div class="form-col" style="max-width:110px">
+        <span class="form-label">WTSL From %</span>
+        <input type="number" class="form-input form-input-sm rush-wtsl-from" placeholder="96" min="0" max="100">
+      </div>
+      <div class="form-col" style="max-width:110px">
+        <span class="form-label">WTSL To %</span>
+        <input type="number" class="form-input form-input-sm rush-wtsl-to" placeholder="94" min="0" max="100">
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:6px">
+      <div class="form-col">
+        <span class="form-label">Extra Detail</span>
+        <input type="text" class="form-input rush-notes" placeholder="Any additional context for this rush...">
+      </div>
+    </div>
+  `;
+  document.getElementById('rushContainer').appendChild(div);
+  renumberRushes();
+}
+
+function removeRush(id) {
+  var el = document.getElementById('rush-' + id);
+  if (el) el.remove();
+  renumberRushes();
+}
+
+function renumberRushes() {
+  document.querySelectorAll('.rush-card').forEach(function(card, i) {
+    card.querySelector('.rush-title').textContent = 'Rush ' + getOrdinal(i + 1);
+  });
+}
+
+function getOrdinal(n) {
+  var names = ['', 'First', 'Second', 'Third', 'Fourth', 'Fifth'];
+  return names[n] || '#' + n;
+}
+
+function toggleRushChip(el, rushId) {
+  el.classList.toggle('active');
+  renderRushEventDetails(rushId);
+}
+
+function renderRushEventDetails(rushId) {
+  var card = document.getElementById('rush-' + rushId);
+  if (!card) return;
+  var container = document.getElementById('rush-events-' + rushId);
+  var html = '';
+  card.querySelectorAll('.rush-events .chip.active').forEach(function(chip) {
+    var val = chip.dataset.val;
+    var placeholder = '';
+    if (val === 'sports') placeholder = 'e.g. came through at 1100';
+    else if (val === 'etd') placeholder = 'e.g. lane 2, multiple bags searched, private room requested';
+    else if (val === 'ct_error') placeholder = 'e.g. lane 4 showing error, rebooted at 1200';
+    else if (val === 'bpss') placeholder = 'e.g. down from 1500-1525';
+    else if (val === 'ssss') placeholder = 'e.g. screened in lane 6';
+    else if (val === 'connecting') placeholder = 'e.g. arriving flight, connecting passengers';
+    html += '<input type="text" class="form-input event-detail" data-event="' + val + '" placeholder="' + placeholder + '" style="margin-top:6px;width:100%;font-size:0.75rem">';
+  });
+  container.innerHTML = html;
+}
+
+function addLaneAction(rushId) {
+  var container = document.getElementById('rush-actions-' + rushId);
+  var row = document.createElement('div');
+  row.className = 'lane-action-row';
+  row.innerHTML = `
+    <select class="la-action">
+      <option value="opened">Opened</option>
+      <option value="closed">Closed</option>
+    </select>
+    <select class="la-lane">
+      <option value="VT Lane 1">VT Lane 1</option>
+      <option value="Lane 2">Lane 2</option>
+      <option value="Lane 3">Lane 3</option>
+      <option value="CT Lane 4">CT Lane 4</option>
+      <option value="Lane 5">Lane 5</option>
+      <option value="Lane 6">Lane 6</option>
+      <option value="Lane 7">Lane 7</option>
+    </select>
+    <input type="text" class="la-time" placeholder="HHMM" maxlength="4" style="width:60px;text-align:center">
+    <input type="text" class="la-reason" placeholder="reason (optional)" style="width:120px;font-size:0.7rem">
+    <button class="lane-action-remove" onclick="this.parentElement.remove()">\u2715</button>
+  `;
+  container.appendChild(row);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// REPORT GENERATION ENGINE
+// ═══════════════════════════════════════════════════════════════
+function generate() {
+  var data = gatherData();
+  var report = buildReport(data);
+  document.getElementById('reportText').value = report;
+  document.getElementById('outputArea').classList.add('visible');
+  document.getElementById('outputArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('Report generated');
+}
+
+function gatherData() {
+  var d = {};
+  d.date = document.getElementById('rptDate').value;
+  d.shift = getActivePill('shiftGroup') || 'PM';
+  d.fm = document.getElementById('rptFM').value.trim();
+  d.pax = getActivePill('paxGroup') || '';
+  d.plan = getActivePill('planGroup') || '';
+  d.wtslStart = document.getElementById('wtslStart').value;
+  d.wtslEnd = document.getElementById('wtslEnd').value;
+  d.peakWT = document.getElementById('peakWT').value.trim();
+  d.peakTime = document.getElementById('peakTime').value.trim();
+  d.beforePeak = getActivePill('beforePeakGroup') || '';
+  d.peakLanesRun = document.getElementById('peakLanesRun').value;
+  d.peakLanesPlan = document.getElementById('peakLanesPlan').value;
+  d.peakSince = document.getElementById('peakSince').value.trim();
+  d.peakTP = document.getElementById('peakTP').value;
+
+  // Rushes
+  d.rushes = [];
+  document.querySelectorAll('.rush-card').forEach(function(card) {
+    var rush = {};
+    rush.from = card.querySelector('.rush-from').value.trim();
+    rush.to = card.querySelector('.rush-to').value.trim();
+    rush.lanes = card.querySelector('.rush-lanes').value;
+    rush.plan = card.querySelector('.rush-plan').value;
+    rush.reason = '';
+    var reasonPill = card.querySelector('.rush-reason-group .pill.active');
+    if (reasonPill) rush.reason = reasonPill.dataset.val;
+
+    rush.events = [];
+    card.querySelectorAll('.rush-events .chip.active').forEach(function(chip) {
+      var evtVal = chip.dataset.val;
+      var detailInput = card.querySelector('.event-detail[data-event="' + evtVal + '"]');
+      rush.events.push({ type: evtVal, detail: detailInput ? detailInput.value.trim() : '' });
+    });
+
+    rush.laneActions = [];
+    card.querySelectorAll('.lane-action-row').forEach(function(row) {
+      rush.laneActions.push({
+        action: row.querySelector('.la-action').value,
+        lane: row.querySelector('.la-lane').value,
+        time: row.querySelector('.la-time').value.trim(),
+        reason: row.querySelector('.la-reason').value.trim()
+      });
+    });
+
+    rush.peakWT = card.querySelector('.rush-peak-wt').value.trim();
+    rush.peakTime = card.querySelector('.rush-peak-time').value.trim();
+    rush.tp = card.querySelector('.rush-tp').value;
+    rush.pax = card.querySelector('.rush-pax').value;
+    rush.wtslFrom = card.querySelector('.rush-wtsl-from').value;
+    rush.wtslTo = card.querySelector('.rush-wtsl-to').value;
+    rush.notes = card.querySelector('.rush-notes').value.trim();
+    d.rushes.push(rush);
+  });
+
+  // Training
+  d.training = [];
+  document.querySelectorAll('#trainingChips .chip.active').forEach(function(chip) {
+    var detailInput = document.querySelector('.training-detail[data-type="' + chip.dataset.val + '"]');
+    d.training.push({ type: chip.dataset.val, detail: detailInput ? detailInput.value.trim() : '' });
+  });
+
+  d.extraNotes = document.getElementById('extraNotes').value.trim();
+  d.noConcerns = document.getElementById('noConcerns').checked;
+  return d;
+}
+
+function getActivePill(groupId) {
+  var el = document.querySelector('#' + groupId + ' .pill.active');
+  return el ? el.dataset.val : '';
+}
+
+function fmt(hhmm) {
+  if (!hhmm) return '';
+  var s = hhmm.replace(/[^0-9]/g, '');
+  if (s.length === 4) return s.slice(0, 2) + ':' + s.slice(2);
+  return hhmm;
+}
+
+function fmtRaw(hhmm) {
+  if (!hhmm) return '';
+  return hhmm.replace(/[^0-9]/g, '');
+}
+
+function lanesUnderText(running, planned) {
+  var r = parseInt(running), p = parseInt(planned);
+  if (isNaN(r) || isNaN(p)) return '';
+  var diff = p - r;
+  if (diff <= 0) return 'to plan';
+  if (diff === 1) return '1 lane under plan';
+  return diff + ' lanes under plan';
+}
+
+function buildReport(d) {
+  var lines = [];
+  var hasRushes = d.rushes.length > 0;
+  var rushRanges = d.rushes.map(function(r) { return fmtRaw(r.from) + '-' + fmtRaw(r.to); });
+
+  // ── OPENING LINE ──
+  var paxDesc = d.pax || 'steady';
+  if (hasRushes && (paxDesc === 'heavy' || paxDesc === 'waves' || paxDesc === 'steady to heavy')) {
+    var opening = 'PBS dom checkpoint experienced ' + paxDesc + ' pax presentation';
+    if (rushRanges.length === 1) opening += ' from ' + rushRanges[0] + '.';
+    else if (rushRanges.length === 2) opening += ' from ' + rushRanges[0] + ' and again at ' + rushRanges[1] + '.';
+    else if (rushRanges.length > 2) opening += ' from ' + rushRanges.slice(0, -1).join(', ') + ' and again at ' + rushRanges[rushRanges.length - 1] + '.';
+    opening += ' Highest WT of ' + d.peakWT + ' at ' + fmtRaw(d.peakTime);
+    lines.push(opening);
+  } else {
+    var opening = 'Checkpoint experienced ' + paxDesc + ' passenger presentation and ran to ' + (d.plan || 'plan') + ' for the majority of the ' + d.shift + ' operation.';
+    if (d.wtslStart && d.wtslEnd) {
+      if (d.wtslStart === d.wtslEnd) opening += ' WTSL started and stayed at ' + d.wtslStart + '%.';
+      else opening += ' WTSL started at ' + d.wtslStart + '% and currently at ' + d.wtslEnd + '%.';
+    }
+    lines.push(opening);
+    lines.push('');
+    // Separate highest WT paragraph
+    var peakLine = 'Highest wait time today was ' + d.peakWT + ' at ' + fmt(d.peakTime) + '.';
+    if (d.beforePeak) {
+      var underText = lanesUnderText(d.peakLanesRun, d.peakLanesPlan);
+      if (d.beforePeak === 'plan') {
+        peakLine += ' Prior to the highest wait time, the checkpoint was running to plan';
+        if (d.peakLanesRun) peakLine += ' with ' + d.peakLanesRun + ' lanes open';
+        if (d.peakSince) peakLine += ' since ' + fmtRaw(d.peakSince);
+        peakLine += '.';
+      } else {
+        peakLine += ' Prior to the highest wait time, the checkpoint was running ' + underText;
+        if (d.peakSince) peakLine += ' since ' + fmtRaw(d.peakSince);
+        peakLine += '.';
+        if (d.beforePeak === 'breaks') peakLine += ' Resources were being used for break deployments during this time.';
+        else if (d.beforePeak === 'training') peakLine += ' Resources were being used for training during this time.';
+        else if (d.beforePeak === 'staffing') peakLine += ' This was due to a shortage in staffing during this time.';
+      }
+    }
+    if (d.peakTP) peakLine += ' TP was ' + d.peakTP + ' during this time.';
+    lines.push(peakLine);
+  }
+
+  // ── RUSH NARRATIVES ──
+  d.rushes.forEach(function(rush, idx) {
+    lines.push('');
+    var rushLines = [];
+    var ordinal = idx === 0 ? 'first' : idx === 1 ? 'second' : idx === 2 ? 'third' : 'next';
+    var underText = lanesUnderText(rush.lanes, rush.plan);
+    var reasonText = '';
+    if (rush.reason === 'breaks') reasonText = 'to facilitate breaks';
+    else if (rush.reason === 'training') reasonText = 'for training';
+    else if (rush.reason === 'staffing') reasonText = 'due to staffing shortage';
+
+    // Opening sentence for this rush
+    if (idx === 0 && hasRushes && (paxDesc === 'heavy' || paxDesc === 'waves' || paxDesc === 'steady to heavy')) {
+      var s = 'During the ' + ordinal + ' rush, domestic was running ' + underText;
+      if (reasonText && underText !== 'to plan') s += ' ' + reasonText;
+      s += '.';
+      rushLines.push(s);
+    } else {
+      var s = 'The ' + ordinal + ' rush occurred from ' + fmtRaw(rush.from) + '-' + fmtRaw(rush.to) + '.';
+      if (underText !== 'to plan') {
+        s += ' Domestic was running ' + underText;
+        if (reasonText) s += ' ' + reasonText;
+        s += '.';
+      }
+      rushLines.push(s);
+    }
+
+    // Events
+    rush.events.forEach(function(evt) {
+      if (evt.type === 'sports') {
+        rushLines.push('A sports team came through during this time.');
+      } else if (evt.type === 'etd') {
+        var detail = evt.detail || 'multiple bags had to be searched';
+        rushLines.push('An ETD alarm occurred' + (evt.detail ? ' \u2014 ' + detail : '') + '.');
+      } else if (evt.type === 'ct_error') {
+        var detail = evt.detail || 'CT lane was showing error and slowed down the screening';
+        rushLines.push(detail.charAt(0).toUpperCase() + detail.slice(1) + (detail.endsWith('.') ? '' : '.'));
+      } else if (evt.type === 'bpss') {
+        var detail = evt.detail || 'went down and showed no WT';
+        rushLines.push('BPSS ' + detail + '.');
+      } else if (evt.type === 'ssss') {
+        var detail = evt.detail || 'was screened';
+        rushLines.push('An airline selectee (SSSS) ' + detail + ', this slowed down the screening.');
+      } else if (evt.type === 'connecting') {
+        rushLines.push('Majority of passengers were from an arriving flight with passengers that were connecting.');
+      }
+    });
+
+    // Lane actions (chronological)
+    rush.laneActions.forEach(function(la) {
+      if (!la.lane || !la.time) return;
+      var s = la.lane + ' was ' + la.action + ' at ' + fmtRaw(la.time);
+      if (la.reason) s += ' ' + la.reason;
+      else if (la.action === 'opened') s += ' to assist in clearing the queue';
+      else if (la.action === 'closed') s += ' to facilitate breaks';
+      s += '.';
+      rushLines.push(s);
+    });
+
+    // Peak WT during rush
+    if (rush.peakWT && rush.peakTime) {
+      rushLines.push('Highest WT during this period was ' + rush.peakWT + ' at ' + fmtRaw(rush.peakTime) + '.');
+    }
+
+    // Stats
+    if (rush.tp && rush.pax) {
+      rushLines.push('Throughput of ' + rush.tp + ' was maintained during this time. Approximately ' + rush.pax + ' passengers screened from ' + fmtRaw(rush.from) + '-' + fmtRaw(rush.to) + '.');
+    } else if (rush.tp) {
+      rushLines.push('Throughput of ' + rush.tp + ' was maintained during this time.');
+    } else if (rush.pax) {
+      rushLines.push('Approximately ' + rush.pax + ' passengers screened from ' + fmtRaw(rush.from) + '-' + fmtRaw(rush.to) + '.');
+    }
+
+    // WTSL change
+    if (rush.wtslFrom && rush.wtslTo) {
+      var from = parseInt(rush.wtslFrom), to = parseInt(rush.wtslTo);
+      if (to < from) rushLines.push('WTSL dropped from ' + rush.wtslFrom + '% to ' + rush.wtslTo + '% during this rush.');
+      else if (to > from) rushLines.push('WTSL increased from ' + rush.wtslFrom + '% to ' + rush.wtslTo + '%.');
+    }
+
+    // Extra notes
+    if (rush.notes) rushLines.push(rush.notes);
+
+    lines.push(rushLines.join(' '));
+  });
+
+  // ── TRAINING ──
+  if (d.training.length > 0) {
+    lines.push('');
+    var tLines = [];
+    d.training.forEach(function(t) {
+      if (t.type === 'piap') {
+        tLines.push(t.detail ? t.detail + ' for PIAP' : 'PIAP training conducted');
+      } else if (t.type === 'xrt') {
+        tLines.push(t.detail ? t.detail : 'XRT/RLP training conducted');
+      } else if (t.type === 'ojt') {
+        tLines.push(t.detail ? 'SO OJT ' + t.detail : 'SO OJT also on the floor');
+      } else if (t.type === 'rtw') {
+        tLines.push(t.detail ? 'RTW training ' + t.detail : 'RTW training conducted');
+      } else if (t.type === 'briefings') {
+        tLines.push(t.detail ? 'Briefings ' + t.detail : 'Briefings were conducted during downtime');
+      }
+    });
+    lines.push(tLines.join('. ') + '.');
+  }
+
+  // ── EXTRA NOTES ──
+  if (d.extraNotes) {
+    lines.push('');
+    lines.push(d.extraNotes);
+  }
+
+  // ── CLOSING ──
+  // Only add WTSL closing line if not already in the opening (style 1 with rush ranges)
+  if (hasRushes && (paxDesc === 'heavy' || paxDesc === 'waves' || paxDesc === 'steady to heavy')) {
+    if (d.wtslStart && d.wtslEnd) {
+      lines.push('');
+      lines.push('WTSL started at ' + d.wtslStart + '% and closed at ' + d.wtslEnd + '%');
+    }
+  }
+
+  if (d.noConcerns) {
+    lines.push('No other concerns to report.');
+  }
+
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+function copyReport() {
+  var text = document.getElementById('reportText').value;
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copied to clipboard');
+  });
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function clearForm() {
+  localStorage.removeItem('classified_state');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATE PERSISTENCE
+// ═══════════════════════════════════════════════════════════════
+function saveState() {
+  try {
+    var data = gatherData();
+    localStorage.setItem('classified_state', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem('classified_state');
+    if (!raw) return;
+    var d = JSON.parse(raw);
+
+    if (d.date) document.getElementById('rptDate').value = d.date;
+    if (d.shift) setActivePill('shiftGroup', d.shift);
+    if (d.fm) document.getElementById('rptFM').value = d.fm;
+    if (d.pax) setActivePill('paxGroup', d.pax);
+    if (d.plan) setActivePill('planGroup', d.plan);
+    if (d.wtslStart) document.getElementById('wtslStart').value = d.wtslStart;
+    if (d.wtslEnd) document.getElementById('wtslEnd').value = d.wtslEnd;
+    if (d.peakWT) document.getElementById('peakWT').value = d.peakWT;
+    if (d.peakTime) document.getElementById('peakTime').value = d.peakTime;
+    if (d.beforePeak) setActivePill('beforePeakGroup', d.beforePeak);
+    if (d.peakLanesRun) document.getElementById('peakLanesRun').value = d.peakLanesRun;
+    if (d.peakLanesPlan) document.getElementById('peakLanesPlan').value = d.peakLanesPlan;
+    if (d.peakSince) document.getElementById('peakSince').value = d.peakSince;
+    if (d.peakTP) document.getElementById('peakTP').value = d.peakTP;
+    if (d.extraNotes) document.getElementById('extraNotes').value = d.extraNotes;
+    if (d.noConcerns !== undefined) document.getElementById('noConcerns').checked = d.noConcerns;
+
+    // Restore rushes
+    if (d.rushes && d.rushes.length) {
+      d.rushes.forEach(function(rush) {
+        addRush();
+        var card = document.querySelector('.rush-card:last-child');
+        if (rush.from) card.querySelector('.rush-from').value = rush.from;
+        if (rush.to) card.querySelector('.rush-to').value = rush.to;
+        if (rush.lanes) card.querySelector('.rush-lanes').value = rush.lanes;
+        if (rush.plan) card.querySelector('.rush-plan').value = rush.plan;
+        if (rush.reason) {
+          var pill = card.querySelector('.rush-reason-group .pill[data-val="' + rush.reason + '"]');
+          if (pill) { card.querySelectorAll('.rush-reason-group .pill').forEach(function(p){p.classList.remove('active');}); pill.classList.add('active'); }
+        }
+        if (rush.peakWT) card.querySelector('.rush-peak-wt').value = rush.peakWT;
+        if (rush.peakTime) card.querySelector('.rush-peak-time').value = rush.peakTime;
+        if (rush.tp) card.querySelector('.rush-tp').value = rush.tp;
+        if (rush.pax) card.querySelector('.rush-pax').value = rush.pax;
+        if (rush.wtslFrom) card.querySelector('.rush-wtsl-from').value = rush.wtslFrom;
+        if (rush.wtslTo) card.querySelector('.rush-wtsl-to').value = rush.wtslTo;
+        if (rush.notes) card.querySelector('.rush-notes').value = rush.notes;
+      });
+    }
+
+    // Restore training
+    if (d.training && d.training.length) {
+      d.training.forEach(function(t) {
+        var chip = document.querySelector('#trainingChips .chip[data-val="' + t.type + '"]');
+        if (chip) chip.classList.add('active');
+      });
+      renderTrainingDetails();
+      // Fill in detail values after rendering
+      d.training.forEach(function(t) {
+        var input = document.querySelector('.training-detail[data-type="' + t.type + '"]');
+        if (input && t.detail) input.value = t.detail;
+      });
+    }
+  } catch(e) {}
+}
+
+function setActivePill(groupId, val) {
+  var group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.pill').forEach(function(p) {
+    p.classList.toggle('active', p.dataset.val === val);
+  });
+}
+
+// Auto-save on change (debounced)
+var saveTimer;
+document.addEventListener('input', function() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 500);
+});
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('pill') || e.target.classList.contains('chip')) {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 200);
+  }
+});
+</script>
+</body>
+</html>

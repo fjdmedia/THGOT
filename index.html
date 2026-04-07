@@ -160,6 +160,26 @@
     }
     .powered-by a { color: var(--accent); font-weight: 600; text-decoration: none; }
     .powered-by a:hover { text-decoration: underline; }
+
+    .tool-card.classified {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid rgba(231,76,60,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .tool-card.classified:hover { border-color: rgba(231,76,60,0.5); }
+    .tool-card.classified .tool-name { display: flex; align-items: center; gap: 8px; }
+    .tool-card.classified .tool-tag {
+      color: #e74c3c;
+      background: rgba(231,76,60,0.1);
+      border-color: rgba(231,76,60,0.25);
+    }
+    .classified-badge {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #e74c3c;
+      background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.25);
+      border-radius: 4px; padding: 2px 6px;
+    }
   </style>
 
   <script>
@@ -235,6 +255,15 @@
     </div>
     <div class="tool-desc">Paste shift blocks to forecast when break clusters occur throughout the day. Color-coded 30-min grid with heat-mapped totals.</div>
     <div class="tool-tag">Breaks</div>
+  </a>
+
+  <a class="tool-card classified" href="classified.html">
+    <div class="tool-top">
+      <div class="tool-name">🔒 Classified <span class="classified-badge">Admin Only</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+    <div class="tool-desc">Restricted access. Authorized personnel only.</div>
+    <div class="tool-tag">Classified</div>
   </a>
 
   <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
