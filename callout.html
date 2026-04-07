@@ -137,12 +137,13 @@
   .results-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
   .results-table tbody tr:nth-child(even) { background: var(--gray); }
   .results-table tbody tr:hover { background: #e8f0fb; }
+  [data-theme="dark"] .results-table tbody tr:hover { background: #1a2540; }
 
   .results-table td {
     padding: 0.55rem 0.75rem;
     vertical-align: middle;
   }
-  .results-table td:first-child { text-align: center; font-weight: 700; color: var(--navy); }
+  .results-table td:first-child { text-align: center; font-weight: 700; color: var(--text); }
   .results-table td:last-child  { text-align: center; }
 
   .no-results {
@@ -212,16 +213,17 @@
     white-space: nowrap;
     overflow: hidden;
   }
-  /* col widths: Rank | Name | EE | Date | OT Shift | Total | Result | Notes | × */
+  /* col widths: Rank | Name | EE | Date | OT Shift | Total | Asked By | Result | Notes | × */
   .log-table colgroup col:nth-child(1) { width: 48px; }
   .log-table colgroup col:nth-child(2) { width: 13%; }
   .log-table colgroup col:nth-child(3) { width: 62px; }
   .log-table colgroup col:nth-child(4) { width: 96px; }
   .log-table colgroup col:nth-child(5) { width: 80px; }
   .log-table colgroup col:nth-child(6) { width: 52px; }
-  .log-table colgroup col:nth-child(7) { width: 13%; }
-  .log-table colgroup col:nth-child(8) { }
-  .log-table colgroup col:nth-child(9) { width: 28px; }
+  .log-table colgroup col:nth-child(7) { width: 56px; }
+  .log-table colgroup col:nth-child(8) { width: 13%; }
+  .log-table colgroup col:nth-child(9) { }
+  .log-table colgroup col:nth-child(10) { width: 28px; }
 
   .log-table thead th:first-child { text-align: center; cursor: pointer; user-select: none; }
   .log-table thead th:first-child:hover { background: #1a3050; }
@@ -231,7 +233,7 @@
   .log-table tbody tr:nth-child(even) { background: var(--gray); }
 
   .log-table td { padding: 0.4rem 0.5rem; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .log-table td:first-child { text-align: center; font-weight: 700; color: var(--navy); }
+  .log-table td:first-child { text-align: center; font-weight: 700; color: var(--text); }
 
   .log-table td input {
     width: 100%;
@@ -245,12 +247,31 @@
     border-radius: 4px;
     transition: background 0.15s;
   }
-  .log-table td input:focus { background: #e8f4ff; }
+  .log-table td input:focus { background: rgba(201,168,76,0.1); }
+  [data-theme="dark"] .log-table td input:focus { background: rgba(201,168,76,0.15); }
+
+  .btn-result {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    width: 100%;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    color: var(--muted);
+    text-align: center;
+  }
+  .btn-result:hover { border-color: var(--gold); }
+  .btn-result.res-yes { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.5); color: #22c55e; }
+  .btn-result.res-no  { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); color: #ef4444; }
 
   .btn-remove {
     background: transparent;
     border: none;
-    color: #ccc;
+    color: var(--muted);
     cursor: pointer;
     font-size: 1rem;
     padding: 0 0.3rem;
@@ -437,11 +458,11 @@
   .powered-by {
     text-align: center;
     font-size: 0.65rem;
-    color: var(--faint);
+    color: var(--muted);
     padding: 28px 0 8px;
     letter-spacing: 0.05em;
   }
-  .powered-by a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .powered-by a { color: var(--gold); font-weight: 600; text-decoration: none; }
   .powered-by a:hover { text-decoration: underline; }
 
   /* ── Password Gate ── */
@@ -527,6 +548,10 @@
         <label for="sessionShift">OT Shift</label>
         <input type="text" id="sessionShift" placeholder="e.g. 0700-1500">
       </div>
+      <div class="info-field">
+        <label for="sessionFM">FM</label>
+        <input type="text" id="sessionFM" placeholder="Initials" maxlength="5" style="text-transform:uppercase">
+      </div>
     </div>
   </div>
 
@@ -565,7 +590,7 @@
       </div>
       <div class="log-table-wrap">
         <table class="log-table">
-          <colgroup><col><col><col><col><col><col><col><col><col></colgroup>
+          <colgroup><col><col><col><col><col><col><col><col><col><col></colgroup>
           <thead>
             <tr>
               <th onclick="toggleSort()" title="Click to sort by rank">Rank <span class="sort-indicator" id="sortIndicator">↕</span></th>
@@ -574,13 +599,14 @@
               <th>Date</th>
               <th>OT Shift</th>
               <th>Total</th>
+              <th>FM</th>
               <th>Result</th>
               <th>Notes</th>
               <th></th>
             </tr>
           </thead>
           <tbody id="logBody">
-            <tr><td colspan="8" class="log-empty">No employees logged yet</td></tr>
+            <tr><td colspan="10" class="log-empty">No employees logged yet</td></tr>
           </tbody>
         </table>
       </div>
@@ -674,10 +700,39 @@ function addToLog(idx) {
   }
   const date  = document.getElementById('sessionDate').value;
   const shift = document.getElementById('sessionShift').value;
-  logEntries.push({ rank: o.rank, name: o.name, ee: o.ee, date, shift, result: '', notes: '' });
+  const fm    = document.getElementById('sessionFM').value.toUpperCase();
+  logEntries.push({ rank: o.rank, name: o.name, ee: o.ee, date, shift, fm, result: '', notes: '' });
   renderLog();
   showToast(`${getFirstName(o.name)} added`);
+  searchInput.value = '';
+  resultsBody.innerHTML = '<tr><td colspan="4" class="no-results">Start typing to search</td></tr>';
+  searchInput.focus();
 }
+
+// ── Result toggle (3-state: empty → yes → no → empty) ───────────────────
+function toggleResult(i) {
+  const cur = logEntries[i].result;
+  if (cur === '')    logEntries[i].result = 'yes';
+  else if (cur === 'yes') logEntries[i].result = 'no';
+  else               logEntries[i].result = '';
+  renderLog();
+  renderSummary();
+}
+
+// ── OT Shift auto-format (08 digits no dash → insert dash) ──────────────
+document.getElementById('sessionShift').addEventListener('blur', function() {
+  const v = this.value.trim();
+  if (/^\d{8}$/.test(v)) {
+    this.value = v.slice(0, 4) + '-' + v.slice(4);
+  }
+});
+
+// ── Enter key adds top search result ─────────────────────────────────────
+searchInput.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  const btn = resultsBody.querySelector('.btn-add');
+  if (btn) btn.click();
+});
 
 // ── Render log ────────────────────────────────────────────────────────────
 function renderLog() {
@@ -688,7 +743,7 @@ function renderLog() {
   ind.textContent = sortDir === 'asc' ? '▲' : sortDir === 'desc' ? '▼' : '↕';
 
   if (!logEntries.length) {
-    logBody.innerHTML = '<tr><td colspan="9" class="log-empty">No employees logged yet</td></tr>';
+    logBody.innerHTML = '<tr><td colspan="10" class="log-empty">No employees logged yet</td></tr>';
     return;
   }
 
@@ -719,7 +774,8 @@ function renderLog() {
       <td>${e.date || '—'}</td>
       <td>${e.shift || '—'}</td>
       <td>${fmtHrs(calcHours(e.shift))}</td>
-      <td><input type="text" value="${e.result}" placeholder="Yes / No" oninput="logEntries[${e._i}].result=this.value;renderSummary()"></td>
+      <td><input type="text" value="${e.fm || ''}" placeholder="FM" style="text-transform:uppercase;width:100%" oninput="logEntries[${e._i}].fm=this.value.toUpperCase()"></td>
+      <td><button class="btn-result${e.result === 'yes' ? ' res-yes' : e.result === 'no' ? ' res-no' : ''}" onclick="toggleResult(${e._i})">${e.result === 'yes' ? '✓ Yes' : e.result === 'no' ? '✗ No' : '—'}</button></td>
       <td><input type="text" value="${e.notes}" placeholder="Notes..." oninput="logEntries[${e._i}].notes=this.value"></td>
       <td><button class="btn-remove" onclick="removeFromLog(${e._i})" title="Remove">✕</button></td>
     </tr>
@@ -816,7 +872,8 @@ function saveOTState() {
   const state = {
     logEntries,
     sessionDate: document.getElementById('sessionDate').value,
-    sessionShift: document.getElementById('sessionShift').value
+    sessionShift: document.getElementById('sessionShift').value,
+    sessionFM: document.getElementById('sessionFM').value
   };
   localStorage.setItem('callout_state', JSON.stringify(state));
 }
@@ -828,6 +885,7 @@ function loadOTState() {
     const s = JSON.parse(saved);
     if (s.sessionDate) document.getElementById('sessionDate').value = s.sessionDate;
     if (s.sessionShift) document.getElementById('sessionShift').value = s.sessionShift;
+    if (s.sessionFM) document.getElementById('sessionFM').value = s.sessionFM;
     if (s.logEntries && s.logEntries.length) {
       logEntries = s.logEntries;
       renderLog();
@@ -842,8 +900,11 @@ const _origRemoveFromLog = removeFromLog;
 window.removeFromLog = function(i) { _origRemoveFromLog(i); saveOTState(); };
 const _origClearLog = clearLog;
 window.clearLog = function() { _origClearLog(); saveOTState(); };
+const _origToggleResult = toggleResult;
+window.toggleResult = function(i) { _origToggleResult(i); saveOTState(); };
 document.getElementById('sessionDate').addEventListener('change', saveOTState);
 document.getElementById('sessionShift').addEventListener('input', saveOTState);
+document.getElementById('sessionFM').addEventListener('input', saveOTState);
 
 // Save when result/notes fields change (delegated)
 document.getElementById('logBody').addEventListener('input', saveOTState);

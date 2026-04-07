@@ -1181,11 +1181,15 @@ function updateTimeDisplay() {
 function startLive() {
   currentTimeMins = getNowMins();
   updateTimeDisplay();
+  if (shiftRows.length > 0) renderGrid();
   liveInterval = setInterval(function() {
-    currentTimeMins = getNowMins();
-    updateTimeDisplay();
-    if (shiftRows.length > 0) renderGrid();
-  }, 60000);
+    var now = getNowMins();
+    if (now !== currentTimeMins) {
+      currentTimeMins = now;
+      updateTimeDisplay();
+      if (shiftRows.length > 0) renderGrid();
+    }
+  }, 5000);
 }
 
 function stopLive() {
