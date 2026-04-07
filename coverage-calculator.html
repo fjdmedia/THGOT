@@ -368,6 +368,17 @@
   }
   .pw-shake { animation: pw-shake 0.4s ease; }
 
+  #toast {
+    position: fixed; bottom: 5rem; left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 20px; border-radius: 10px;
+    font-size: 0.78rem; font-weight: 500; opacity: 0; z-index: 200;
+    transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 </style>
 
   <script>
@@ -609,6 +620,10 @@
     document.getElementById('shiftInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') addShift();
     });
+    document.getElementById('shiftInput').addEventListener('blur', function() {
+      var v = this.value.trim();
+      if (/^\d{8}$/.test(v)) this.value = v.slice(0, 4) + '-' + v.slice(4);
+    });
 
     // ── Clear All ──────────────────────────────────────────────────────
     function clearAllShifts() {
@@ -617,6 +632,7 @@
       renderChips();
       renderTable();
       localStorage.removeItem('coverage_state');
+      showToast('Cleared');
     }
 
     // ── Save / Load State ─────────────────────────────────────────────
@@ -682,7 +698,17 @@ function checkPW() {
 }
 </script>
 
+<div id="toast"></div>
 <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
-
+<script>
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+</script>
 </body>
 </html>

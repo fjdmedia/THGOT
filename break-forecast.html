@@ -300,37 +300,61 @@
     .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
     /* ── Mini Staffing ── */
-    .staff-mini { font-size: 0.72rem; }
-    .staff-row {
+    /* ── Staffing Bar (full-width) ── */
+    .staffing-bar {
+      max-width: 1500px;
+      margin: 16px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 24px;
+    }
+    .sb-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+    }
+    .sb-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .sb-group {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 6px;
     }
-    .staff-row-label {
-      font-size: 0.65rem;
+    .sb-group-label {
+      font-size: 0.7rem;
       font-weight: 600;
       color: var(--muted);
-      width: 44px;
-      flex-shrink: 0;
       letter-spacing: 0.03em;
+    }
+    .sb-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      flex-shrink: 0;
     }
     .lane-pills {
       display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
+      gap: 4px;
     }
     .lane-pill {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 5px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: var(--surface2);
       color: var(--muted);
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
@@ -346,44 +370,38 @@
       opacity: 0.35;
       pointer-events: none;
     }
-    .staff-skelly-row {
+    .sb-summary {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 5px;
-      margin-left: 52px;
-    }
-    .staff-breakdown {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      margin-top: 4px;
-      padding-top: 6px;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
       border-top: 1px solid var(--border);
     }
-    .staff-bd-row {
+    .sb-breakdown {
       display: flex;
-      justify-content: space-between;
-      font-size: 0.68rem;
-      color: var(--muted);
-      padding: 1px 0;
+      gap: 24px;
     }
-    .staff-bd-row span:last-child { font-weight: 600; color: var(--text); }
-    .staff-total-row {
+    .sb-chip {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-top: 4px;
-      padding-top: 6px;
-      border-top: 1px solid var(--border);
-    }
-    .staff-total-label {
+      gap: 6px;
       font-size: 0.72rem;
+    }
+    .sb-chip-label { color: var(--muted); }
+    .sb-chip-val { font-weight: 600; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    .sb-total {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sb-total-label {
+      font-size: 0.78rem;
       font-weight: 600;
       color: var(--text);
     }
-    .staff-total-num {
-      font-size: 1.2rem;
+    .sb-total-num {
+      font-size: 1.4rem;
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
       color: var(--accent);
@@ -750,6 +768,17 @@
     }
     .pw-shake { animation: pw-shake 0.4s ease; }
 
+    #toast {
+      position: fixed; bottom: 5rem; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 20px; border-radius: 10px;
+      font-size: 0.78rem; font-weight: 500; opacity: 0; z-index: 200;
+      transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     /* ── Time Tracker ── */
     .time-ctrl {
       margin-top: 14px;
@@ -921,50 +950,6 @@
       <button class="btn btn-ghost admin-only" style="width:100%;margin-top:10px;font-size:0.75rem;" onclick="completeAllDue()">Complete All Due</button>
     </div>
 
-    <div class="section-label section-divider">Staffing</div>
-    <div class="staff-mini">
-      <div class="staff-row">
-        <span class="staff-row-label">Zone B</span>
-        <label class="toggle-label" style="font-size:0.7rem;">
-          <input type="checkbox" class="toggle-checkbox" id="msZoneB" onchange="calcMiniStaffing()"> On
-        </label>
-        <label class="toggle-label" style="font-size:0.7rem;" id="msSkBwrap" hidden>
-          <input type="checkbox" class="toggle-checkbox" id="msSkB" onchange="calcMiniStaffing()"> Skelly
-        </label>
-      </div>
-      <div class="staff-row">
-        <span class="staff-row-label">Zone A</span>
-        <div class="lane-pills" id="msLanes">
-          <div class="lane-pill" data-mslane="6" onclick="toggleMSLane(this)">6</div>
-          <div class="lane-pill" data-mslane="1" onclick="toggleMSLane(this)">1</div>
-          <div class="lane-pill" data-mslane="4" onclick="toggleMSLane(this)">4</div>
-          <div class="lane-pill" data-mslane="2" onclick="toggleMSLane(this)">2</div>
-          <div class="lane-pill" data-mslane="5" onclick="toggleMSLane(this)">5</div>
-          <div class="lane-pill" data-mslane="7" onclick="toggleMSLane(this)">7</div>
-        </div>
-      </div>
-      <div class="staff-skelly-row">
-        <label class="toggle-label" style="font-size:0.68rem;">
-          <input type="checkbox" class="toggle-checkbox" id="msSkA" onchange="calcMiniStaffing()"> Zone A Skelly
-        </label>
-      </div>
-      <div id="msHskellyRow" class="staff-skelly-row" hidden>
-        <label class="toggle-label" style="font-size:0.68rem;">
-          <input type="checkbox" class="toggle-checkbox" id="msHcr" onchange="calcMiniStaffing()"> CR
-        </label>
-        <label class="toggle-label" style="font-size:0.68rem;">
-          <input type="checkbox" class="toggle-checkbox" id="msHl3" onchange="calcMiniStaffing()"> L3
-        </label>
-        <label class="toggle-label" style="font-size:0.68rem;">
-          <input type="checkbox" class="toggle-checkbox" id="msHos" onchange="calcMiniStaffing()"> O/S
-        </label>
-      </div>
-      <div class="staff-breakdown" id="msBreakdown"></div>
-      <div class="staff-total-row">
-        <span class="staff-total-label">Required</span>
-        <span class="staff-total-num" id="msTotal">—</span>
-      </div>
-    </div>
   </div>
 
   <div class="grid-panel">
@@ -996,6 +981,57 @@
 
 </div>
 
+<div class="staffing-bar">
+  <div class="sb-label">Staffing</div>
+  <div class="sb-controls">
+    <div class="sb-group">
+      <span class="sb-group-label">Zone B</span>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msZoneB" onchange="calcMiniStaffing()"> On
+      </label>
+      <label class="toggle-label" style="font-size:0.72rem;" id="msSkBwrap" hidden>
+        <input type="checkbox" class="toggle-checkbox" id="msSkB" onchange="calcMiniStaffing()"> Skelly
+      </label>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-group">
+      <span class="sb-group-label">Zone A</span>
+      <div class="lane-pills" id="msLanes">
+        <div class="lane-pill" data-mslane="6" onclick="toggleMSLane(this)">6</div>
+        <div class="lane-pill" data-mslane="1" onclick="toggleMSLane(this)">1</div>
+        <div class="lane-pill" data-mslane="4" onclick="toggleMSLane(this)">4</div>
+        <div class="lane-pill" data-mslane="2" onclick="toggleMSLane(this)">2</div>
+        <div class="lane-pill" data-mslane="5" onclick="toggleMSLane(this)">5</div>
+        <div class="lane-pill" data-mslane="7" onclick="toggleMSLane(this)">7</div>
+      </div>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msSkA" onchange="calcMiniStaffing()"> Zone A Skelly
+      </label>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-group" id="msHskellyRow" hidden>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msHcr" onchange="calcMiniStaffing()"> CR
+      </label>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msHl3" onchange="calcMiniStaffing()"> L3
+      </label>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msHos" onchange="calcMiniStaffing()"> O/S
+      </label>
+      <div class="sb-divider"></div>
+    </div>
+  </div>
+  <div class="sb-summary">
+    <div class="sb-breakdown" id="msBreakdown"></div>
+    <div class="sb-total">
+      <span class="sb-total-label">Required</span>
+      <span class="sb-total-num" id="msTotal">—</span>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
 
 <nav class="bottom-nav">
@@ -1268,6 +1304,7 @@ function clearAll() {
   document.getElementById('otCountWrap').classList.remove('visible');
   saveShifts();
   renderGrid();
+  showToast('Cleared');
 }
 
 // ── Save Button ────────────────────────────────────────────────────────────
@@ -1837,10 +1874,10 @@ function calcMiniStaffing() {
   // Render breakdown
   var bd = document.getElementById('msBreakdown');
   var html = '';
-  if (zbOn) html += '<div class="staff-bd-row"><span>Zone B' + (zbSkelly ? ' (Skelly)' : '') + '</span><span>' + zbCount + '</span></div>';
-  if (zaCount > 0) html += '<div class="staff-bd-row"><span>Zone A' + (zaSkelly ? ' (Skelly)' : '') + '</span><span>' + zaCount + '</span></div>';
-  html += '<div class="staff-bd-row"><span>H' + (anySkelly ? ' (manual)' : '') + '</span><span>' + hCount + '</span></div>';
-  html += '<div class="staff-bd-row"><span>NPS</span><span>' + npsCount + '</span></div>';
+  if (zbOn) html += '<div class="sb-chip"><span class="sb-chip-label">Zone B' + (zbSkelly ? ' (Skelly)' : '') + '</span><span class="sb-chip-val">' + zbCount + '</span></div>';
+  if (zaCount > 0) html += '<div class="sb-chip"><span class="sb-chip-label">Zone A' + (zaSkelly ? ' (Skelly)' : '') + '</span><span class="sb-chip-val">' + zaCount + '</span></div>';
+  html += '<div class="sb-chip"><span class="sb-chip-label">H' + (anySkelly ? ' (manual)' : '') + '</span><span class="sb-chip-val">' + hCount + '</span></div>';
+  html += '<div class="sb-chip"><span class="sb-chip-label">NPS</span><span class="sb-chip-val">' + npsCount + '</span></div>';
   bd.innerHTML = html;
 
   document.getElementById('msTotal').textContent = total;
@@ -1894,6 +1931,15 @@ document.addEventListener('DOMContentLoaded', function() {
   loadMSState();
   calcMiniStaffing();
 });
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
 </script>
 
 </body>
