@@ -380,50 +380,6 @@ function renderApp() {
       </div>
     </div>
 
-    <!-- Highest Wait Time -->
-    <div class="card">
-      <div class="card-label">Highest Wait Time</div>
-      <div class="form-row">
-        <div class="form-col" style="max-width:110px">
-          <span class="form-label">WT (MM:SS)</span>
-          <input type="text" class="form-input form-input-sm" id="peakWT" placeholder="25:46">
-        </div>
-        <div class="form-col" style="max-width:110px">
-          <span class="form-label">At (HHMM)</span>
-          <input type="text" class="form-input form-input-sm" id="peakTime" placeholder="1530">
-        </div>
-      </div>
-      <div class="form-row" style="margin-top:6px">
-        <div class="form-col">
-          <span class="form-label">Before Peak</span>
-          <div class="pill-group" id="beforePeakGroup">
-            <div class="pill" data-val="plan" onclick="togglePill(this)">To Plan</div>
-            <div class="pill" data-val="breaks" onclick="togglePill(this)">Under for Breaks</div>
-            <div class="pill" data-val="training" onclick="togglePill(this)">Under for Training</div>
-            <div class="pill" data-val="staffing" onclick="togglePill(this)">Under for Staffing</div>
-          </div>
-        </div>
-      </div>
-      <div class="form-row" style="margin-top:6px">
-        <div class="form-col" style="max-width:110px">
-          <span class="form-label">Lanes Running</span>
-          <input type="number" class="form-input form-input-sm" id="peakLanesRun" placeholder="2" min="1" max="7">
-        </div>
-        <div class="form-col" style="max-width:110px">
-          <span class="form-label">Lanes Planned</span>
-          <input type="number" class="form-input form-input-sm" id="peakLanesPlan" placeholder="4" min="1" max="7">
-        </div>
-        <div class="form-col" style="max-width:110px">
-          <span class="form-label">Since (HHMM)</span>
-          <input type="text" class="form-input form-input-sm" id="peakSince" placeholder="1240">
-        </div>
-        <div class="form-col" style="max-width:110px">
-          <span class="form-label">TP (optional)</span>
-          <input type="number" class="form-input form-input-sm" id="peakTP" placeholder="60">
-        </div>
-      </div>
-    </div>
-
     <!-- Rushes -->
     <div class="card">
       <div class="card-label">Rush Periods</div>
@@ -493,14 +449,6 @@ function setupApp() {
   var saved = localStorage.getItem('passTheme') || 'dark';
   document.getElementById('themeBtn').textContent = saved === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19';
 
-  // Auto-format time inputs on blur
-  document.querySelectorAll('#peakTime, #peakSince').forEach(function(el) {
-    el.addEventListener('blur', function() {
-      var v = this.value.trim();
-      if (/^\d{4}$/.test(v)) this.value = v; // keep HHMM
-    });
-  });
-
   // Load saved state
   loadState();
 }
@@ -530,10 +478,10 @@ function renderTrainingDetails() {
   document.querySelectorAll('#trainingChips .chip.active').forEach(function(chip) {
     var val = chip.dataset.val;
     var label = '', placeholder = '';
-    if (val === 'piap') { label = 'PIAP'; placeholder = 'e.g. 16 SOs trained'; }
+    if (val === 'piap') { label = 'PIAP'; placeholder = 'e.g. 16 (number of SOs)'; }
     else if (val === 'xrt') { label = 'XRT/RLP'; placeholder = 'e.g. 5 SOs, 1600-1715'; }
-    else if (val === 'ojt') { label = 'OJT'; placeholder = 'e.g. on floor until 1900'; }
-    else if (val === 'rtw') { label = 'RTW'; placeholder = 'e.g. conducted throughout PM'; }
+    else if (val === 'ojt') { label = 'OJT'; placeholder = 'e.g. on the floor since 1100'; }
+    else if (val === 'rtw') { label = 'RTW'; placeholder = 'e.g. conducted throughout the PM'; }
     else if (val === 'briefings') { label = 'Briefings'; placeholder = 'e.g. conducted during downtime'; }
     html += '<div class="form-row"><div class="form-col"><span class="form-label">' + label + '</span>';
     html += '<input type="text" class="form-input training-detail" data-type="' + val + '" placeholder="' + placeholder + '"></div></div>';
@@ -557,21 +505,25 @@ function addRush() {
       <button class="rush-remove" onclick="removeRush(${id})">\u2715</button>
     </div>
     <div class="form-row">
-      <div class="form-col" style="max-width:110px">
-        <span class="form-label">From (HHMM)</span>
+      <div class="form-col" style="max-width:100px">
+        <span class="form-label">From</span>
         <input type="text" class="form-input form-input-sm rush-from" placeholder="1100">
       </div>
-      <div class="form-col" style="max-width:110px">
-        <span class="form-label">To (HHMM)</span>
+      <div class="form-col" style="max-width:100px">
+        <span class="form-label">To</span>
         <input type="text" class="form-input form-input-sm rush-to" placeholder="1200">
       </div>
-      <div class="form-col" style="max-width:80px">
+      <div class="form-col" style="max-width:70px">
         <span class="form-label">Lanes</span>
         <input type="number" class="form-input form-input-sm rush-lanes" placeholder="3" min="1" max="7">
       </div>
-      <div class="form-col" style="max-width:80px">
+      <div class="form-col" style="max-width:70px">
         <span class="form-label">Plan</span>
         <input type="number" class="form-input form-input-sm rush-plan" placeholder="4" min="1" max="7">
+      </div>
+      <div class="form-col" style="max-width:100px">
+        <span class="form-label">Since</span>
+        <input type="text" class="form-input form-input-sm rush-since" placeholder="1040">
       </div>
     </div>
     <div class="form-row">
@@ -625,13 +577,9 @@ function addRush() {
       </div>
     </div>
     <div class="form-row" style="margin-top:6px">
-      <div class="form-col" style="max-width:110px">
-        <span class="form-label">WTSL From %</span>
-        <input type="number" class="form-input form-input-sm rush-wtsl-from" placeholder="96" min="0" max="100">
-      </div>
-      <div class="form-col" style="max-width:110px">
-        <span class="form-label">WTSL To %</span>
-        <input type="number" class="form-input form-input-sm rush-wtsl-to" placeholder="94" min="0" max="100">
+      <div class="form-col" style="max-width:130px">
+        <span class="form-label">WTSL After %</span>
+        <input type="number" class="form-input form-input-sm rush-wtsl-after" placeholder="94" min="0" max="100">
       </div>
     </div>
     <div class="form-row" style="margin-top:6px">
@@ -732,13 +680,6 @@ function gatherData() {
   d.plan = getActivePill('planGroup') || '';
   d.wtslStart = document.getElementById('wtslStart').value;
   d.wtslEnd = document.getElementById('wtslEnd').value;
-  d.peakWT = document.getElementById('peakWT').value.trim();
-  d.peakTime = document.getElementById('peakTime').value.trim();
-  d.beforePeak = getActivePill('beforePeakGroup') || '';
-  d.peakLanesRun = document.getElementById('peakLanesRun').value;
-  d.peakLanesPlan = document.getElementById('peakLanesPlan').value;
-  d.peakSince = document.getElementById('peakSince').value.trim();
-  d.peakTP = document.getElementById('peakTP').value;
 
   // Rushes
   d.rushes = [];
@@ -769,12 +710,12 @@ function gatherData() {
       });
     });
 
+    rush.since = card.querySelector('.rush-since').value.trim();
     rush.peakWT = card.querySelector('.rush-peak-wt').value.trim();
     rush.peakTime = card.querySelector('.rush-peak-time').value.trim();
     rush.tp = card.querySelector('.rush-tp').value;
     rush.pax = card.querySelector('.rush-pax').value;
-    rush.wtslFrom = card.querySelector('.rush-wtsl-from').value;
-    rush.wtslTo = card.querySelector('.rush-wtsl-to').value;
+    rush.wtslAfter = card.querySelector('.rush-wtsl-after').value;
     rush.notes = card.querySelector('.rush-notes').value.trim();
     d.rushes.push(rush);
   });
@@ -823,45 +764,65 @@ function buildReport(d) {
   var rushRanges = d.rushes.map(function(r) { return fmtRaw(r.from) + '-' + fmtRaw(r.to); });
 
   // ── OPENING LINE ──
+  // ── AUTO-DETECT PEAK WT FROM RUSHES ──
+  var peakRushIdx = -1;
+  var peakWT = '', peakTime = '';
+  if (hasRushes) {
+    var maxWT = 0;
+    d.rushes.forEach(function(r, i) {
+      if (r.peakWT) {
+        var parts = r.peakWT.split(':');
+        var secs = parts.length === 2 ? parseInt(parts[0]) * 60 + parseInt(parts[1]) : parseInt(parts[0]);
+        if (secs > maxWT) { maxWT = secs; peakRushIdx = i; peakWT = r.peakWT; peakTime = r.peakTime; }
+      }
+    });
+  }
+
   var paxDesc = d.pax || 'steady';
   if (hasRushes && (paxDesc === 'heavy' || paxDesc === 'waves' || paxDesc === 'steady to heavy')) {
+    // Style 1: rush-range opening
     var opening = 'PBS dom checkpoint experienced ' + paxDesc + ' pax presentation';
     if (rushRanges.length === 1) opening += ' from ' + rushRanges[0] + '.';
     else if (rushRanges.length === 2) opening += ' from ' + rushRanges[0] + ' and again at ' + rushRanges[1] + '.';
     else if (rushRanges.length > 2) opening += ' from ' + rushRanges.slice(0, -1).join(', ') + ' and again at ' + rushRanges[rushRanges.length - 1] + '.';
-    opening += ' Highest WT of ' + d.peakWT + ' at ' + fmtRaw(d.peakTime);
+    if (peakWT) opening += ' Highest WT of ' + peakWT + ' at ' + fmtRaw(peakTime);
     lines.push(opening);
   } else {
+    // Style 2: general summary opening
     var opening = 'Checkpoint experienced ' + paxDesc + ' passenger presentation and ran to ' + (d.plan || 'plan') + ' for the majority of the ' + d.shift + ' operation.';
     if (d.wtslStart && d.wtslEnd) {
       if (d.wtslStart === d.wtslEnd) opening += ' WTSL started and stayed at ' + d.wtslStart + '%.';
       else opening += ' WTSL started at ' + d.wtslStart + '% and currently at ' + d.wtslEnd + '%.';
     }
     lines.push(opening);
-    lines.push('');
-    // Separate highest WT paragraph
-    var peakLine = 'Highest wait time today was ' + d.peakWT + ' at ' + fmt(d.peakTime) + '.';
-    if (d.beforePeak) {
-      var underText = lanesUnderText(d.peakLanesRun, d.peakLanesPlan);
-      if (d.beforePeak === 'plan') {
+
+    // Peak WT paragraph — derived from the rush with the highest peak
+    if (peakWT && peakRushIdx >= 0) {
+      var pr = d.rushes[peakRushIdx];
+      lines.push('');
+      var peakLine = 'Highest wait time today was ' + peakWT + ' at ' + fmt(peakTime) + '.';
+      var underText = lanesUnderText(pr.lanes, pr.plan);
+      if (underText === 'to plan') {
         peakLine += ' Prior to the highest wait time, the checkpoint was running to plan';
-        if (d.peakLanesRun) peakLine += ' with ' + d.peakLanesRun + ' lanes open';
-        if (d.peakSince) peakLine += ' since ' + fmtRaw(d.peakSince);
+        if (pr.lanes) peakLine += ' with ' + pr.lanes + ' lanes open';
+        if (pr.since) peakLine += ' since ' + fmtRaw(pr.since);
         peakLine += '.';
       } else {
         peakLine += ' Prior to the highest wait time, the checkpoint was running ' + underText;
-        if (d.peakSince) peakLine += ' since ' + fmtRaw(d.peakSince);
+        if (pr.since) peakLine += ' since ' + fmtRaw(pr.since);
         peakLine += '.';
-        if (d.beforePeak === 'breaks') peakLine += ' Resources were being used for break deployments during this time.';
-        else if (d.beforePeak === 'training') peakLine += ' Resources were being used for training during this time.';
-        else if (d.beforePeak === 'staffing') peakLine += ' This was due to a shortage in staffing during this time.';
+        if (pr.reason === 'breaks') peakLine += ' Resources were being used for break deployments during this time.';
+        else if (pr.reason === 'training') peakLine += ' Resources were being used for training during this time.';
+        else if (pr.reason === 'staffing') peakLine += ' This was due to a shortage in staffing during this time.';
       }
+      lines.push(peakLine);
     }
-    if (d.peakTP) peakLine += ' TP was ' + d.peakTP + ' during this time.';
-    lines.push(peakLine);
   }
 
   // ── RUSH NARRATIVES ──
+  // WTSL chaining: first rush starts from overview WTSL Start, subsequent from previous rush's wtslAfter
+  var prevWTSL = d.wtslStart || '';
+
   d.rushes.forEach(function(rush, idx) {
     lines.push('');
     var rushLines = [];
@@ -920,8 +881,8 @@ function buildReport(d) {
       rushLines.push(s);
     });
 
-    // Peak WT during rush
-    if (rush.peakWT && rush.peakTime) {
+    // Peak WT during rush — skip for the rush that IS the overall peak (already covered above)
+    if (rush.peakWT && rush.peakTime && idx !== peakRushIdx) {
       rushLines.push('Highest WT during this period was ' + rush.peakWT + ' at ' + fmtRaw(rush.peakTime) + '.');
     }
 
@@ -934,15 +895,22 @@ function buildReport(d) {
       rushLines.push('Approximately ' + rush.pax + ' passengers screened from ' + fmtRaw(rush.from) + '-' + fmtRaw(rush.to) + '.');
     }
 
-    // WTSL change
-    if (rush.wtslFrom && rush.wtslTo) {
-      var from = parseInt(rush.wtslFrom), to = parseInt(rush.wtslTo);
-      if (to < from) rushLines.push('WTSL dropped from ' + rush.wtslFrom + '% to ' + rush.wtslTo + '% during this rush.');
-      else if (to > from) rushLines.push('WTSL increased from ' + rush.wtslFrom + '% to ' + rush.wtslTo + '%.');
+    // WTSL change — auto-chained from previous rush or overview start
+    var wtslBefore = prevWTSL;
+    var wtslAfterVal = rush.wtslAfter || '';
+    if (wtslBefore && wtslAfterVal) {
+      var from = parseInt(wtslBefore), to = parseInt(wtslAfterVal);
+      if (to < from) rushLines.push('WTSL dropped from ' + wtslBefore + '% to ' + wtslAfterVal + '% during this rush.');
+      else if (to > from) rushLines.push('WTSL increased from ' + wtslBefore + '% to ' + wtslAfterVal + '%.');
     }
+    if (wtslAfterVal) prevWTSL = wtslAfterVal;
 
     // Extra notes
-    if (rush.notes) rushLines.push(rush.notes);
+    if (rush.notes) {
+      var n = rush.notes;
+      if (!n.endsWith('.') && !n.endsWith('!') && !n.endsWith('?')) n += '.';
+      rushLines.push(n);
+    }
 
     lines.push(rushLines.join(' '));
   });
@@ -952,19 +920,31 @@ function buildReport(d) {
     lines.push('');
     var tLines = [];
     d.training.forEach(function(t) {
+      var det = t.detail ? t.detail.trim() : '';
+      var isNum = /^\d+$/.test(det);
       if (t.type === 'piap') {
-        tLines.push(t.detail ? t.detail + ' for PIAP' : 'PIAP training conducted');
+        if (!det) tLines.push('PIAP training conducted during downtime.');
+        else if (isNum) tLines.push(det + ' SOs trained for PIAP.');
+        else tLines.push(det + ' for PIAP.');
       } else if (t.type === 'xrt') {
-        tLines.push(t.detail ? t.detail : 'XRT/RLP training conducted');
+        if (!det) tLines.push('All computers were occupied for XRT/RLP.');
+        else if (isNum) tLines.push(det + ' SOs started their XRT/RLP.');
+        else tLines.push(det + ' for XRT/RLP.');
       } else if (t.type === 'ojt') {
-        tLines.push(t.detail ? 'SO OJT ' + t.detail : 'SO OJT also on the floor');
+        if (!det || isNum) tLines.push('SO OJT also on the floor.');
+        else {
+          var ojtDet = det.charAt(0).toLowerCase() + det.slice(1);
+          tLines.push('SO OJT ' + ojtDet + (ojtDet.endsWith('.') ? '' : '.'));
+        }
       } else if (t.type === 'rtw') {
-        tLines.push(t.detail ? 'RTW training ' + t.detail : 'RTW training conducted');
+        if (!det || isNum) tLines.push('RTW training and briefings conducted throughout the PM.');
+        else tLines.push('RTW training ' + det + (det.endsWith('.') ? '' : '.'));
       } else if (t.type === 'briefings') {
-        tLines.push(t.detail ? 'Briefings ' + t.detail : 'Briefings were conducted during downtime');
+        if (!det || isNum) tLines.push('Briefings were conducted during downtime.');
+        else tLines.push('Briefings ' + det + (det.endsWith('.') ? '' : '.'));
       }
     });
-    lines.push(tLines.join('. ') + '.');
+    lines.push(tLines.join('\n'));
   }
 
   // ── EXTRA NOTES ──
@@ -1036,13 +1016,6 @@ function loadState() {
     if (d.plan) setActivePill('planGroup', d.plan);
     if (d.wtslStart) document.getElementById('wtslStart').value = d.wtslStart;
     if (d.wtslEnd) document.getElementById('wtslEnd').value = d.wtslEnd;
-    if (d.peakWT) document.getElementById('peakWT').value = d.peakWT;
-    if (d.peakTime) document.getElementById('peakTime').value = d.peakTime;
-    if (d.beforePeak) setActivePill('beforePeakGroup', d.beforePeak);
-    if (d.peakLanesRun) document.getElementById('peakLanesRun').value = d.peakLanesRun;
-    if (d.peakLanesPlan) document.getElementById('peakLanesPlan').value = d.peakLanesPlan;
-    if (d.peakSince) document.getElementById('peakSince').value = d.peakSince;
-    if (d.peakTP) document.getElementById('peakTP').value = d.peakTP;
     if (d.extraNotes) document.getElementById('extraNotes').value = d.extraNotes;
     if (d.noConcerns !== undefined) document.getElementById('noConcerns').checked = d.noConcerns;
 
@@ -1059,12 +1032,13 @@ function loadState() {
           var pill = card.querySelector('.rush-reason-group .pill[data-val="' + rush.reason + '"]');
           if (pill) { card.querySelectorAll('.rush-reason-group .pill').forEach(function(p){p.classList.remove('active');}); pill.classList.add('active'); }
         }
+        if (rush.since) card.querySelector('.rush-since').value = rush.since;
         if (rush.peakWT) card.querySelector('.rush-peak-wt').value = rush.peakWT;
         if (rush.peakTime) card.querySelector('.rush-peak-time').value = rush.peakTime;
         if (rush.tp) card.querySelector('.rush-tp').value = rush.tp;
         if (rush.pax) card.querySelector('.rush-pax').value = rush.pax;
-        if (rush.wtslFrom) card.querySelector('.rush-wtsl-from').value = rush.wtslFrom;
-        if (rush.wtslTo) card.querySelector('.rush-wtsl-to').value = rush.wtslTo;
+        if (rush.wtslAfter) card.querySelector('.rush-wtsl-after').value = rush.wtslAfter;
+        else if (rush.wtslTo) card.querySelector('.rush-wtsl-after').value = rush.wtslTo;
         if (rush.notes) card.querySelector('.rush-notes').value = rush.notes;
       });
     }
