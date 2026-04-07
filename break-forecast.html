@@ -1084,6 +1084,13 @@ function syncTopScroll() {
 var userMode = 'admin';
 
 (function() {
+  var auth = sessionStorage.getItem('thgot_auth');
+  if (auth) {
+    userMode = auth;
+    document.getElementById('pw-gate').remove();
+    applyMode();
+    return;
+  }
   var inp = document.getElementById('pw-input');
   inp.focus();
   inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
@@ -1091,12 +1098,14 @@ var userMode = 'admin';
 
 function checkPW() {
   var val = document.getElementById('pw-input').value;
-  if (val === '1234') {
-    userMode = 'viewer';
+  if (val === '1781') {
+    userMode = 'admin';
+    sessionStorage.setItem('thgot_auth', 'admin');
     document.getElementById('pw-gate').remove();
     applyMode();
-  } else if (val === '1781') {
-    userMode = 'admin';
+  } else if (val === '1234' || val === '#TeamPASS204') {
+    userMode = 'viewer';
+    sessionStorage.setItem('thgot_auth', 'viewer');
     document.getElementById('pw-gate').remove();
     applyMode();
   } else {

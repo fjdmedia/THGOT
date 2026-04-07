@@ -426,7 +426,21 @@
       line-height: 1;
     }
     .theme-btn:hover { border-color: var(--accent); }
-  
+    .clear-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      line-height: 1;
+    }
+    .clear-btn:hover { border-color: rgba(239,68,68,0.5); color: rgba(239,68,68,0.8); }
+
   /* ── Password Gate ── */
   #pw-gate {
     position: fixed; inset: 0; z-index: 9999;
@@ -495,6 +509,7 @@
       <div class="subtitle">Minimum staff required</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
+      <button class="clear-btn" onclick="clearAll()">Reset</button>
       <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
       <div class="live-dot">LIVE</div>
     </div>
@@ -835,18 +850,92 @@
       ['hbsCR', 'hbsL3', 'hbsDomOs'].forEach(id => document.getElementById(id).checked = false);
     }
 
-    init();
-    calculate();
+    // ── Clear All ──────────────────────────────────────────────────────
+    function clearAll() {
+      document.getElementById('timeInput').value = '';
+      activeLanes.clear();
+      document.querySelectorAll('.lane-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.lanes-grid').classList.remove('disabled');
+      ['domSkellyToggle','tbToggle','tbSkellyToggle','hbsCR','hbsL3','hbsDomOs'].forEach(id => document.getElementById(id).checked = false);
+      document.getElementById('tbSkellyRow').style.display = 'none';
+      document.getElementById('hbsSkellyCard').style.display = 'none';
+      document.getElementById('totalCount').textContent = '--';
+      document.getElementById('timeDisplay').textContent = '--:--';
+      document.getElementById('breakdown').innerHTML = '';
+      localStorage.removeItem('staffing_state');
+    }
+
+    // ── Save / Load State ─────────────────────────────────────────────
+    function saveState() {
+      const state = {
+        time: document.getElementById('timeInput').value,
+        lanes: [...activeLanes],
+        domSkelly: document.getElementById('domSkellyToggle').checked,
+        tb: document.getElementById('tbToggle').checked,
+        tbSkelly: document.getElementById('tbSkellyToggle').checked,
+        hbsCR: document.getElementById('hbsCR').checked,
+        hbsL3: document.getElementById('hbsL3').checked,
+        hbsDomOs: document.getElementById('hbsDomOs').checked
+      };
+      localStorage.setItem('staffing_state', JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('staffing_state');
+        if (!saved) { init(); calculate(); return; }
+        const s = JSON.parse(saved);
+        if (s.time) document.getElementById('timeInput').value = s.time;
+        if (s.domSkelly) {
+          document.getElementById('domSkellyToggle').checked = true;
+          document.querySelector('.lanes-grid').classList.add('disabled');
+        }
+        if (s.lanes && s.lanes.length && !s.domSkelly) {
+          s.lanes.forEach(l => {
+            activeLanes.add(l);
+            const btn = document.querySelector(`[data-lane="${l}"]`);
+            if (btn) btn.classList.add('active');
+          });
+        }
+        if (s.tb) {
+          document.getElementById('tbToggle').checked = true;
+          document.getElementById('tbSkellyRow').style.display = 'flex';
+        }
+        if (s.tbSkelly) document.getElementById('tbSkellyToggle').checked = true;
+        if (s.domSkelly || s.tbSkelly) document.getElementById('hbsSkellyCard').style.display = 'block';
+        if (s.hbsCR) document.getElementById('hbsCR').checked = true;
+        if (s.hbsL3) document.getElementById('hbsL3').checked = true;
+        if (s.hbsDomOs) document.getElementById('hbsDomOs').checked = true;
+        calculate();
+      } catch(e) { init(); calculate(); }
+    }
+
+    // Hook save into all interactive elements
+    document.getElementById('timeInput').addEventListener('input', saveState);
+    ['domSkellyToggle','tbToggle','tbSkellyToggle','hbsCR','hbsL3','hbsDomOs'].forEach(id => {
+      document.getElementById(id).addEventListener('change', saveState);
+    });
+    // Override toggleLane to also save
+    const _origToggleLane = toggleLane;
+    window.toggleLane = function(el) { _origToggleLane(el); saveState(); };
+
+    loadState();
   </script>
 <script>
 (function() {
+  var auth = sessionStorage.getItem('thgot_auth');
+  if (auth) { document.getElementById('pw-gate').remove(); return; }
   var inp = document.getElementById('pw-input');
   inp.focus();
   inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
 })();
 function checkPW() {
   var val = document.getElementById('pw-input').value;
-  if (val === '#TeamPASS204') {
+  if (val === '1781') {
+    sessionStorage.setItem('thgot_auth', 'admin');
+    document.getElementById('pw-gate').remove();
+  } else if (val === '#TeamPASS204') {
+    sessionStorage.setItem('thgot_auth', 'viewer');
     document.getElementById('pw-gate').remove();
   } else {
     var box = document.querySelector('.pw-box');

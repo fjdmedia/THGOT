@@ -373,6 +373,21 @@
       display: none;
     }
   
+    .clear-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      line-height: 1;
+    }
+    .clear-btn:hover { border-color: rgba(239,68,68,0.5); color: rgba(239,68,68,0.8); }
+
   .powered-by {
     text-align: center;
     font-size: 0.65rem;
@@ -452,7 +467,10 @@
         <div class="title">Weekly Hours</div>
         <div class="subtitle">Paste schedule from Excel</div>
       </div>
-      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="clear-btn" onclick="clearAll()">Clear</button>
+        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+      </div>
     </div>
   </div>
 
@@ -706,16 +724,64 @@
       document.getElementById('results').style.display = 'block';
       document.getElementById('daysSection').style.display = 'block';
     }
+
+    // ── Clear All ──────────────────────────────────────────────────────
+    function clearAll() {
+      document.getElementById('pasteInput').value = '';
+      satOvernights.length = 0;
+      renderSatList();
+      document.getElementById('totalHrs').textContent = '—';
+      document.getElementById('totalEmps').textContent = '—';
+      document.getElementById('daysSection').style.display = 'none';
+      document.getElementById('errorMsg').style.display = 'none';
+      localStorage.removeItem('hours_state');
+    }
+
+    // ── Save / Load State ─────────────────────────────────────────────
+    function saveState() {
+      const state = {
+        paste: document.getElementById('pasteInput').value,
+        satOvernights: satOvernights.slice()
+      };
+      localStorage.setItem('hours_state', JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('hours_state');
+        if (!saved) return;
+        const s = JSON.parse(saved);
+        if (s.paste) document.getElementById('pasteInput').value = s.paste;
+        if (s.satOvernights && s.satOvernights.length) {
+          s.satOvernights.forEach(h => satOvernights.push(h));
+          renderSatList();
+        }
+      } catch(e) {}
+    }
+
+    document.getElementById('pasteInput').addEventListener('input', saveState);
+    const _origAddSat = addSatOvernight;
+    window.addSatOvernight = function() { _origAddSat(); saveState(); };
+    const _origRemoveSat = removeSatOvernight;
+    window.removeSatOvernight = function(i) { _origRemoveSat(i); saveState(); };
+
+    loadState();
   </script>
 <script>
 (function() {
+  var auth = sessionStorage.getItem('thgot_auth');
+  if (auth) { document.getElementById('pw-gate').remove(); return; }
   var inp = document.getElementById('pw-input');
   inp.focus();
   inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
 })();
 function checkPW() {
   var val = document.getElementById('pw-input').value;
-  if (val === '#TeamPASS204') {
+  if (val === '1781') {
+    sessionStorage.setItem('thgot_auth', 'admin');
+    document.getElementById('pw-gate').remove();
+  } else if (val === '#TeamPASS204') {
+    sessionStorage.setItem('thgot_auth', 'viewer');
     document.getElementById('pw-gate').remove();
   } else {
     var box = document.querySelector('.pw-box');

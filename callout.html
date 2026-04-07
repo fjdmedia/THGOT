@@ -811,6 +811,45 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
 }
 
+// ── Save / Load State ─────────────────────────────────────────────────────
+function saveOTState() {
+  const state = {
+    logEntries,
+    sessionDate: document.getElementById('sessionDate').value,
+    sessionShift: document.getElementById('sessionShift').value
+  };
+  localStorage.setItem('callout_state', JSON.stringify(state));
+}
+
+function loadOTState() {
+  try {
+    const saved = localStorage.getItem('callout_state');
+    if (!saved) return;
+    const s = JSON.parse(saved);
+    if (s.sessionDate) document.getElementById('sessionDate').value = s.sessionDate;
+    if (s.sessionShift) document.getElementById('sessionShift').value = s.sessionShift;
+    if (s.logEntries && s.logEntries.length) {
+      logEntries = s.logEntries;
+      renderLog();
+    }
+  } catch(e) {}
+}
+
+// Hook save into log mutations
+const _origAddToLog = addToLog;
+window.addToLog = function(idx) { _origAddToLog(idx); saveOTState(); };
+const _origRemoveFromLog = removeFromLog;
+window.removeFromLog = function(i) { _origRemoveFromLog(i); saveOTState(); };
+const _origClearLog = clearLog;
+window.clearLog = function() { _origClearLog(); saveOTState(); };
+document.getElementById('sessionDate').addEventListener('change', saveOTState);
+document.getElementById('sessionShift').addEventListener('input', saveOTState);
+
+// Save when result/notes fields change (delegated)
+document.getElementById('logBody').addEventListener('input', saveOTState);
+
+loadOTState();
+
 // ── Theme ──────────────────────────────────────────────────────────────────
 (function() {
   const saved = localStorage.getItem('passTheme') || 'dark';
@@ -837,13 +876,19 @@ function toggleTheme() {
 
 <script>
 (function() {
+  var auth = sessionStorage.getItem('thgot_auth');
+  if (auth) { document.getElementById('pw-gate').remove(); return; }
   var inp = document.getElementById('pw-input');
   inp.focus();
   inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
 })();
 function checkPW() {
   var val = document.getElementById('pw-input').value;
-  if (val === '#TeamPASS204') {
+  if (val === '1781') {
+    sessionStorage.setItem('thgot_auth', 'admin');
+    document.getElementById('pw-gate').remove();
+  } else if (val === '#TeamPASS204') {
+    sessionStorage.setItem('thgot_auth', 'viewer');
     document.getElementById('pw-gate').remove();
   } else {
     var box = document.querySelector('.pw-box');

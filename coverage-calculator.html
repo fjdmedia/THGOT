@@ -297,6 +297,21 @@
     .nav-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
     .nav-icon { font-size: 0.85rem; }
   
+    .clear-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      line-height: 1;
+    }
+    .clear-btn:hover { border-color: rgba(239,68,68,0.5); color: rgba(239,68,68,0.8); }
+
   .powered-by {
     text-align: center;
     font-size: 0.65rem;
@@ -391,7 +406,10 @@
       <div class="title">H Coverage</div>
       <div class="subtitle">Schedule vs. requirement</div>
     </div>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="clear-btn" onclick="clearAllShifts()">Clear All</button>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    </div>
   </div>
 
   <div class="layout">
@@ -592,17 +610,65 @@
       if (e.key === 'Enter') addShift();
     });
 
-    renderTable();
+    // ── Clear All ──────────────────────────────────────────────────────
+    function clearAllShifts() {
+      shifts.length = 0;
+      document.getElementById('zoneBLateToggle').checked = false;
+      renderChips();
+      renderTable();
+      localStorage.removeItem('coverage_state');
+    }
+
+    // ── Save / Load State ─────────────────────────────────────────────
+    function saveState() {
+      const state = {
+        shifts: shifts.map(s => s.raw),
+        zoneBLate: document.getElementById('zoneBLateToggle').checked
+      };
+      localStorage.setItem('coverage_state', JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('coverage_state');
+        if (!saved) { renderTable(); return; }
+        const s = JSON.parse(saved);
+        if (s.zoneBLate) document.getElementById('zoneBLateToggle').checked = true;
+        if (s.shifts && s.shifts.length) {
+          s.shifts.forEach(raw => {
+            const shift = parseShiftStr(raw);
+            if (shift) shifts.push(shift);
+          });
+          renderChips();
+        }
+        renderTable();
+      } catch(e) { renderTable(); }
+    }
+
+    // Hook save into mutations
+    const _origAddShift = addShift;
+    window.addShift = function() { _origAddShift(); saveState(); };
+    const _origRemoveShift = removeShift;
+    window.removeShift = function(i) { _origRemoveShift(i); saveState(); };
+    document.getElementById('zoneBLateToggle').addEventListener('change', saveState);
+
+    loadState();
   </script>
 <script>
 (function() {
+  var auth = sessionStorage.getItem('thgot_auth');
+  if (auth) { document.getElementById('pw-gate').remove(); return; }
   var inp = document.getElementById('pw-input');
   inp.focus();
   inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
 })();
 function checkPW() {
   var val = document.getElementById('pw-input').value;
-  if (val === '#TeamPASS204') {
+  if (val === '1781') {
+    sessionStorage.setItem('thgot_auth', 'admin');
+    document.getElementById('pw-gate').remove();
+  } else if (val === '#TeamPASS204') {
+    sessionStorage.setItem('thgot_auth', 'viewer');
     document.getElementById('pw-gate').remove();
   } else {
     var box = document.querySelector('.pw-box');
