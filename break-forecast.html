@@ -58,6 +58,24 @@
     .header .title { font-size: 1rem; font-weight: 600; }
     .header .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .save-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 16px;
+      transition: all 0.2s;
+    }
+    .save-btn:hover { opacity: 0.85; }
+
     .theme-btn {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -73,7 +91,7 @@
       max-width: 1500px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 240px 1fr 260px;
       gap: 16px;
       align-items: start;
     }
@@ -95,6 +113,70 @@
       text-transform: uppercase;
       color: var(--faint);
       margin-bottom: 10px;
+    }
+
+    /* ── Quick Add ── */
+    .quick-add-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .quick-shift-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .quick-shift-input:focus { border-color: var(--accent); }
+    .quick-shift-input::placeholder { color: var(--muted); }
+    .quick-x {
+      color: var(--muted);
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+    .quick-count-input {
+      width: 44px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 4px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      text-align: center;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .quick-count-input:focus { border-color: var(--accent); }
+    .quick-count-input::-webkit-inner-spin-button,
+    .quick-count-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .quick-add-btn {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .quick-add-btn:hover { opacity: 0.82; }
+    .quick-ot-row {
+      margin-bottom: 10px;
+    }
+    .section-divider {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
     }
 
     .paste-area {
@@ -286,6 +368,16 @@
       min-width: 115px;
       font-size: 0.7rem;
     }
+    .row-remove {
+      display: inline-block;
+      margin-right: 5px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .row-remove:hover { color: #ef4444; }
 
     .td-count {
       text-align: center;
@@ -319,17 +411,17 @@
     .in-shift { background: var(--surface2); }
 
     /* Break window colors */
-    .b-1st   { background: rgba(251,146,60,0.38); }
-    .b-lunch { background: rgba(59,130,246,0.38); }
-    .b-3rd   { background: rgba(34,197,94,0.38); }
-    .b-4th   { background: rgba(168,85,247,0.38); }
+    .b-1st   { background: rgba(251,146,60,0.45); }
+    .b-lunch { background: rgba(59,130,246,0.45); }
+    .b-3rd   { background: rgba(34,197,94,0.45); }
+    .b-4th   { background: rgba(168,85,247,0.45); }
     .b-multi {
       background: repeating-linear-gradient(
         45deg,
-        rgba(251,146,60,0.35),
-        rgba(251,146,60,0.35) 4px,
-        rgba(59,130,246,0.35) 4px,
-        rgba(59,130,246,0.35) 8px
+        rgba(251,146,60,0.4),
+        rgba(251,146,60,0.4) 4px,
+        rgba(59,130,246,0.4) 4px,
+        rgba(59,130,246,0.4) 8px
       );
     }
 
@@ -338,14 +430,101 @@
     .tr-total .td-count { background: var(--surface2); font-weight: 600; }
 
     .t-0    { background: var(--surface2); color: var(--faint); }
-    .t-low  { background: rgba(251,146,60,0.18); }
-    .t-med  { background: rgba(251,146,60,0.36); }
-    .t-high { background: rgba(251,146,60,0.58); font-weight: 600; }
-    .t-peak { background: rgba(239,68,68,0.52); font-weight: 700; }
-    .tl-low  { background: rgba(59,130,246,0.18); }
-    .tl-med  { background: rgba(59,130,246,0.36); }
-    .tl-high { background: rgba(59,130,246,0.58); font-weight: 600; }
-    .tl-peak { background: rgba(59,130,246,0.82); font-weight: 700; }
+    .t-low  { background: rgba(251,146,60,0.22); color: var(--text); }
+    .t-med  { background: rgba(251,146,60,0.40); color: var(--text); }
+    .t-high { background: rgba(251,146,60,0.62); font-weight: 600; color: #1e2a3a; }
+    .t-peak { background: rgba(239,68,68,0.58); font-weight: 700; color: #fff; }
+    .tl-low  { background: rgba(59,130,246,0.22); color: var(--text); }
+    .tl-med  { background: rgba(59,130,246,0.40); color: var(--text); }
+    .tl-high { background: rgba(59,130,246,0.62); font-weight: 600; color: #fff; }
+    .tl-peak { background: rgba(59,130,246,0.85); font-weight: 700; color: #fff; }
+    [data-theme="dark"] .t-high { color: #fff; }
+    [data-theme="dark"] .t-med  { color: #e8e2d9; }
+
+    /* ── Next Up Panel (right column) ── */
+    .next-up-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      position: sticky;
+      top: 16px;
+    }
+    .next-up-title {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 10px;
+    }
+    .next-up-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .next-up-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px 8px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.72rem;
+    }
+    .next-up-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .next-up-shift {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.7rem;
+    }
+    .next-up-type {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+    .next-up-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 16px;
+    }
+    .next-up-window {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .next-up-urgent .next-up-window {
+      color: #ef4444;
+    }
+    .next-up-remaining {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.7rem;
+      white-space: nowrap;
+    }
+    .next-up-urgent {
+      border-color: rgba(239,68,68,0.3);
+      background: rgba(239,68,68,0.06);
+    }
+    [data-theme="dark"] .next-up-urgent {
+      background: rgba(239,68,68,0.08);
+    }
+    .next-up-empty {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-style: italic;
+      padding: 8px 0;
+    }
 
     .empty-state {
       text-align: center;
@@ -473,17 +652,22 @@
     .td-cell-past { opacity: 0.4; }
     .td-cell-now { border-left: 2px solid var(--accent) !important; }
     /* Trackable break cells (past) */
-    .b-track { cursor: pointer; font-size: 0.72rem; font-weight: 700; color: rgba(10,13,20,0.8); }
+    .b-track { cursor: pointer; font-size: 0.72rem; font-weight: 700; color: #1a1a2e; }
     .b-track:hover { filter: brightness(1.1); }
     [data-theme="dark"] .b-track { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.65); }
-    .b-done-cell { opacity: 0.2 !important; cursor: pointer; }
+    .b-done-cell { opacity: 0.25 !important; cursor: pointer; }
 
     /* Viewer mode — hide admin-only controls */
     body.viewer-mode .admin-only { display: none !important; }
 
-    @media (max-width: 800px) {
+    @media (max-width: 1000px) {
+      .main { grid-template-columns: 240px 1fr; }
+      .next-up-panel { grid-column: 1 / -1; position: static; }
+    }
+    @media (max-width: 700px) {
       .main { grid-template-columns: 1fr; }
       .input-panel { position: static; }
+      .next-up-panel { position: static; }
     }
   </style>
 
@@ -522,14 +706,31 @@
     <div class="title">Break Forecast</div>
     <div class="subtitle">Break window planning by shift block</div>
   </div>
-  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  <div class="header-actions">
+    <button class="save-btn admin-only" id="saveBtn" onclick="manualSave()">Save</button>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
 </div>
 
 <div class="main">
 
   <div class="input-panel">
     <div class="admin-only">
-      <div class="section-label">Add Shifts</div>
+      <div class="section-label">Quick Add</div>
+      <div class="quick-add-row">
+        <input type="text" class="quick-shift-input" id="quickShift" placeholder="0300-1100" maxlength="9">
+        <span class="quick-x">×</span>
+        <input type="number" class="quick-count-input" id="quickCount" min="1" value="1">
+        <button class="quick-add-btn" onclick="quickAdd()">+</button>
+      </div>
+      <div class="quick-ot-row">
+        <label class="toggle-label">
+          <input type="checkbox" class="toggle-checkbox" id="quickOT">
+          OT
+        </label>
+      </div>
+
+      <div class="section-label section-divider">Paste Shifts</div>
       <textarea class="paste-area" id="pasteArea" placeholder="Paste shifts here&#10;0300-1100&#10;0400-1200&#10;0300-1100&#10;..."></textarea>
 
       <div class="ot-row">
@@ -604,6 +805,11 @@
     <div class="grid-wrap" id="gridWrap">
       <div class="empty-state">Paste shifts and click Add Shifts to see the break forecast.</div>
     </div>
+  </div>
+
+  <div class="next-up-panel" id="nextUp">
+    <div class="next-up-title">Next Up</div>
+    <div class="next-up-list" id="nextUpList"></div>
   </div>
 
 </div>
@@ -737,6 +943,61 @@ function loadShifts() {
   } catch(e) { shiftRows = []; }
 }
 
+// ── Quick Add ──────────────────────────────────────────────────────────────
+function quickAdd() {
+  var raw = document.getElementById('quickShift').value.trim();
+  var count = parseInt(document.getElementById('quickCount').value) || 1;
+  var isOT = document.getElementById('quickOT').checked;
+  var p = parseShiftLine(raw);
+  if (!p) return;
+
+  var label = formatTime(p.start) + ' - ' + formatTime(p.start + p.duration);
+  if (isOT) {
+    var otLabel = label + ' ◎';
+    var ex = shiftRows.find(function(r) { return r.label === otLabel && r.isOT; });
+    if (ex) { ex.count += count; }
+    else {
+      shiftRows.push({
+        label: otLabel, count: count,
+        start: p.start, duration: p.duration,
+        breaks: getBreaks(p.start, p.duration, true),
+        isOT: true, sent: {}
+      });
+    }
+  } else {
+    var ex = shiftRows.find(function(r) { return r.label === label && !r.isOT; });
+    if (ex) { ex.count += count; }
+    else {
+      shiftRows.push({
+        label: label, count: count,
+        start: p.start, duration: p.duration,
+        breaks: getBreaks(p.start, p.duration, false),
+        isOT: false, sent: {}
+      });
+    }
+  }
+
+  shiftRows.sort(function(a, b) {
+    if (a.start !== b.start) return a.start - b.start;
+    return a.duration - b.duration;
+  });
+
+  document.getElementById('quickShift').value = '';
+  document.getElementById('quickCount').value = '1';
+  document.getElementById('quickOT').checked = false;
+  document.getElementById('quickShift').focus();
+  renderGrid();
+}
+
+// Enter key on quick-add inputs triggers quickAdd
+document.addEventListener('DOMContentLoaded', function() {
+  ['quickShift', 'quickCount'].forEach(function(id) {
+    document.getElementById(id).addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); quickAdd(); }
+    });
+  });
+});
+
 // ── Input ───────────────────────────────────────────────────────────────────
 function toggleOT() {
   var on = document.getElementById('otToggle').checked;
@@ -808,14 +1069,97 @@ function addShifts() {
 
   document.getElementById('otToggle').checked = false;
   document.getElementById('otCountWrap').classList.remove('visible');
-  saveShifts();
   renderGrid();
 }
 
 function clearAll() {
   shiftRows = [];
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('quickShift').value = '';
+  document.getElementById('quickCount').value = '1';
+  document.getElementById('quickOT').checked = false;
+  document.getElementById('otToggle').checked = false;
+  document.getElementById('otCountWrap').classList.remove('visible');
   saveShifts();
   renderGrid();
+}
+
+// ── Save Button ────────────────────────────────────────────────────────────
+function manualSave() {
+  saveShifts();
+  var btn = document.getElementById('saveBtn');
+  btn.textContent = 'Saved';
+  btn.style.background = 'rgba(34,197,94,0.7)';
+  setTimeout(function() {
+    btn.textContent = 'Save';
+    btn.style.background = '';
+  }, 1200);
+}
+
+// ── Next Up ────────────────────────────────────────────────────────────────
+var BREAK_DOT_COLOR = { '1st': 'rgba(251,146,60,0.8)', 'Lunch': 'rgba(59,130,246,0.8)', '3rd': 'rgba(34,197,94,0.8)', '4th': 'rgba(168,85,247,0.8)' };
+
+function renderNextUp() {
+  var container = document.getElementById('nextUp');
+  var list = document.getElementById('nextUpList');
+  if (!container || !list) return;
+
+  container.style.display = 'block';
+  if (currentTimeMins === null || shiftRows.length === 0) {
+    list.innerHTML = '<div class="next-up-empty">Set current time to see alerts</div>';
+    return;
+  }
+
+  // Alert when 20 min left before it's LATE
+  // Late = can't start AND finish the break before window closes
+  // 20min break: alert at 40 min left (20 cushion + 20 duration)
+  // Lunch 35min: alert at 55 min left (20 cushion + 35 duration)
+  var items = [];
+  shiftRows.forEach(function(row) {
+    row.breaks.forEach(function(b) {
+      var sent = (row.sent && row.sent[b.type]) || 0;
+      var remaining = row.count - sent;
+      if (remaining <= 0) return;
+      if (b.wEnd <= currentTimeMins) return;
+      if (b.wStart > currentTimeMins) return;
+
+      var breakDur = b.type === 'Lunch' ? 35 : 20;
+      var threshold = 20 + breakDur; // 20 min cushion + time to complete
+      var timeLeft = b.wEnd - currentTimeMins;
+      if (timeLeft > threshold) return;
+
+      items.push({
+        label: row.label,
+        type: b.type,
+        remaining: remaining,
+        timeLeft: timeLeft
+      });
+    });
+  });
+
+  items.sort(function(a, b) { return a.timeLeft - b.timeLeft; });
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="next-up-empty">No breaks due right now</div>';
+    return;
+  }
+  var html = '';
+  items.forEach(function(item) {
+    var breakDur = item.type === 'Lunch' ? 35 : 20;
+    var minsBeforeLate = item.timeLeft - breakDur;
+    var urgentCls = minsBeforeLate <= 10 ? ' next-up-urgent' : '';
+    var timeTag = minsBeforeLate <= 0 ? 'LATE' : minsBeforeLate + ' min before late';
+    html += '<div class="next-up-item' + urgentCls + '">';
+    html += '<div class="next-up-dot" style="background:' + (BREAK_DOT_COLOR[item.type] || 'var(--muted)') + '"></div>';
+    html += '<span class="next-up-shift">' + item.label + '</span>';
+    html += '<span class="next-up-type">' + item.type + '</span>';
+    html += '<div class="next-up-meta">';
+    html += '<span class="next-up-remaining">' + item.remaining + ' left</span>';
+    html += '<span class="next-up-window">' + timeTag + '</span>';
+    html += '</div>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
 }
 
 // ── Time Tracker ────────────────────────────────────────────────────────────
@@ -878,7 +1222,7 @@ function completeAllDue() {
   if (currentTimeMins === null || shiftRows.length === 0) return;
   shiftRows.forEach(function(row) {
     row.breaks.forEach(function(b) {
-      if (b.wStart <= currentTimeMins) {
+      if (b.wEnd <= currentTimeMins) {
         row.sent[b.type] = row.count;
       }
     });
@@ -888,6 +1232,7 @@ function completeAllDue() {
 
 // ── Grid ────────────────────────────────────────────────────────────────────
 var BREAK_CLASS = { '1st': 'b-1st', 'Lunch': 'b-lunch', '3rd': 'b-3rd', '4th': 'b-4th' };
+var BREAK_COLOR = { '1st': 'rgba(251,146,60,0.55)', 'Lunch': 'rgba(59,130,246,0.55)', '3rd': 'rgba(34,197,94,0.55)', '4th': 'rgba(168,85,247,0.55)' };
 
 function renderGrid() {
   var wrap = document.getElementById('gridWrap');
@@ -930,7 +1275,7 @@ function renderGrid() {
 
   shiftRows.forEach(function(row, rowIdx) {
     html += '<tr>';
-    html += '<td class="td-shift">' + row.label + '</td>';
+    html += '<td class="td-shift"><span class="row-remove" data-remove="' + rowIdx + '">✕</span>' + row.label + '</td>';
     html += '<td class="td-count">' + row.count + '</td>';
 
     slots.forEach(function(t, i) {
@@ -947,8 +1292,16 @@ function renderGrid() {
       if (covering.length === 0) {
         html += '<td class="td-cell' + (inShift ? ' in-shift' : '') + timeCls + '"></td>';
       } else if (covering.length > 1) {
-        // Multi-overlap: not trackable as a single cell — but totals reflect remaining per break type
-        html += '<td class="td-cell b-multi' + timeCls + '"></td>';
+        // Build stripe from actual overlapping break colors
+        var colors = covering.map(function(b) { return BREAK_COLOR[b.type] || 'rgba(150,150,150,0.4)'; });
+        var stripeSize = 6;
+        var stops = [];
+        for (var ci = 0; ci < colors.length; ci++) {
+          stops.push(colors[ci] + ' ' + (ci * stripeSize) + 'px');
+          stops.push(colors[ci] + ' ' + ((ci + 1) * stripeSize) + 'px');
+        }
+        var grad = 'repeating-linear-gradient(45deg,' + stops.join(',') + ')';
+        html += '<td class="td-cell' + timeCls + '" style="background:' + grad + '"></td>';
         covering.forEach(function(b) {
           var sentAmt   = (row.sent && row.sent[b.type]) || 0;
           var remaining = row.count - sentAmt;
@@ -977,13 +1330,20 @@ function renderGrid() {
     html += '</tr>';
   });
 
-  var totalCount = shiftRows.reduce(function(s, r) { return s + r.count; }, 0);
+  var total20Count = shiftRows.reduce(function(s, r) {
+    var has20 = r.breaks.some(function(b) { return b.type !== 'Lunch'; });
+    return s + (has20 ? r.count : 0);
+  }, 0);
+  var totalLunchCount = shiftRows.reduce(function(s, r) {
+    var hasLunch = r.breaks.some(function(b) { return b.type === 'Lunch'; });
+    return s + (hasLunch ? r.count : 0);
+  }, 0);
 
   // Total row — 20 min breaks (orange heat)
   var peak20 = Math.max.apply(null, totals20.concat([1]));
   html += '<tr class="tr-total">';
   html += '<td class="td-shift">20 min</td>';
-  html += '<td class="td-count">' + totalCount + '</td>';
+  html += '<td class="td-count">' + total20Count + '</td>';
   totals20.forEach(function(v, i) {
     var t = slots[i];
     var isPast = nowMins !== null && (t + 30 <= nowMins);
@@ -1006,7 +1366,7 @@ function renderGrid() {
   var peakLunch = Math.max.apply(null, totalsLunch.concat([1]));
   html += '<tr class="tr-total">';
   html += '<td class="td-shift">Lunch 35</td>';
-  html += '<td class="td-count">' + totalCount + '</td>';
+  html += '<td class="td-count">' + totalLunchCount + '</td>';
   totalsLunch.forEach(function(v, i) {
     var t = slots[i];
     var isPast = nowMins !== null && (t + 30 <= nowMins);
@@ -1026,8 +1386,24 @@ function renderGrid() {
   html += '</tr></tbody></table>';
   wrap.innerHTML = html;
   syncTopScroll();
+  renderNextUp();
 
   var table = document.getElementById('forecastTable');
+
+  // Remove one shift from row (delete row if count hits 0)
+  table.addEventListener('click', function(e) {
+    var rm = e.target.closest('.row-remove');
+    if (rm) {
+      var idx = parseInt(rm.getAttribute('data-remove'));
+      var row = shiftRows[idx];
+      if (row) {
+        row.count--;
+        if (row.count <= 0) shiftRows.splice(idx, 1);
+      }
+      renderGrid();
+      return;
+    }
+  });
 
   // Left-click: increment sent count
   table.addEventListener('click', function(e) {
@@ -1040,7 +1416,6 @@ function renderGrid() {
     if (!row || !row.sent) return;
     var cur = row.sent[bType] || 0;
     row.sent[bType] = cur >= row.count ? 0 : cur + 1;
-    saveShifts();
     renderGrid();
   });
 
@@ -1056,7 +1431,6 @@ function renderGrid() {
     if (!row || !row.sent) return;
     var cur = row.sent[bType] || 0;
     row.sent[bType] = cur <= 0 ? row.count : cur - 1;
-    saveShifts();
     renderGrid();
   });
 }
