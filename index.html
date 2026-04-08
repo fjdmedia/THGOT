@@ -266,7 +266,7 @@
     <div class="tool-tag">Classified</div>
   </a>
 
-  <a class="tool-card classified admin-only-card" href="break-forecast-lab.html" style="display:none;">
+  <a class="tool-card classified" href="break-forecast-lab.html" onclick="labGate(event)">
     <div class="tool-top">
       <div class="tool-name">🧪 Dexter's Lab <span class="classified-badge">Admin Only</span></div>
       <div class="tool-arrow">→</div>
@@ -277,12 +277,46 @@
 
   <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
 
+  <!-- Lab Password Gate Modal -->
+  <div id="lab-gate" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;">
+    <div style="background:#0d1b2e;border:1px solid #c9a84c;border-radius:14px;padding:2.5rem 2.8rem;text-align:center;min-width:300px;">
+      <div style="font-size:2rem;margin-bottom:12px;">🔒</div>
+      <div style="font-size:1.1rem;font-weight:600;color:#c9a84c;margin-bottom:4px;">Admin Access</div>
+      <div style="font-size:0.75rem;color:rgba(201,168,76,0.6);margin-bottom:20px;">Enter password to continue</div>
+      <input type="password" id="lab-pw-input" placeholder="Password" autocomplete="off"
+        style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.3);border-radius:8px;color:#e8e2d9;font-size:0.9rem;outline:none;margin-bottom:10px;">
+      <button onclick="submitLabPW()" style="width:100%;padding:10px;background:#c9a84c;border:none;border-radius:8px;color:#0d1b2e;font-weight:600;font-size:0.9rem;cursor:pointer;">Enter</button>
+      <div id="lab-pw-error" style="font-size:0.72rem;color:#ef4444;margin-top:8px;min-height:18px;"></div>
+      <div style="margin-top:12px;"><button onclick="closeLabGate()" style="background:none;border:none;color:rgba(201,168,76,0.5);font-size:0.75rem;cursor:pointer;">Cancel</button></div>
+    </div>
+  </div>
+
   <script>
-    // Show admin-only cards when session auth is admin
-    if (sessionStorage.getItem('thgot_auth') === 'admin') {
-      document.querySelectorAll('.admin-only-card').forEach(function(el) {
-        el.style.display = '';
-      });
+    function labGate(e) {
+      if (sessionStorage.getItem('thgot_auth') === 'admin') return;
+      e.preventDefault();
+      var modal = document.getElementById('lab-gate');
+      modal.style.display = 'flex';
+      var inp = document.getElementById('lab-pw-input');
+      inp.value = '';
+      document.getElementById('lab-pw-error').textContent = '';
+      setTimeout(function() { inp.focus(); }, 50);
+      inp.onkeydown = function(ev) { if (ev.key === 'Enter') submitLabPW(); };
+    }
+    function submitLabPW() {
+      var val = document.getElementById('lab-pw-input').value;
+      if (val === '1781') {
+        sessionStorage.setItem('thgot_auth', 'admin');
+        closeLabGate();
+        window.location.href = 'break-forecast-lab.html';
+      } else {
+        var err = document.getElementById('lab-pw-error');
+        err.textContent = 'Incorrect password.';
+        document.getElementById('lab-pw-input').value = '';
+      }
+    }
+    function closeLabGate() {
+      document.getElementById('lab-gate').style.display = 'none';
     }
   </script>
 

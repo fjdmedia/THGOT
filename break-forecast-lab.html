@@ -1024,6 +1024,8 @@
         </label>
       </div>
       <button class="btn btn-ghost admin-only" style="width:100%;margin-top:10px;font-size:0.75rem;" onclick="completeAllDue()">Complete All Due</button>
+      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:6px;font-size:0.75rem;border-color:rgba(239,68,68,0.35);color:#ef4444;" onclick="clearBreaks()">Clear Breaks</button>
+      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:6px;font-size:0.75rem;border-color:rgba(239,68,68,0.35);color:#ef4444;" onclick="clearAll()">Reset Shifts</button>
     </div>
 
   </div>
@@ -1808,6 +1810,15 @@ function completeAllDue() {
   saveShifts();
   renderGrid();
   showToast('All due completed', true);
+}
+
+function clearBreaks() {
+  if (shiftRows.length === 0) return;
+  undoSnapshot = JSON.parse(JSON.stringify(shiftRows));
+  shiftRows.forEach(function(row) { row.sent = {}; });
+  saveShifts();
+  renderGrid();
+  showToast('Breaks cleared', true);
 }
 
 // ── Grid ────────────────────────────────────────────────────────────────────
