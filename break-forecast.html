@@ -778,6 +778,13 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.25);
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast a.toast-undo {
+      color: var(--accent);
+      font-weight: 700;
+      margin-left: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
 
     /* ── Time Tracker ── */
     .time-ctrl {
@@ -819,6 +826,7 @@
     .b-track:hover { filter: brightness(1.1); }
     [data-theme="dark"] .b-track { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.65); }
     .b-done-cell { opacity: 0.25 !important; cursor: pointer; }
+    .b-grace-warn { border-left: 3px solid #f59e0b !important; }
 
     /* Viewer mode — hide admin-only controls */
     body.viewer-mode .admin-only { display: none !important; }
@@ -871,6 +879,7 @@
   </div>
   <div class="header-actions">
     <button class="save-btn admin-only" id="saveBtn" onclick="manualSave()">Save</button>
+    <button class="save-btn admin-only" id="shareBtn" onclick="shareState()">Share</button>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
   </div>
 </div>
@@ -1149,6 +1158,18 @@ function getBreaks(shiftStart, durationMins, isOT) {
 
 // ── State ───────────────────────────────────────────────────────────────────
 var shiftRows = [];
+var undoSnapshot = null;
+var undoTimer = null;
+
+function undoRestore() {
+  if (!undoSnapshot) return;
+  shiftRows = undoSnapshot;
+  undoSnapshot = null;
+  clearTimeout(undoTimer);
+  saveShifts();
+  renderGrid();
+  showToast('Restored');
+}
 
 function saveShifts() {
   localStorage.setItem('bf_shiftRows', JSON.stringify(shiftRows));
@@ -1295,6 +1316,8 @@ function addShifts() {
 }
 
 function clearAll() {
+  if (shiftRows.length === 0) return;
+  undoSnapshot = JSON.parse(JSON.stringify(shiftRows));
   shiftRows = [];
   document.getElementById('pasteArea').value = '';
   document.getElementById('quickShift').value = '';
@@ -1304,7 +1327,7 @@ function clearAll() {
   document.getElementById('otCountWrap').classList.remove('visible');
   saveShifts();
   renderGrid();
-  showToast('Cleared');
+  showToast('Cleared', true);
 }
 
 // ── Save Button ────────────────────────────────────────────────────────────
@@ -1317,6 +1340,44 @@ function manualSave() {
     btn.textContent = 'Save';
     btn.style.background = '';
   }, 1200);
+}
+
+// ── Share (URL hash) ──────────────────────────────────────────────────────
+function shareState() {
+  if (shiftRows.length === 0) {
+    showToast('Nothing to share');
+    return;
+  }
+  var encoded = btoa(JSON.stringify(shiftRows));
+  var url = window.location.origin + window.location.pathname + '#data=' + encoded;
+  navigator.clipboard.writeText(url).then(function() {
+    showToast('Link copied');
+  }).catch(function() {
+    var tmp = document.createElement('input');
+    tmp.value = url;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    showToast('Link copied');
+  });
+}
+
+function loadFromHash() {
+  var hash = window.location.hash;
+  if (!hash || hash.indexOf('#data=') !== 0) return false;
+  try {
+    var encoded = hash.slice(6);
+    var decoded = JSON.parse(atob(encoded));
+    if (Array.isArray(decoded) && decoded.length > 0) {
+      shiftRows = decoded;
+      saveShifts();
+      window.location.hash = '';
+      showToast('Loaded shared data');
+      return true;
+    }
+  } catch(e) {}
+  return false;
 }
 
 // ── Next Up ────────────────────────────────────────────────────────────────
@@ -1460,6 +1521,7 @@ function onManualTime() {
 
 function completeAllDue() {
   if (currentTimeMins === null || shiftRows.length === 0) return;
+  undoSnapshot = JSON.parse(JSON.stringify(shiftRows));
   shiftRows.forEach(function(row) {
     row.breaks.forEach(function(b) {
       if (b.wEnd <= currentTimeMins) {
@@ -1467,7 +1529,9 @@ function completeAllDue() {
       }
     });
   });
+  saveShifts();
   renderGrid();
+  showToast('All due completed', true);
 }
 
 // ── Grid ────────────────────────────────────────────────────────────────────
@@ -1519,6 +1583,19 @@ function renderGrid() {
     html += '<td class="td-shift"><span class="row-remove" data-remove="' + rowIdx + '">✕</span>' + row.label + '</td>';
     html += '<td class="td-count">' + row.count + '</td>';
 
+    // Grace period detection: flag break windows < 60min apart
+    var graceSlots = {};
+    for (var bi = 1; bi < row.breaks.length; bi++) {
+      var prev = row.breaks[bi - 1];
+      var curr = row.breaks[bi];
+      var gap = curr.wStart - prev.wEnd;
+      if (gap < 60 && !((row.sent[prev.type] || 0) >= row.count && (row.sent[curr.type] || 0) >= row.count)) {
+        for (var gs = curr.wStart; gs < curr.wEnd; gs += 30) {
+          graceSlots[gs] = true;
+        }
+      }
+    }
+
     slots.forEach(function(t, i) {
       var slotEnd = t + 30;
       var isPast = nowMins !== null && (slotEnd <= nowMins);
@@ -1543,7 +1620,8 @@ function renderGrid() {
           stops.push(colors[ci] + ' ' + ((ci + 1) * stripeSize) + 'px');
         }
         var grad = 'repeating-linear-gradient(45deg,' + stops.join(',') + ')';
-        html += '<td class="td-cell' + timeCls + '" style="background:' + grad + '"></td>';
+        var graceCls = graceSlots[t] ? ' b-grace-warn' : '';
+        html += '<td class="td-cell' + graceCls + timeCls + '" style="background:' + grad + '"></td>';
         covering.forEach(function(b) {
           var sentAmt   = (row.sent && row.sent[b.type]) || 0;
           var remaining = row.count - sentAmt;
@@ -1559,12 +1637,13 @@ function renderGrid() {
         else                   totals20[i]    += remaining;
         var isDone   = sentAmt >= row.count;
         var trackCls = isDone ? ' b-done-cell' : ' b-track';
+        var graceCls = graceSlots[t] ? ' b-grace-warn' : '';
         if (isPast) {
           var countTxt = sentAmt > 0 ? sentAmt + '/' + row.count : '';
-          html += '<td class="td-cell ' + bCls + trackCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
+          html += '<td class="td-cell ' + bCls + trackCls + graceCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
         } else {
           var countTxt = sentAmt > 0 ? sentAmt + '/' + row.count : '';
-          html += '<td class="td-cell ' + bCls + trackCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
+          html += '<td class="td-cell ' + bCls + trackCls + graceCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
         }
       }
     });
@@ -1650,55 +1729,13 @@ function renderGrid() {
     html += '<td class="td-cell ' + cls + timeCls + '">' + (v > 0 ? v : '') + '</td>';
   });
   html += '</tr></tbody></table>';
+  var savedScroll = wrap.scrollLeft;
   wrap.innerHTML = html;
+  wrap.scrollLeft = savedScroll;
+  var topBar = document.getElementById('gridScrollTop');
+  if (topBar) topBar.scrollLeft = savedScroll;
   syncTopScroll();
   renderNextUp();
-
-  var table = document.getElementById('forecastTable');
-
-  // Remove one shift from row (delete row if count hits 0)
-  table.addEventListener('click', function(e) {
-    var rm = e.target.closest('.row-remove');
-    if (rm) {
-      var idx = parseInt(rm.getAttribute('data-remove'));
-      var row = shiftRows[idx];
-      if (row) {
-        row.count--;
-        if (row.count <= 0) shiftRows.splice(idx, 1);
-      }
-      renderGrid();
-      return;
-    }
-  });
-
-  // Left-click: increment sent count
-  table.addEventListener('click', function(e) {
-    var td = e.target;
-    while (td && td.tagName !== 'TD') td = td.parentElement;
-    if (!td || !td.getAttribute('data-row')) return;
-    var rowIdx = parseInt(td.getAttribute('data-row'));
-    var bType  = td.getAttribute('data-break');
-    var row = shiftRows[rowIdx];
-    if (!row || !row.sent) return;
-    var cur = row.sent[bType] || 0;
-    row.sent[bType] = cur >= row.count ? 0 : cur + 1;
-    renderGrid();
-  });
-
-  // Right-click: decrement sent count
-  table.addEventListener('contextmenu', function(e) {
-    var td = e.target;
-    while (td && td.tagName !== 'TD') td = td.parentElement;
-    if (!td || !td.getAttribute('data-row')) return;
-    e.preventDefault();
-    var rowIdx = parseInt(td.getAttribute('data-row'));
-    var bType  = td.getAttribute('data-break');
-    var row = shiftRows[rowIdx];
-    if (!row || !row.sent) return;
-    var cur = row.sent[bType] || 0;
-    row.sent[bType] = cur <= 0 ? row.count : cur - 1;
-    renderGrid();
-  });
 }
 
 // Manual mode by default — focus the time input
@@ -1711,6 +1748,52 @@ document.addEventListener('DOMContentLoaded', function() {
   var wrap = document.getElementById('gridWrap');
   top.addEventListener('scroll',  function() { wrap.scrollLeft = top.scrollLeft; });
   wrap.addEventListener('scroll', function() { top.scrollLeft  = wrap.scrollLeft; });
+
+  // Delegated event listeners on gridWrap (stable container — never replaced by innerHTML)
+  // Row remove + sent increment (both on click)
+  wrap.addEventListener('click', function(e) {
+    // Row remove
+    var rm = e.target.closest('.row-remove');
+    if (rm) {
+      var idx = parseInt(rm.getAttribute('data-remove'));
+      var row = shiftRows[idx];
+      if (row) {
+        row.count--;
+        if (row.count <= 0) shiftRows.splice(idx, 1);
+      }
+      saveShifts();
+      renderGrid();
+      return;
+    }
+    // Sent increment (left-click on break cell)
+    var td = e.target;
+    while (td && td.tagName !== 'TD') td = td.parentElement;
+    if (!td || !td.getAttribute('data-row')) return;
+    var rowIdx = parseInt(td.getAttribute('data-row'));
+    var bType  = td.getAttribute('data-break');
+    var row = shiftRows[rowIdx];
+    if (!row || !row.sent) return;
+    var cur = row.sent[bType] || 0;
+    row.sent[bType] = cur >= row.count ? 0 : cur + 1;
+    saveShifts();
+    renderGrid();
+  });
+
+  // Sent decrement (right-click on break cell)
+  wrap.addEventListener('contextmenu', function(e) {
+    var td = e.target;
+    while (td && td.tagName !== 'TD') td = td.parentElement;
+    if (!td || !td.getAttribute('data-row')) return;
+    e.preventDefault();
+    var rowIdx = parseInt(td.getAttribute('data-row'));
+    var bType  = td.getAttribute('data-break');
+    var row = shiftRows[rowIdx];
+    if (!row || !row.sent) return;
+    var cur = row.sent[bType] || 0;
+    row.sent[bType] = cur <= 0 ? row.count : cur - 1;
+    saveShifts();
+    renderGrid();
+  });
 });
 
 // Keep top scrollbar width in sync with grid content width
@@ -1760,8 +1843,10 @@ function checkPW() {
 }
 
 function applyMode() {
-  // Load shifts first — prevents race where renderGrid fires before DOMContentLoaded
-  loadShifts();
+  // Load from shared URL hash first, fall back to localStorage
+  if (!loadFromHash()) {
+    loadShifts();
+  }
   if (userMode === 'viewer') {
     document.body.classList.add('viewer-mode');
   }
@@ -1935,12 +2020,20 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 var toastTimer;
-function showToast(msg) {
+function showToast(msg, undoable) {
   var t = document.getElementById('toast');
-  t.textContent = msg;
+  if (undoable) {
+    t.innerHTML = msg + ' <a class="toast-undo" onclick="undoRestore()">Undo</a>';
+  } else {
+    t.textContent = msg;
+  }
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+  var duration = undoable ? 5000 : 2000;
+  toastTimer = setTimeout(function() {
+    t.classList.remove('show');
+    if (undoable) undoSnapshot = null;
+  }, duration);
 }
 </script>
 
