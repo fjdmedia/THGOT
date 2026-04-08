@@ -581,6 +581,14 @@
     [data-theme="dark"] .hc-med  { color: #e8e2d9; }
 
     /* ── Right Column (Next Up + OT Prediction) ── */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 16px;
+      align-self: start;
+    }
     .next-up-panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -892,12 +900,12 @@
 
     @media (max-width: 1000px) {
       .main { grid-template-columns: 240px 1fr; }
-      .next-up-panel { position: static; }
+      .right-col { grid-column: 1 / -1; position: static; }
     }
     @media (max-width: 700px) {
       .main { grid-template-columns: 1fr; }
       .input-panel { position: static; }
-      .next-up-panel { position: static; }
+      .right-col { position: static; }
     }
   </style>
 
@@ -1042,7 +1050,7 @@
     </div>
   </div>
 
-  <div style="display:flex;flex-direction:column;gap:16px;">
+  <div class="right-col">
     <div class="next-up-panel" id="nextUp">
       <div class="next-up-title">Next Up</div>
       <div class="next-up-list" id="nextUpList"></div>
@@ -1244,11 +1252,42 @@ function saveShifts() {
   localStorage.setItem('bflab_shiftRows', JSON.stringify(shiftRows));
 }
 
+function seedShifts() {
+  // Pre-filled demo shifts for testing
+  var seeds = [
+    { start: 180, duration: 480 }, // 03:00-11:00 (8hr) x5
+    { start: 240, duration: 480 }, // 04:00-12:00 (8hr) x4
+    { start: 300, duration: 480 }, // 05:00-13:00 (8hr) x3
+    { start: 300, duration: 600 }, // 05:00-15:00 (10hr) x2
+    { start: 360, duration: 480 }, // 06:00-14:00 (8hr) x3
+    { start: 420, duration: 540 }, // 07:00-16:00 (9hr) x2
+    { start: 480, duration: 480 }, // 08:00-16:00 (8hr) x2
+    { start: 840, duration: 480 }, // 14:00-22:00 (8hr) x3
+    { start: 900, duration: 480 }, // 15:00-23:00 (8hr) x2
+  ];
+  var counts = [5, 4, 3, 2, 3, 2, 2, 3, 2];
+  seeds.forEach(function(s, i) {
+    var label = formatTime(s.start) + ' - ' + formatTime(s.start + s.duration);
+    shiftRows.push({
+      label: label, count: counts[i],
+      start: s.start, duration: s.duration,
+      breaks: getBreaks(s.start, s.duration, false),
+      isOT: false, sent: {}
+    });
+  });
+  saveShifts();
+}
+
 function loadShifts() {
   try {
     var saved = localStorage.getItem('bflab_shiftRows');
-    if (saved) shiftRows = JSON.parse(saved);
-  } catch(e) { shiftRows = []; }
+    if (saved) {
+      var parsed = JSON.parse(saved);
+      if (parsed.length > 0) { shiftRows = parsed; return; }
+    }
+  } catch(e) {}
+  shiftRows = [];
+  seedShifts();
 }
 
 // ── Quick Add ──────────────────────────────────────────────────────────────
@@ -1619,6 +1658,7 @@ function runOTPrediction() {
     }
 
     // Process: send up to surplus breaks from eligible list
+    // NOTE: doesn't reduce headcount for people currently on break — slightly optimistic
     var canSend = surplus;
     for (var j = 0; j < eligible.length && canSend > 0; j++) {
       var send = Math.min(canSend, eligible[j].remaining);
