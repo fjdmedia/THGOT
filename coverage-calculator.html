@@ -631,44 +631,10 @@
       document.getElementById('zoneBLateToggle').checked = false;
       renderChips();
       renderTable();
-      localStorage.removeItem('coverage_state');
       showToast('Cleared');
     }
 
-    // ── Save / Load State ─────────────────────────────────────────────
-    function saveState() {
-      const state = {
-        shifts: shifts.map(s => s.raw),
-        zoneBLate: document.getElementById('zoneBLateToggle').checked
-      };
-      localStorage.setItem('coverage_state', JSON.stringify(state));
-    }
-
-    function loadState() {
-      try {
-        const saved = localStorage.getItem('coverage_state');
-        if (!saved) { renderTable(); return; }
-        const s = JSON.parse(saved);
-        if (s.zoneBLate) document.getElementById('zoneBLateToggle').checked = true;
-        if (s.shifts && s.shifts.length) {
-          s.shifts.forEach(raw => {
-            const shift = parseShiftStr(raw);
-            if (shift) shifts.push(shift);
-          });
-          renderChips();
-        }
-        renderTable();
-      } catch(e) { renderTable(); }
-    }
-
-    // Hook save into mutations
-    const _origAddShift = addShift;
-    window.addShift = function() { _origAddShift(); saveState(); };
-    const _origRemoveShift = removeShift;
-    window.removeShift = function(i) { _origRemoveShift(i); saveState(); };
-    document.getElementById('zoneBLateToggle').addEventListener('change', saveState);
-
-    loadState();
+    renderTable();
   </script>
 <script>
 (function() {

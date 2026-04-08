@@ -1760,6 +1760,8 @@ function checkPW() {
 }
 
 function applyMode() {
+  // Load shifts first — prevents race where renderGrid fires before DOMContentLoaded
+  loadShifts();
   if (userMode === 'viewer') {
     document.body.classList.add('viewer-mode');
   }

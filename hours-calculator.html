@@ -745,39 +745,9 @@
       document.getElementById('totalEmps').textContent = '—';
       document.getElementById('daysSection').style.display = 'none';
       document.getElementById('errorMsg').style.display = 'none';
-      localStorage.removeItem('hours_state');
       showToast('Cleared');
     }
 
-    // ── Save / Load State ─────────────────────────────────────────────
-    function saveState() {
-      const state = {
-        paste: document.getElementById('pasteInput').value,
-        satOvernights: satOvernights.slice()
-      };
-      localStorage.setItem('hours_state', JSON.stringify(state));
-    }
-
-    function loadState() {
-      try {
-        const saved = localStorage.getItem('hours_state');
-        if (!saved) return;
-        const s = JSON.parse(saved);
-        if (s.paste) document.getElementById('pasteInput').value = s.paste;
-        if (s.satOvernights && s.satOvernights.length) {
-          s.satOvernights.forEach(h => satOvernights.push(h));
-          renderSatList();
-        }
-      } catch(e) {}
-    }
-
-    document.getElementById('pasteInput').addEventListener('input', saveState);
-    const _origAddSat = addSatOvernight;
-    window.addSatOvernight = function() { _origAddSat(); saveState(); };
-    const _origRemoveSat = removeSatOvernight;
-    window.removeSatOvernight = function(i) { _origRemoveSat(i); saveState(); };
-
-    loadState();
   </script>
 <script>
 (function() {
