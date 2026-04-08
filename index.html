@@ -257,7 +257,7 @@
     <div class="tool-tag">Breaks</div>
   </a>
 
-  <a class="tool-card classified" href="classified.html">
+  <a class="tool-card classified admin-only-card" href="classified.html" style="display:none;">
     <div class="tool-top">
       <div class="tool-name">🔒 Classified <span class="classified-badge">Admin Only</span></div>
       <div class="tool-arrow">→</div>
@@ -266,7 +266,25 @@
     <div class="tool-tag">Classified</div>
   </a>
 
+  <a class="tool-card classified admin-only-card" href="break-forecast-lab.html" style="display:none;">
+    <div class="tool-top">
+      <div class="tool-name">🧪 Dexter's Lab <span class="classified-badge">Admin Only</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+    <div class="tool-desc">Break forecast sandbox</div>
+    <div class="tool-tag">Lab</div>
+  </a>
+
   <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
+
+  <script>
+    // Show admin-only cards when session auth is admin
+    if (sessionStorage.getItem('thgot_auth') === 'admin') {
+      document.querySelectorAll('.admin-only-card').forEach(function(el) {
+        el.style.display = '';
+      });
+    }
+  </script>
 
 </body>
 </html>

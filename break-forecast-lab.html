@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dexter's Lab</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e4e8ee;
+      --border: rgba(0,0,0,0.1);
+      --accent: #4a6fa5;
+      --accent-dim: rgba(74,111,165,0.12);
+      --text: #1e2a3a;
+      --muted: rgba(30,42,58,0.55);
+      --faint: rgba(30,42,58,0.3);
+      --nav-bg: rgba(240,242,245,0.92);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0d14;
+      --surface: #12172a;
+      --surface2: #1a1f30;
+      --border: rgba(255,255,255,0.09);
+      --accent: #fb923c;
+      --accent-dim: rgba(251,146,60,0.10);
+      --text: #e8e2d9;
+      --muted: rgba(232,226,217,0.5);
+      --faint: rgba(232,226,217,0.12);
+      --nav-bg: rgba(10,13,20,0.92);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 20px 18px 100px;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      max-width: 1500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .header .title { font-size: 1rem; font-weight: 600; }
+    .header .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .save-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 16px;
+      transition: all 0.2s;
+    }
+    .save-btn:hover { opacity: 0.85; }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+    }
+    .theme-btn:hover { border-color: var(--accent); }
+
+    .main {
+      max-width: 1500px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 240px 1fr 260px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ── Input Panel ── */
+    .input-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .section-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 10px;
+    }
+
+    /* ── Quick Add ── */
+    .quick-add-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .quick-shift-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .quick-shift-input:focus { border-color: var(--accent); }
+    .quick-shift-input::placeholder { color: var(--muted); }
+    .quick-x {
+      color: var(--muted);
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+    .quick-count-input {
+      width: 44px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 4px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      text-align: center;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .quick-count-input:focus { border-color: var(--accent); }
+    .quick-count-input::-webkit-inner-spin-button,
+    .quick-count-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .quick-add-btn {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .quick-add-btn:hover { opacity: 0.82; }
+    .quick-ot-row {
+      margin-bottom: 10px;
+    }
+    .section-divider {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .collapse-toggle {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .collapse-toggle::after {
+      content: '▸';
+      font-size: 0.55rem;
+      transition: transform 0.2s;
+    }
+    .collapse-toggle.open::after { transform: rotate(90deg); }
+    .collapse-body { display: none; }
+    .collapse-body.open { display: block; }
+
+    .paste-area {
+      width: 100%;
+      min-height: 130px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      resize: vertical;
+      outline: none;
+      line-height: 1.6;
+    }
+    .paste-area:focus { border-color: var(--accent); }
+    .paste-area::placeholder { color: var(--muted); }
+
+    .ot-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .toggle-checkbox {
+      width: 32px;
+      height: 18px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-checkbox::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: var(--muted);
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-checkbox:checked { background: var(--accent); border-color: var(--accent); }
+    .toggle-checkbox:checked::after { transform: translateX(14px); background: #fff; }
+
+    .ot-count-wrap { display: none; margin-top: 10px; }
+    .ot-count-wrap.visible { display: block; }
+
+    .ot-count-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
+
+    .ot-count-input {
+      width: 90px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 8px;
+      color: var(--text);
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .ot-count-input:focus { border-color: var(--accent); }
+
+    .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+
+    .btn {
+      flex: 1;
+      padding: 8px 0;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.82; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; color: var(--muted); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+    /* ── Mini Staffing ── */
+    /* ── Staffing Bar (full-width) ── */
+    .staffing-bar {
+      max-width: 1500px;
+      margin: 16px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 24px;
+    }
+    .sb-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+    }
+    .sb-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .sb-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sb-group-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+    .sb-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .lane-pills {
+      display: flex;
+      gap: 4px;
+    }
+    .lane-pill {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .lane-pill:hover { border-color: var(--accent); }
+    .lane-pill.lp-on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .lane-pill.lp-disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .sb-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .sb-breakdown {
+      display: flex;
+      gap: 24px;
+    }
+    .sb-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+    }
+    .sb-chip-label { color: var(--muted); }
+    .sb-chip-val { font-weight: 600; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    .sb-total {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sb-total-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .sb-total-num {
+      font-size: 1.4rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+    }
+
+    /* ── Grid Panel ── */
+    .grid-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .grid-scroll-top {
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 12px;
+      margin-bottom: 4px;
+    }
+    .grid-scroll-top-inner { height: 1px; }
+    .grid-wrap { overflow-x: auto; }
+
+    /* Themed scrollbar — both bars */
+    .grid-scroll-top::-webkit-scrollbar,
+    .grid-wrap::-webkit-scrollbar { height: 8px; }
+    .grid-scroll-top::-webkit-scrollbar-track,
+    .grid-wrap::-webkit-scrollbar-track { background: var(--surface2); border-radius: 4px; }
+    .grid-scroll-top::-webkit-scrollbar-thumb,
+    .grid-wrap::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+    .grid-scroll-top::-webkit-scrollbar-thumb:hover,
+    .grid-wrap::-webkit-scrollbar-thumb:hover { opacity: 0.8; }
+
+    .forecast-table {
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .forecast-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .forecast-table th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-weight: 500;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .th-shift {
+      text-align: left !important;
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      background: var(--surface2) !important;
+      min-width: 160px;
+    }
+
+    .th-count {
+      position: sticky;
+      left: 160px;
+      z-index: 5;
+      background: var(--surface2) !important;
+      min-width: 48px;
+    }
+
+    .forecast-table td {
+      border: 1px solid var(--border);
+      height: 32px;
+      width: 42px;
+      min-width: 42px;
+      padding: 0;
+    }
+
+    .td-shift {
+      padding: 6px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--surface);
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      color: var(--text);
+      min-width: 160px;
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+    .row-remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.6rem;
+      font-weight: 600;
+      vertical-align: middle;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .row-remove:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+
+    .td-count {
+      text-align: center;
+      background: var(--surface);
+      position: sticky;
+      left: 160px;
+      z-index: 1;
+      color: var(--text);
+      padding: 0 6px;
+      min-width: 48px;
+      font-weight: 500;
+    }
+
+    .td-cell { text-align: center; vertical-align: middle; font-size: 0.75rem; }
+
+    /* ── Grid Legend ── */
+    .grid-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 14px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .gl-item { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--muted); }
+    .gl-dot { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+    .gl-hint { font-size: 0.65rem; color: var(--faint); margin-left: auto; white-space: nowrap; }
+
+    /* In-shift but no break */
+    .in-shift { background: var(--surface2); }
+
+    /* Break window colors */
+    .b-1st   { background: rgba(251,146,60,0.45); }
+    .b-lunch { background: rgba(59,130,246,0.45); }
+    .b-3rd   { background: rgba(34,197,94,0.45); }
+    .b-4th   { background: rgba(168,85,247,0.45); }
+    .b-multi {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(251,146,60,0.4),
+        rgba(251,146,60,0.4) 4px,
+        rgba(59,130,246,0.4) 4px,
+        rgba(59,130,246,0.4) 8px
+      );
+    }
+
+    /* Total row */
+    .tr-total .td-shift { font-weight: 600; background: var(--surface2); padding-left: 38px; }
+    .tr-total .td-count { background: var(--surface2); font-weight: 600; }
+
+    .t-0    { background: var(--surface2); color: var(--faint); }
+    .t-low  { background: rgba(251,146,60,0.22); color: var(--text); }
+    .t-med  { background: rgba(251,146,60,0.40); color: var(--text); }
+    .t-high { background: rgba(251,146,60,0.62); font-weight: 600; color: #1e2a3a; }
+    .t-peak { background: rgba(239,68,68,0.58); font-weight: 700; color: #fff; }
+    .tl-low  { background: rgba(59,130,246,0.22); color: var(--text); }
+    .tl-med  { background: rgba(59,130,246,0.40); color: var(--text); }
+    .tl-high { background: rgba(59,130,246,0.62); font-weight: 600; color: #fff; }
+    .tl-peak { background: rgba(59,130,246,0.85); font-weight: 700; color: #fff; }
+    [data-theme="dark"] .t-high { color: #fff; }
+    [data-theme="dark"] .t-med  { color: #e8e2d9; }
+
+    /* Headcount row — teal heat scale */
+    .hc-0    { background: var(--surface2); color: var(--faint); }
+    .hc-low  { background: rgba(20,184,166,0.22); color: var(--text); }
+    .hc-med  { background: rgba(20,184,166,0.40); color: var(--text); }
+    .hc-high { background: rgba(20,184,166,0.62); font-weight: 600; color: #fff; }
+    .hc-peak { background: rgba(20,184,166,0.85); font-weight: 700; color: #fff; }
+    [data-theme="dark"] .hc-high { color: #fff; }
+    [data-theme="dark"] .hc-med  { color: #e8e2d9; }
+
+    /* ── Right Column (Next Up + OT Prediction) ── */
+    .next-up-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    /* ── OT Prediction Panel ── */
+    .ot-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .ot-panel-title {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 10px;
+    }
+    .ot-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    .ot-badge-green  { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .ot-badge-amber  { background: rgba(251,146,60,0.18); color: #fb923c; }
+    .ot-badge-red    { background: rgba(239,68,68,0.18); color: #ef4444; }
+    .ot-badge-empty  { background: var(--surface2); color: var(--muted); }
+    .ot-body { font-size: 0.72rem; }
+    .ot-empty { color: var(--muted); font-style: italic; padding: 4px 0; }
+    .ot-section-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+    .ot-bottleneck {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text);
+      padding: 6px 0;
+    }
+    .ot-miss-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.7rem;
+    }
+    .ot-miss-item:last-child { border-bottom: none; }
+    .ot-miss-shift { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text); }
+    .ot-miss-type { color: var(--muted); }
+    .ot-miss-time { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+    .ot-extension {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ef4444;
+      padding: 6px 0;
+    }
+    .next-up-title {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 10px;
+    }
+    .next-up-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .next-up-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px 8px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.72rem;
+    }
+    .next-up-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .next-up-shift {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.7rem;
+    }
+    .next-up-type {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+    .next-up-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 16px;
+    }
+    .next-up-window {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .next-up-urgent .next-up-window {
+      color: #ef4444;
+    }
+    .next-up-remaining {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.7rem;
+      white-space: nowrap;
+    }
+    .next-up-countdown {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 2px 8px;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    .cd-ok   { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .cd-warn { background: rgba(251,146,60,0.18); color: #fb923c; }
+    .cd-crit { background: rgba(239,68,68,0.18); color: #ef4444; }
+    .cd-late { background: rgba(239,68,68,0.25); color: #ef4444; animation: pulse-late 1s ease-in-out infinite; }
+    @keyframes pulse-late { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
+    .next-up-urgent {
+      border-color: rgba(239,68,68,0.3);
+      background: rgba(239,68,68,0.06);
+    }
+    [data-theme="dark"] .next-up-urgent {
+      background: rgba(239,68,68,0.08);
+    }
+    .next-up-empty {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding: 50px 20px;
+    }
+
+    /* Powered by */
+    .powered-by {
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--faint);
+      padding: 28px 0 8px;
+      letter-spacing: 0.05em;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+    .powered-by a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .powered-by a:hover { text-decoration: underline; }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px 18px;
+      z-index: 100;
+    }
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-decoration: none;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--text); }
+    .nav-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
+    .nav-icon { font-size: 0.82rem; }
+
+    /* Password Gate */
+    #pw-gate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0a1220;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pw-box {
+      background: #0d1b2e; border: 1px solid #c9a84c;
+      border-radius: 14px; padding: 2.5rem 2.8rem;
+      text-align: center; min-width: 300px;
+    }
+    .pw-lock { font-size: 2rem; margin-bottom: 12px; }
+    .pw-title { font-size: 1.1rem; font-weight: 600; color: #c9a84c; margin-bottom: 4px; }
+    .pw-sub { font-size: 0.75rem; color: rgba(201,168,76,0.6); margin-bottom: 20px; }
+    #pw-input {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 8px; color: #e8e2d9;
+      font-size: 0.9rem; outline: none; margin-bottom: 10px;
+    }
+    #pw-input:focus { border-color: #c9a84c; }
+    .pw-btn {
+      width: 100%; padding: 10px;
+      background: #c9a84c; border: none; border-radius: 8px;
+      color: #0d1b2e; font-weight: 600; font-size: 0.9rem; cursor: pointer;
+    }
+    .pw-btn:hover { background: #d4b86a; }
+    .pw-error { font-size: 0.72rem; color: #ef4444; margin-top: 8px; min-height: 18px; }
+    @keyframes pw-shake {
+      0%,100%{ transform: translateX(0); }
+      20%{ transform: translateX(-8px); }
+      40%{ transform: translateX(8px); }
+      60%{ transform: translateX(-5px); }
+      80%{ transform: translateX(5px); }
+    }
+    .pw-shake { animation: pw-shake 0.4s ease; }
+
+    #toast {
+      position: fixed; bottom: 5rem; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 20px; border-radius: 10px;
+      font-size: 0.78rem; font-weight: 500; opacity: 0; z-index: 200;
+      transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast a.toast-undo {
+      color: var(--accent);
+      font-weight: 700;
+      margin-left: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* ── Time Tracker ── */
+    .time-ctrl {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .time-display-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .time-now-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .time-manual-input {
+      width: 80px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      color: var(--text);
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+    }
+    .time-manual-input:focus { border-color: var(--accent); }
+    /* Past / now / future columns */
+    .th-past { color: var(--faint) !important; }
+    .th-now-col { color: var(--accent) !important; border-bottom: 2px solid var(--accent) !important; }
+    .td-cell-past { opacity: 0.4; }
+    .td-cell-now { border-left: 2px solid var(--accent) !important; }
+    /* Trackable break cells (past) */
+    .b-track { cursor: pointer; font-size: 0.72rem; font-weight: 700; color: #1a1a2e; }
+    .b-track:hover { filter: brightness(1.1); }
+    [data-theme="dark"] .b-track { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.65); }
+    .b-done-cell { opacity: 0.25 !important; cursor: pointer; }
+    .b-grace-warn { border-left: 3px solid #f59e0b !important; }
+
+    @media (max-width: 1000px) {
+      .main { grid-template-columns: 240px 1fr; }
+      .next-up-panel { position: static; }
+    }
+    @media (max-width: 700px) {
+      .main { grid-template-columns: 1fr; }
+      .input-panel { position: static; }
+      .next-up-panel { position: static; }
+    }
+  </style>
+
+  <script>
+    (function() {
+      var saved = localStorage.getItem('passTheme') || 'dark';
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+      });
+    })();
+    function toggleTheme() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+      localStorage.setItem('passTheme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+</head>
+<body>
+
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-lock">🔒</div>
+    <div class="pw-title">THGOT</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="off">
+    <button class="pw-btn" onclick="checkPW()">Enter</button>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+<div class="header">
+  <div>
+    <div class="title">Dexter's Lab</div>
+    <div class="subtitle">Break forecast sandbox</div>
+  </div>
+  <div class="header-actions">
+    <button class="save-btn admin-only" id="saveBtn" onclick="manualSave()">Save</button>
+    <button class="save-btn admin-only" id="shareBtn" onclick="shareState()">Share</button>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="input-panel">
+    <div class="admin-only">
+      <div class="section-label">Quick Add</div>
+      <div class="quick-add-row">
+        <input type="text" class="quick-shift-input" id="quickShift" placeholder="0300-1100" maxlength="9">
+        <span class="quick-x">×</span>
+        <input type="number" class="quick-count-input" id="quickCount" min="1" value="1">
+        <button class="quick-add-btn" onclick="quickAdd()">+</button>
+      </div>
+      <div class="quick-ot-row">
+        <label class="toggle-label">
+          <input type="checkbox" class="toggle-checkbox" id="quickOT">
+          OT
+        </label>
+      </div>
+
+      <div class="section-label section-divider collapse-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Paste Shifts</div>
+      <div class="collapse-body">
+        <textarea class="paste-area" id="pasteArea" placeholder="Paste shifts here&#10;0300-1100&#10;0400-1200&#10;0300-1100&#10;..."></textarea>
+
+        <div class="ot-row">
+          <label class="toggle-label">
+            <input type="checkbox" class="toggle-checkbox" id="otToggle" onchange="toggleOT()">
+            OT
+          </label>
+        </div>
+
+        <div class="ot-count-wrap" id="otCountWrap">
+          <div class="ot-count-label">How many are OT?</div>
+          <input type="number" class="ot-count-input" id="otCount" min="0" value="1">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addShifts()">Add Shifts</button>
+          <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(251,146,60,0.55)"></div>
+        1st Break (20 min)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(59,130,246,0.55)"></div>
+        Lunch (35 min)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(34,197,94,0.55)"></div>
+        3rd Break (20 min)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(168,85,247,0.55)"></div>
+        4th Break (20 min)
+      </div>
+    </div>
+
+    <div class="time-ctrl">
+      <div class="section-label">Current Time</div>
+      <div class="time-display-row">
+        <div class="time-now-display" id="timeDisplay">--:--</div>
+        <input type="text" class="time-manual-input admin-only" id="timeManual" placeholder="HHMM" maxlength="4" oninput="onManualTime()">
+      </div>
+      <div class="ot-row admin-only">
+        <label class="toggle-label">
+          <input type="checkbox" class="toggle-checkbox" id="liveToggle" onchange="toggleLive()">
+          Live
+        </label>
+      </div>
+      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:10px;font-size:0.75rem;" onclick="completeAllDue()">Complete All Due</button>
+    </div>
+
+  </div>
+
+  <div class="grid-panel">
+    <div class="section-label">Forecast</div>
+    <div class="grid-legend">
+      <div class="gl-item"><div class="gl-dot" style="background:rgba(251,146,60,0.65)"></div> 1st Break</div>
+      <div class="gl-item"><div class="gl-dot" style="background:rgba(59,130,246,0.65)"></div> Lunch</div>
+      <div class="gl-item"><div class="gl-dot" style="background:rgba(34,197,94,0.65)"></div> 3rd Break</div>
+      <div class="gl-item"><div class="gl-dot" style="background:rgba(168,85,247,0.65)"></div> 4th Break</div>
+      <div class="gl-item">
+        <div class="gl-dot" style="background:repeating-linear-gradient(45deg,rgba(251,146,60,0.5),rgba(251,146,60,0.5) 3px,rgba(59,130,246,0.5) 3px,rgba(59,130,246,0.5) 6px)"></div>
+        Overlap
+      </div>
+      <div class="gl-item"><div class="gl-dot" style="background:rgba(20,184,166,0.65)"></div> Headcount</div>
+      <div class="gl-hint">click to mark sent · right-click to undo</div>
+    </div>
+    <div class="grid-scroll-top" id="gridScrollTop">
+      <div class="grid-scroll-top-inner" id="gridScrollTopInner"></div>
+    </div>
+    <div class="grid-wrap" id="gridWrap">
+      <div class="empty-state">Paste shifts and click Add Shifts to see the break forecast.</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="next-up-panel" id="nextUp">
+      <div class="next-up-title">Next Up</div>
+      <div class="next-up-list" id="nextUpList"></div>
+    </div>
+
+    <div class="ot-panel" id="otPanel">
+      <div class="ot-panel-title">OT Prediction</div>
+      <div id="otBadge" class="ot-badge ot-badge-empty">--</div>
+      <div id="otBody" class="ot-body">
+        <div class="ot-empty">Add shifts and set time to see predictions</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="staffing-bar">
+  <div class="sb-label">Staffing</div>
+  <div class="sb-controls">
+    <div class="sb-group">
+      <span class="sb-group-label">Zone B</span>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msZoneB" onchange="calcMiniStaffing()"> On
+      </label>
+      <label class="toggle-label" style="font-size:0.72rem;" id="msSkBwrap" hidden>
+        <input type="checkbox" class="toggle-checkbox" id="msSkB" onchange="calcMiniStaffing()"> Skelly
+      </label>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-group">
+      <span class="sb-group-label">Zone A</span>
+      <div class="lane-pills" id="msLanes">
+        <div class="lane-pill" data-mslane="6" onclick="toggleMSLane(this)">6</div>
+        <div class="lane-pill" data-mslane="1" onclick="toggleMSLane(this)">1</div>
+        <div class="lane-pill" data-mslane="4" onclick="toggleMSLane(this)">4</div>
+        <div class="lane-pill" data-mslane="2" onclick="toggleMSLane(this)">2</div>
+        <div class="lane-pill" data-mslane="5" onclick="toggleMSLane(this)">5</div>
+        <div class="lane-pill" data-mslane="7" onclick="toggleMSLane(this)">7</div>
+      </div>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msSkA" onchange="calcMiniStaffing()"> Zone A Skelly
+      </label>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-group" id="msHskellyRow" hidden>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msHcr" onchange="calcMiniStaffing()"> CR
+      </label>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msHl3" onchange="calcMiniStaffing()"> L3
+      </label>
+      <label class="toggle-label" style="font-size:0.72rem;">
+        <input type="checkbox" class="toggle-checkbox" id="msHos" onchange="calcMiniStaffing()"> O/S
+      </label>
+      <div class="sb-divider"></div>
+    </div>
+  </div>
+  <div class="sb-summary">
+    <div class="sb-breakdown" id="msBreakdown"></div>
+    <div class="sb-total">
+      <span class="sb-total-label">Required</span>
+      <span class="sb-total-num" id="msTotal">—</span>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
+
+<nav class="bottom-nav">
+  <a class="nav-btn" href="staffing-calculator.html"><span class="nav-icon">👮</span> Staffing</a>
+  <a class="nav-btn" href="coverage-calculator.html"><span class="nav-icon">📋</span> Coverage</a>
+  <a class="nav-btn" href="hours-calculator.html"><span class="nav-icon">🕐</span> Hours</a>
+  <a class="nav-btn" href="callout.html"><span class="nav-icon">📋</span> OT</a>
+  <a class="nav-btn" href="break-forecast.html"><span class="nav-icon">☕</span> Breaks</a>
+</nav>
+
+<script>
+// ── Utilities ──────────────────────────────────────────────────────────────
+
+function parseTime(str) {
+  var s = str.replace(/:/g, '').trim();
+  if (s.length < 3) return null;
+  var h = parseInt(s.length === 3 ? s.slice(0, 1) : s.slice(0, 2));
+  var m = parseInt(s.slice(-2));
+  if (isNaN(h) || isNaN(m) || m > 59) return null;
+  return h * 60 + m;
+}
+
+function formatTime(totalMins) {
+  var t = ((totalMins % 1440) + 1440) % 1440;
+  var h = Math.floor(t / 60);
+  var m = t % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+
+function parseShiftLine(line) {
+  // Format 1: HHMM-HHMM
+  var match = line.match(/(\d{3,4})\s*[-–]\s*(\d{3,4})/);
+  if (match) {
+    var start = parseTime(match[1]);
+    var end   = parseTime(match[2]);
+    if (start === null || end === null) return null;
+    var dur = end - start;
+    if (dur <= 0) dur += 1440;
+    return { start: start, duration: dur };
+  }
+  // Format 2: H:MM[tab]H:MM (schedule paste)
+  var parts = line.split('\t');
+  if (parts.length >= 2) {
+    var start2 = parseTime(parts[0].trim());
+    var end2   = parseTime(parts[1].trim());
+    if (start2 === null || end2 === null) return null;
+    var dur2 = end2 - start2;
+    if (dur2 <= 0) dur2 += 1440;
+    return { start: start2, duration: dur2 };
+  }
+  return null;
+}
+
+// ── Break Schedule ──────────────────────────────────────────────────────────
+// wStart / wEnd = absolute minutes (shift start + offset)
+// wEnd = latest moment the break must be COMPLETED by
+
+function getBreaks(shiftStart, durationMins, isOT) {
+  var h = durationMins / 60;
+  var s = shiftStart;
+  var d = durationMins;
+
+  // OT EXT (OT toggle + 4hr or less)
+  if (isOT && h <= 4) {
+    if (h < 2) return [];
+    if (h < 4) {
+      // 2–3.9hr: 1 break (20 min) anywhere after 1hr in
+      return [{ type: '1st', wStart: s + 60, wEnd: s + d }];
+    }
+    // 4hr: 2 breaks (1st in first 2hr block, lunch in second)
+    return [
+      { type: '1st',   wStart: s + 60,  wEnd: s + 120 },
+      { type: 'Lunch', wStart: s + 120, wEnd: s + d   }
+    ];
+  }
+
+  // OT Shift 5hr: 1x 20min, window opens after 2hr
+  if (isOT && h >= 5 && h < 6) {
+    return [{ type: '1st', wStart: s + 120, wEnd: s + d }];
+  }
+
+  // OT 6hr+ falls through to regular schedule below
+
+  // Regular (and OT 6hr+)
+  if (h <= 4) {
+    return [{ type: '1st', wStart: s + 60, wEnd: s + d }];
+  }
+  if (h < 6) {
+    // 5hr: 1x 35min lunch, window opens after 2hr
+    return [{ type: 'Lunch', wStart: s + 120, wEnd: s + d }];
+  }
+  if (h < 8) {
+    // 6–7hr schedule
+    return [
+      { type: '1st',   wStart: s + 60,  wEnd: s + 180 },
+      { type: 'Lunch', wStart: s + 180, wEnd: s + 300 }
+    ];
+  }
+  if (h < 10) {
+    // 8–9hr schedule
+    return [
+      { type: '1st',   wStart: s + 60,  wEnd: s + 180 },
+      { type: 'Lunch', wStart: s + 180, wEnd: s + 360 },
+      { type: '3rd',   wStart: s + 300, wEnd: s + 420 }
+    ];
+  }
+  // 10hr+
+  return [
+    { type: '1st',   wStart: s + 60,  wEnd: s + 180 },
+    { type: 'Lunch', wStart: s + 180, wEnd: s + 360 },
+    { type: '3rd',   wStart: s + 300, wEnd: s + 420 },
+    { type: '4th',   wStart: s + 420, wEnd: s + 540 }
+  ];
+}
+
+// ── State ───────────────────────────────────────────────────────────────────
+var shiftRows = [];
+var undoSnapshot = null;
+var undoTimer = null;
+
+function undoRestore() {
+  if (!undoSnapshot) return;
+  shiftRows = undoSnapshot;
+  undoSnapshot = null;
+  clearTimeout(undoTimer);
+  saveShifts();
+  renderGrid();
+  showToast('Restored');
+}
+
+function saveShifts() {
+  localStorage.setItem('bflab_shiftRows', JSON.stringify(shiftRows));
+}
+
+function loadShifts() {
+  try {
+    var saved = localStorage.getItem('bflab_shiftRows');
+    if (saved) shiftRows = JSON.parse(saved);
+  } catch(e) { shiftRows = []; }
+}
+
+// ── Quick Add ──────────────────────────────────────────────────────────────
+function quickAdd() {
+  var raw = document.getElementById('quickShift').value.trim();
+  var count = parseInt(document.getElementById('quickCount').value) || 1;
+  var isOT = document.getElementById('quickOT').checked;
+  var p = parseShiftLine(raw);
+  if (!p) return;
+
+  var label = formatTime(p.start) + ' - ' + formatTime(p.start + p.duration);
+  if (isOT) {
+    var otLabel = label + ' ◎';
+    var ex = shiftRows.find(function(r) { return r.label === otLabel && r.isOT; });
+    if (ex) { ex.count += count; }
+    else {
+      shiftRows.push({
+        label: otLabel, count: count,
+        start: p.start, duration: p.duration,
+        breaks: getBreaks(p.start, p.duration, true),
+        isOT: true, sent: {}
+      });
+    }
+  } else {
+    var ex = shiftRows.find(function(r) { return r.label === label && !r.isOT; });
+    if (ex) { ex.count += count; }
+    else {
+      shiftRows.push({
+        label: label, count: count,
+        start: p.start, duration: p.duration,
+        breaks: getBreaks(p.start, p.duration, false),
+        isOT: false, sent: {}
+      });
+    }
+  }
+
+  shiftRows.sort(function(a, b) {
+    if (a.start !== b.start) return a.start - b.start;
+    return a.duration - b.duration;
+  });
+
+  document.getElementById('quickShift').value = '';
+  document.getElementById('quickOT').checked = false;
+  document.getElementById('quickShift').focus();
+  renderGrid();
+}
+
+// Enter key on quick-add inputs triggers quickAdd + auto-format shift input
+document.addEventListener('DOMContentLoaded', function() {
+  ['quickShift', 'quickCount'].forEach(function(id) {
+    document.getElementById(id).addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); quickAdd(); }
+    });
+  });
+  // Auto-format 8 digits → HHMM-HHMM on blur
+  document.getElementById('quickShift').addEventListener('blur', function() {
+    var v = this.value.trim();
+    if (/^\d{8}$/.test(v)) this.value = v.slice(0, 4) + '-' + v.slice(4);
+  });
+});
+
+// ── Input ───────────────────────────────────────────────────────────────────
+function toggleOT() {
+  var on = document.getElementById('otToggle').checked;
+  document.getElementById('otCountWrap').classList.toggle('visible', on);
+}
+
+function addShifts() {
+  var text = document.getElementById('pasteArea').value.trim();
+  if (!text) return;
+
+  var isOT    = document.getElementById('otToggle').checked;
+  var otCount = isOT ? (parseInt(document.getElementById('otCount').value) || 0) : 0;
+
+  var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+
+  // Group by shift key
+  var groups = {};
+  var order  = [];
+  lines.forEach(function(line) {
+    var p = parseShiftLine(line);
+    if (!p) return;
+    var key = p.start + ':' + p.duration;
+    if (!groups[key]) { groups[key] = { start: p.start, duration: p.duration, count: 0 }; order.push(key); }
+    groups[key].count++;
+  });
+
+  var totalParsed = order.reduce(function(s, k) { return s + groups[k].count; }, 0);
+
+  order.forEach(function(key) {
+    var g = groups[key];
+    // Proportionally distribute OT count across shift types
+    var thisOT  = Math.round(otCount * (g.count / Math.max(totalParsed, 1)));
+    var thisReg = g.count - thisOT;
+
+    var label = formatTime(g.start) + ' - ' + formatTime(g.start + g.duration);
+
+    if (thisReg > 0) {
+      var ex = shiftRows.find(function(r) { return r.label === label && !r.isOT; });
+      if (ex) { ex.count += thisReg; }
+      else {
+        shiftRows.push({
+          label: label, count: thisReg,
+          start: g.start, duration: g.duration,
+          breaks: getBreaks(g.start, g.duration, false),
+          isOT: false, sent: {}
+        });
+      }
+    }
+
+    if (thisOT > 0) {
+      var otLabel = label + ' ◎';
+      var exOT = shiftRows.find(function(r) { return r.label === otLabel && r.isOT; });
+      if (exOT) { exOT.count += thisOT; }
+      else {
+        shiftRows.push({
+          label: otLabel, count: thisOT,
+          start: g.start, duration: g.duration,
+          breaks: getBreaks(g.start, g.duration, true),
+          isOT: true, sent: {}
+        });
+      }
+    }
+  });
+
+  shiftRows.sort(function(a, b) {
+    if (a.start !== b.start) return a.start - b.start;
+    return a.duration - b.duration;
+  });
+
+  document.getElementById('otToggle').checked = false;
+  document.getElementById('otCountWrap').classList.remove('visible');
+  renderGrid();
+}
+
+function clearAll() {
+  if (shiftRows.length === 0) return;
+  undoSnapshot = JSON.parse(JSON.stringify(shiftRows));
+  shiftRows = [];
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('quickShift').value = '';
+  document.getElementById('quickCount').value = '1';
+  document.getElementById('quickOT').checked = false;
+  document.getElementById('otToggle').checked = false;
+  document.getElementById('otCountWrap').classList.remove('visible');
+  saveShifts();
+  renderGrid();
+  showToast('Cleared', true);
+}
+
+// ── Save Button ────────────────────────────────────────────────────────────
+function manualSave() {
+  saveShifts();
+  var btn = document.getElementById('saveBtn');
+  btn.textContent = 'Saved';
+  btn.style.background = 'rgba(34,197,94,0.7)';
+  setTimeout(function() {
+    btn.textContent = 'Save';
+    btn.style.background = '';
+  }, 1200);
+}
+
+// ── Share (URL hash) ──────────────────────────────────────────────────────
+function shareState() {
+  if (shiftRows.length === 0) {
+    showToast('Nothing to share');
+    return;
+  }
+  var encoded = btoa(JSON.stringify(shiftRows));
+  var url = window.location.origin + window.location.pathname + '#data=' + encoded;
+  navigator.clipboard.writeText(url).then(function() {
+    showToast('Link copied');
+  }).catch(function() {
+    var tmp = document.createElement('input');
+    tmp.value = url;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    showToast('Link copied');
+  });
+}
+
+function loadFromHash() {
+  var hash = window.location.hash;
+  if (!hash || hash.indexOf('#data=') !== 0) return false;
+  try {
+    var encoded = hash.slice(6);
+    var decoded = JSON.parse(atob(encoded));
+    if (Array.isArray(decoded) && decoded.length > 0) {
+      shiftRows = decoded;
+      saveShifts();
+      window.location.hash = '';
+      showToast('Loaded shared data');
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+// ── Next Up ────────────────────────────────────────────────────────────────
+var BREAK_DOT_COLOR = { '1st': 'rgba(251,146,60,0.8)', 'Lunch': 'rgba(59,130,246,0.8)', '3rd': 'rgba(34,197,94,0.8)', '4th': 'rgba(168,85,247,0.8)' };
+
+function renderNextUp() {
+  var container = document.getElementById('nextUp');
+  var list = document.getElementById('nextUpList');
+  if (!container || !list) return;
+
+  container.style.display = 'block';
+  if (currentTimeMins === null || shiftRows.length === 0) {
+    list.innerHTML = '<div class="next-up-empty">Set current time to see alerts</div>';
+    return;
+  }
+
+  // Alert when 30 min left before it's LATE
+  // Late = can't start AND finish the break before window closes
+  // 20min break: alert at 50 min left (30 cushion + 20 duration)
+  // Lunch 35min: alert at 65 min left (30 cushion + 35 duration)
+  var items = [];
+  shiftRows.forEach(function(row) {
+    row.breaks.forEach(function(b) {
+      var sent = (row.sent && row.sent[b.type]) || 0;
+      var remaining = row.count - sent;
+      if (remaining <= 0) return;
+      if (b.wEnd <= currentTimeMins) return;
+      if (b.wStart > currentTimeMins) return;
+
+      var breakDur = b.type === 'Lunch' ? 35 : 20;
+      var threshold = 30 + breakDur; // 30 min cushion + time to complete
+      var timeLeft = b.wEnd - currentTimeMins;
+      if (timeLeft > threshold) return;
+
+      items.push({
+        label: row.label,
+        type: b.type,
+        remaining: remaining,
+        timeLeft: timeLeft
+      });
+    });
+  });
+
+  items.sort(function(a, b) { return a.timeLeft - b.timeLeft; });
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="next-up-empty">No breaks due right now</div>';
+    return;
+  }
+  var html = '';
+  items.forEach(function(item) {
+    var breakDur = item.type === 'Lunch' ? 35 : 20;
+    var minsBeforeLate = item.timeLeft - breakDur;
+    var urgentCls = minsBeforeLate <= 10 ? ' next-up-urgent' : '';
+    var cdCls, cdText;
+    if (minsBeforeLate <= 0) {
+      cdCls = 'cd-late';
+      cdText = 'LATE';
+    } else if (minsBeforeLate <= 10) {
+      cdCls = 'cd-crit';
+      cdText = minsBeforeLate + ' min';
+    } else if (minsBeforeLate <= 20) {
+      cdCls = 'cd-warn';
+      cdText = minsBeforeLate + ' min';
+    } else {
+      cdCls = 'cd-ok';
+      cdText = minsBeforeLate + ' min';
+    }
+    html += '<div class="next-up-item' + urgentCls + '">';
+    html += '<div class="next-up-dot" style="background:' + (BREAK_DOT_COLOR[item.type] || 'var(--muted)') + '"></div>';
+    html += '<span class="next-up-shift">' + item.label + '</span>';
+    html += '<span class="next-up-type">' + item.type + '</span>';
+    html += '<div class="next-up-meta">';
+    html += '<span class="next-up-remaining">' + item.remaining + ' left</span>';
+    html += '<span class="next-up-countdown ' + cdCls + '">' + cdText + '</span>';
+    html += '</div>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// ── OT Prediction Engine ───────────────────────────────────────────────────
+function runOTPrediction() {
+  var badge = document.getElementById('otBadge');
+  var body  = document.getElementById('otBody');
+  if (!badge || !body) return;
+
+  // Empty state
+  if (currentTimeMins === null || shiftRows.length === 0) {
+    badge.className = 'ot-badge ot-badge-empty';
+    badge.textContent = '--';
+    body.innerHTML = '<div class="ot-empty">Add shifts and set time to see predictions</div>';
+    return;
+  }
+
+  // 1. Gather unsent breaks with remaining > 0 and window still open
+  var unsent = [];
+  shiftRows.forEach(function(row, rowIdx) {
+    row.breaks.forEach(function(b) {
+      var sent = (row.sent && row.sent[b.type]) || 0;
+      var remaining = row.count - sent;
+      if (remaining <= 0) return;
+      if (b.wEnd <= currentTimeMins) return; // window already closed
+      unsent.push({
+        rowIdx: rowIdx,
+        label: row.label,
+        type: b.type,
+        remaining: remaining,
+        wStart: b.wStart,
+        wEnd: b.wEnd,
+        duration: b.type === 'Lunch' ? 35 : 20
+      });
+    });
+  });
+
+  if (unsent.length === 0) {
+    badge.className = 'ot-badge ot-badge-green';
+    badge.textContent = 'On Track';
+    body.innerHTML = '<div class="ot-empty">All breaks completed or windows closed</div>';
+    return;
+  }
+
+  // 2. Sort by urgency (earliest window end first)
+  unsent.sort(function(a, b) { return a.wEnd - b.wEnd; });
+
+  // 3. Determine slot range
+  var slotStart = Math.floor(currentTimeMins / 30) * 30;
+  var latestEnd = 0;
+  unsent.forEach(function(u) { if (u.wEnd > latestEnd) latestEnd = u.wEnd; });
+  var slotEnd = Math.ceil(latestEnd / 30) * 30;
+
+  // Build headcount per slot from shiftRows (same as renderGrid totalsHC)
+  var slots = [];
+  for (var t = slotStart; t < slotEnd; t += 30) slots.push(t);
+  var totalsHC = new Array(slots.length).fill(0);
+  shiftRows.forEach(function(row) {
+    slots.forEach(function(t, i) {
+      var inShift = (t < row.start + row.duration) && (t + 30 > row.start);
+      if (inShift) totalsHC[i] += row.count;
+    });
+  });
+
+  var staffState = getStaffingState();
+
+  // 4-5. Walk slots and process breaks
+  var bottleneckSlot = null;
+  var bottleneckSurplus = Infinity;
+  var bestMargin = Infinity;
+
+  slots.forEach(function(t, i) {
+    var headcount = totalsHC[i];
+    var slotMid = t + 15;
+    var required = getRequiredStaffing(slotMid, staffState);
+    var surplus = Math.max(0, headcount - required);
+
+    // Count breaks eligible for this slot
+    var eligible = unsent.filter(function(u) {
+      return u.remaining > 0 && u.wStart <= t && u.wEnd > t;
+    });
+    var demand = eligible.reduce(function(s, u) { return s + u.remaining; }, 0);
+
+    // Track bottleneck (tightest surplus vs demand)
+    if (demand > 0) {
+      var margin = surplus - demand;
+      if (margin < bestMargin) {
+        bestMargin = margin;
+        bottleneckSlot = t;
+        bottleneckSurplus = surplus;
+      }
+    }
+
+    // Process: send up to surplus breaks from eligible list
+    var canSend = surplus;
+    for (var j = 0; j < eligible.length && canSend > 0; j++) {
+      var send = Math.min(canSend, eligible[j].remaining);
+      eligible[j].remaining -= send;
+      canSend -= send;
+    }
+  });
+
+  // 6. Collect missed breaks
+  var missed = unsent.filter(function(u) { return u.remaining > 0; });
+
+  // 7. Calculate extension
+  var totalMissedMins = missed.reduce(function(s, u) { return s + u.remaining * u.duration; }, 0);
+
+  // Status classification
+  var status, statusCls, statusText;
+  if (missed.length > 0) {
+    status = 'red';
+    statusCls = 'ot-badge-red';
+    statusText = 'OT Likely';
+  } else if (bottleneckSurplus <= 1 && bottleneckSlot !== null) {
+    // Check if any breaks due within 60 min
+    var urgentSoon = unsent.some(function(u) { return u.wEnd - currentTimeMins <= 60; });
+    if (urgentSoon) {
+      status = 'amber';
+      statusCls = 'ot-badge-amber';
+      statusText = 'At Risk';
+    } else {
+      status = 'green';
+      statusCls = 'ot-badge-green';
+      statusText = 'On Track';
+    }
+  } else {
+    status = 'green';
+    statusCls = 'ot-badge-green';
+    statusText = 'On Track';
+  }
+
+  badge.className = 'ot-badge ' + statusCls;
+  badge.textContent = statusText;
+
+  // Build body HTML
+  var html = '';
+
+  // Bottleneck
+  if (bottleneckSlot !== null) {
+    html += '<div class="ot-section-label">Bottleneck</div>';
+    html += '<div class="ot-bottleneck">' + formatTime(bottleneckSlot) + ' — surplus ' + bottleneckSurplus + '</div>';
+  }
+
+  // Projected misses
+  if (missed.length > 0) {
+    html += '<div class="ot-section-label">Projected Misses</div>';
+    missed.sort(function(a, b) { return a.wEnd - b.wEnd; });
+    missed.forEach(function(m) {
+      html += '<div class="ot-miss-item">';
+      html += '<span class="ot-miss-shift">' + m.label + '</span>';
+      html += '<span class="ot-miss-type">' + m.type + ' (' + m.remaining + ')</span>';
+      html += '<span class="ot-miss-time">' + formatTime(m.wEnd) + '</span>';
+      html += '</div>';
+    });
+  }
+
+  // Est. Extension
+  if (totalMissedMins > 0) {
+    html += '<div class="ot-section-label">Est. Extension</div>';
+    html += '<div class="ot-extension">' + totalMissedMins + ' min</div>';
+  }
+
+  if (html === '') {
+    html = '<div class="ot-empty">No issues detected</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+// ── Time Tracker ────────────────────────────────────────────────────────────
+var liveMode = false;
+var currentTimeMins = null;
+var liveInterval = null;
+
+function getNowMins() {
+  var d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+function updateTimeDisplay() {
+  var el = document.getElementById('timeDisplay');
+  if (!el) return;
+  el.textContent = currentTimeMins !== null ? formatTime(currentTimeMins) : '--:--';
+}
+
+function startLive() {
+  currentTimeMins = getNowMins();
+  updateTimeDisplay();
+  if (shiftRows.length > 0) renderGrid();
+  liveInterval = setInterval(function() {
+    var now = getNowMins();
+    if (now !== currentTimeMins) {
+      currentTimeMins = now;
+      updateTimeDisplay();
+      if (shiftRows.length > 0) renderGrid();
+    }
+  }, 5000);
+}
+
+function stopLive() {
+  if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
+}
+
+function toggleLive() {
+  liveMode = document.getElementById('liveToggle').checked;
+  var manualInput = document.getElementById('timeManual');
+  if (liveMode) {
+    manualInput.style.display = 'none';
+    stopLive();
+    startLive();
+  } else {
+    stopLive();
+    manualInput.style.display = 'block';
+    manualInput.value = '';
+    manualInput.focus();
+  }
+  if (shiftRows.length > 0) renderGrid();
+}
+
+function onManualTime() {
+  var val = document.getElementById('timeManual').value.trim();
+  var t = parseTime(val);
+  if (t !== null) {
+    currentTimeMins = t;
+    updateTimeDisplay();
+    if (shiftRows.length > 0) renderGrid();
+  }
+}
+
+function completeAllDue() {
+  if (currentTimeMins === null || shiftRows.length === 0) return;
+  undoSnapshot = JSON.parse(JSON.stringify(shiftRows));
+  shiftRows.forEach(function(row) {
+    row.breaks.forEach(function(b) {
+      if (b.wEnd <= currentTimeMins) {
+        row.sent[b.type] = row.count;
+      }
+    });
+  });
+  saveShifts();
+  renderGrid();
+  showToast('All due completed', true);
+}
+
+// ── Grid ────────────────────────────────────────────────────────────────────
+var BREAK_CLASS = { '1st': 'b-1st', 'Lunch': 'b-lunch', '3rd': 'b-3rd', '4th': 'b-4th' };
+var BREAK_COLOR = { '1st': 'rgba(251,146,60,0.55)', 'Lunch': 'rgba(59,130,246,0.55)', '3rd': 'rgba(34,197,94,0.55)', '4th': 'rgba(168,85,247,0.55)' };
+
+function renderGrid() {
+  var wrap = document.getElementById('gridWrap');
+  if (shiftRows.length === 0) {
+    wrap.innerHTML = '<div class="empty-state">Paste shifts and click Add Shifts to see the break forecast.</div>';
+    runOTPrediction();
+    return;
+  }
+
+  var minT = Infinity, maxT = -Infinity;
+  shiftRows.forEach(function(row) {
+    minT = Math.min(minT, row.start);
+    maxT = Math.max(maxT, row.start + row.duration);
+    row.breaks.forEach(function(b) {
+      minT = Math.min(minT, b.wStart);
+      maxT = Math.max(maxT, b.wEnd);
+    });
+  });
+  minT = Math.floor(minT / 30) * 30;
+  maxT = Math.ceil(maxT  / 30) * 30;
+
+  var slots = [];
+  for (var t = minT; t < maxT; t += 30) slots.push(t);
+
+  var nowMins = currentTimeMins;
+
+  // Header
+  var html = '<table class="forecast-table" id="forecastTable"><thead><tr>';
+  html += '<th class="th-shift">Shift Time</th>';
+  html += '<th class="th-count">Shifts</th>';
+  slots.forEach(function(t) {
+    var isPast = nowMins !== null && (t + 30 <= nowMins);
+    var isNow  = nowMins !== null && (t <= nowMins && nowMins < t + 30);
+    var cls = isPast ? 'th-past' : (isNow ? 'th-now-col' : '');
+    html += '<th' + (cls ? ' class="' + cls + '"' : '') + '>' + formatTime(t) + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  var totals20    = new Array(slots.length).fill(0);
+  var totalsLunch = new Array(slots.length).fill(0);
+  var totalsHC    = new Array(slots.length).fill(0);
+
+  shiftRows.forEach(function(row, rowIdx) {
+    html += '<tr>';
+    html += '<td class="td-shift"><span class="row-remove" data-remove="' + rowIdx + '">✕</span>' + row.label + '</td>';
+    html += '<td class="td-count">' + row.count + '</td>';
+
+    // Grace period detection: flag break windows < 60min apart
+    var graceSlots = {};
+    for (var bi = 1; bi < row.breaks.length; bi++) {
+      var prev = row.breaks[bi - 1];
+      var curr = row.breaks[bi];
+      var gap = curr.wStart - prev.wEnd;
+      if (gap < 60 && !((row.sent[prev.type] || 0) >= row.count && (row.sent[curr.type] || 0) >= row.count)) {
+        for (var gs = curr.wStart; gs < curr.wEnd; gs += 30) {
+          graceSlots[gs] = true;
+        }
+      }
+    }
+
+    slots.forEach(function(t, i) {
+      var slotEnd = t + 30;
+      var isPast = nowMins !== null && (slotEnd <= nowMins);
+      var isNow  = nowMins !== null && (t <= nowMins && nowMins < slotEnd);
+      var timeCls = isPast ? ' td-cell-past' : (isNow ? ' td-cell-now' : '');
+
+      var covering = row.breaks.filter(function(b) {
+        return t < b.wEnd && slotEnd > b.wStart;
+      });
+      var inShift = (t < row.start + row.duration) && (slotEnd > row.start);
+      if (inShift) totalsHC[i] += row.count;
+
+      if (covering.length === 0) {
+        html += '<td class="td-cell' + (inShift ? ' in-shift' : '') + timeCls + '"></td>';
+      } else if (covering.length > 1) {
+        // Build stripe from actual overlapping break colors
+        var colors = covering.map(function(b) { return BREAK_COLOR[b.type] || 'rgba(150,150,150,0.4)'; });
+        var stripeSize = 6;
+        var stops = [];
+        for (var ci = 0; ci < colors.length; ci++) {
+          stops.push(colors[ci] + ' ' + (ci * stripeSize) + 'px');
+          stops.push(colors[ci] + ' ' + ((ci + 1) * stripeSize) + 'px');
+        }
+        var grad = 'repeating-linear-gradient(45deg,' + stops.join(',') + ')';
+        var graceCls = graceSlots[t] ? ' b-grace-warn' : '';
+        html += '<td class="td-cell' + graceCls + timeCls + '" style="background:' + grad + '"></td>';
+        covering.forEach(function(b) {
+          var sentAmt   = (row.sent && row.sent[b.type]) || 0;
+          var remaining = row.count - sentAmt;
+          if (b.type === 'Lunch') totalsLunch[i] += remaining;
+          else                    totals20[i]    += remaining;
+        });
+      } else {
+        var bType     = covering[0].type;
+        var bCls      = BREAK_CLASS[bType] || '';
+        var sentAmt   = (row.sent && row.sent[bType]) || 0;
+        var remaining = row.count - sentAmt;
+        if (bType === 'Lunch') totalsLunch[i] += remaining;
+        else                   totals20[i]    += remaining;
+        var isDone   = sentAmt >= row.count;
+        var trackCls = isDone ? ' b-done-cell' : ' b-track';
+        var graceCls = graceSlots[t] ? ' b-grace-warn' : '';
+        if (isPast) {
+          var countTxt = sentAmt > 0 ? sentAmt + '/' + row.count : '';
+          html += '<td class="td-cell ' + bCls + trackCls + graceCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
+        } else {
+          var countTxt = sentAmt > 0 ? sentAmt + '/' + row.count : '';
+          html += '<td class="td-cell ' + bCls + trackCls + graceCls + timeCls + '" data-row="' + rowIdx + '" data-break="' + bType + '">' + countTxt + '</td>';
+        }
+      }
+    });
+
+    html += '</tr>';
+  });
+
+  var total20Count = shiftRows.reduce(function(s, r) {
+    var has20 = r.breaks.some(function(b) { return b.type !== 'Lunch'; });
+    return s + (has20 ? r.count : 0);
+  }, 0);
+  var totalLunchCount = shiftRows.reduce(function(s, r) {
+    var hasLunch = r.breaks.some(function(b) { return b.type === 'Lunch'; });
+    return s + (hasLunch ? r.count : 0);
+  }, 0);
+
+  // Total row — Headcount (teal heat)
+  var totalShiftCount = shiftRows.reduce(function(s, r) { return s + r.count; }, 0);
+  var peakHC = Math.max.apply(null, totalsHC.concat([1]));
+  html += '<tr class="tr-total">';
+  html += '<td class="td-shift">Headcount</td>';
+  html += '<td class="td-count">' + totalShiftCount + '</td>';
+  totalsHC.forEach(function(v, i) {
+    var t = slots[i];
+    var isPast = nowMins !== null && (t + 30 <= nowMins);
+    var isNow  = nowMins !== null && (t <= nowMins && nowMins < t + 30);
+    var timeCls = isPast ? ' td-cell-past' : (isNow ? ' td-cell-now' : '');
+    var cls;
+    if (v === 0) cls = 'hc-0';
+    else {
+      var r = v / peakHC;
+      if (r <= 0.25)      cls = 'hc-low';
+      else if (r <= 0.5)  cls = 'hc-med';
+      else if (r <= 0.75) cls = 'hc-high';
+      else                cls = 'hc-peak';
+    }
+    html += '<td class="td-cell ' + cls + timeCls + '">' + (v > 0 ? v : '') + '</td>';
+  });
+  html += '</tr>';
+
+  // Total row — 20 min breaks (orange heat)
+  var peak20 = Math.max.apply(null, totals20.concat([1]));
+  html += '<tr class="tr-total">';
+  html += '<td class="td-shift">20 min</td>';
+  html += '<td class="td-count">' + total20Count + '</td>';
+  totals20.forEach(function(v, i) {
+    var t = slots[i];
+    var isPast = nowMins !== null && (t + 30 <= nowMins);
+    var isNow  = nowMins !== null && (t <= nowMins && nowMins < t + 30);
+    var timeCls = isPast ? ' td-cell-past' : (isNow ? ' td-cell-now' : '');
+    var cls;
+    if (v === 0) cls = 't-0';
+    else {
+      var r = v / peak20;
+      if (r <= 0.25)      cls = 't-low';
+      else if (r <= 0.5)  cls = 't-med';
+      else if (r <= 0.75) cls = 't-high';
+      else                cls = 't-peak';
+    }
+    html += '<td class="td-cell ' + cls + timeCls + '">' + (v > 0 ? v : '') + '</td>';
+  });
+  html += '</tr>';
+
+  // Total row — Lunch 35 min (blue heat)
+  var peakLunch = Math.max.apply(null, totalsLunch.concat([1]));
+  html += '<tr class="tr-total">';
+  html += '<td class="td-shift">Lunch 35</td>';
+  html += '<td class="td-count">' + totalLunchCount + '</td>';
+  totalsLunch.forEach(function(v, i) {
+    var t = slots[i];
+    var isPast = nowMins !== null && (t + 30 <= nowMins);
+    var isNow  = nowMins !== null && (t <= nowMins && nowMins < t + 30);
+    var timeCls = isPast ? ' td-cell-past' : (isNow ? ' td-cell-now' : '');
+    var cls;
+    if (v === 0) cls = 't-0';
+    else {
+      var r = v / peakLunch;
+      if (r <= 0.25)      cls = 'tl-low';
+      else if (r <= 0.5)  cls = 'tl-med';
+      else if (r <= 0.75) cls = 'tl-high';
+      else                cls = 'tl-peak';
+    }
+    html += '<td class="td-cell ' + cls + timeCls + '">' + (v > 0 ? v : '') + '</td>';
+  });
+  html += '</tr></tbody></table>';
+  var savedScroll = wrap.scrollLeft;
+  wrap.innerHTML = html;
+  wrap.scrollLeft = savedScroll;
+  var topBar = document.getElementById('gridScrollTop');
+  if (topBar) topBar.scrollLeft = savedScroll;
+  syncTopScroll();
+  renderNextUp();
+  runOTPrediction();
+}
+
+// Manual mode by default — focus the time input
+document.addEventListener('DOMContentLoaded', function() {
+  loadShifts();
+  document.getElementById('timeManual').focus();
+
+  // Sync top scrollbar ↔ grid scrollbar
+  var top  = document.getElementById('gridScrollTop');
+  var wrap = document.getElementById('gridWrap');
+  top.addEventListener('scroll',  function() { wrap.scrollLeft = top.scrollLeft; });
+  wrap.addEventListener('scroll', function() { top.scrollLeft  = wrap.scrollLeft; });
+
+  // Delegated event listeners on gridWrap (stable container — never replaced by innerHTML)
+  // Row remove + sent increment (both on click)
+  wrap.addEventListener('click', function(e) {
+    // Row remove
+    var rm = e.target.closest('.row-remove');
+    if (rm) {
+      var idx = parseInt(rm.getAttribute('data-remove'));
+      var row = shiftRows[idx];
+      if (row) {
+        row.count--;
+        if (row.count <= 0) shiftRows.splice(idx, 1);
+      }
+      saveShifts();
+      renderGrid();
+      return;
+    }
+    // Sent increment (left-click on break cell)
+    var td = e.target;
+    while (td && td.tagName !== 'TD') td = td.parentElement;
+    if (!td || !td.getAttribute('data-row')) return;
+    var rowIdx = parseInt(td.getAttribute('data-row'));
+    var bType  = td.getAttribute('data-break');
+    var row = shiftRows[rowIdx];
+    if (!row || !row.sent) return;
+    var cur = row.sent[bType] || 0;
+    row.sent[bType] = cur >= row.count ? 0 : cur + 1;
+    saveShifts();
+    renderGrid();
+  });
+
+  // Sent decrement (right-click on break cell)
+  wrap.addEventListener('contextmenu', function(e) {
+    var td = e.target;
+    while (td && td.tagName !== 'TD') td = td.parentElement;
+    if (!td || !td.getAttribute('data-row')) return;
+    e.preventDefault();
+    var rowIdx = parseInt(td.getAttribute('data-row'));
+    var bType  = td.getAttribute('data-break');
+    var row = shiftRows[rowIdx];
+    if (!row || !row.sent) return;
+    var cur = row.sent[bType] || 0;
+    row.sent[bType] = cur <= 0 ? row.count : cur - 1;
+    saveShifts();
+    renderGrid();
+  });
+});
+
+// Keep top scrollbar width in sync with grid content width
+function syncTopScroll() {
+  var wrap  = document.getElementById('gridWrap');
+  var inner = document.getElementById('gridScrollTopInner');
+  if (wrap && inner) inner.style.width = wrap.scrollWidth + 'px';
+}
+
+// ── Password Gate ────────────────────────────────────────────────────────────
+var userMode = 'admin';
+
+(function() {
+  var auth = sessionStorage.getItem('thgot_auth');
+  if (auth === 'admin') {
+    userMode = 'admin';
+    document.getElementById('pw-gate').remove();
+    applyMode();
+    return;
+  }
+  var inp = document.getElementById('pw-input');
+  inp.focus();
+  inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
+})();
+
+function checkPW() {
+  var val = document.getElementById('pw-input').value;
+  if (val === '1781') {
+    userMode = 'admin';
+    sessionStorage.setItem('thgot_auth', 'admin');
+    document.getElementById('pw-gate').remove();
+    applyMode();
+  } else {
+    var box = document.querySelector('.pw-box');
+    box.classList.remove('pw-shake');
+    void box.offsetWidth;
+    box.classList.add('pw-shake');
+    document.getElementById('pw-error').textContent = 'Incorrect password';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function applyMode() {
+  // Load from shared URL hash first, fall back to localStorage
+  if (!loadFromHash()) {
+    loadShifts();
+  }
+  // Auto-enable live mode
+  var liveToggle = document.getElementById('liveToggle');
+  if (!liveToggle.checked) {
+    liveToggle.checked = true;
+    toggleLive();
+  }
+  // Render whatever shifts are already saved
+  if (shiftRows.length > 0) renderGrid();
+}
+
+// ── Mini Staffing ──────────────────────────────────────────────────────────
+var MS_H_SCHEDULE = [
+  [165,0,1,1],[180,1,1,1],[195,1,1,1],[210,1,1,1],[225,1,1,1],[240,1,2,1],
+  [255,1,2,1],[270,2,2,2],[285,2,2,2],[300,2,2,2],[315,2,2,2],[330,2,2,2],
+  [345,2,2,2],[360,2,2,2],[375,2,2,2],[390,2,2,2],[405,2,2,2],[420,2,2,2],
+  [435,1,2,2],[450,1,2,2],[465,1,2,2],[480,1,2,1],[495,1,2,1],[510,1,2,1],
+  [525,1,2,1],[540,1,2,1],[555,1,2,1],[570,1,2,1],[585,1,2,1],[600,1,2,1],
+  [615,1,2,1],[630,1,2,1],[645,1,2,1],[660,1,2,1],[675,1,2,1],[690,1,2,1],
+  [705,1,2,1],[720,1,2,1],[735,1,2,1],[750,1,2,1],[765,1,2,1],[780,1,2,1],
+  [795,1,2,1],[810,1,2,1],[825,1,2,1],[840,2,2,1],[855,2,2,1],[870,2,2,1],
+  [885,2,2,1],[900,2,2,1],[915,2,2,1],[930,2,2,1],[945,2,2,1],[960,2,2,1],
+  [975,2,2,1],[990,2,2,1],[1005,1,2,1],[1020,1,2,1],[1035,1,1,1],[1050,1,1,1],
+  [1065,1,1,1],[1080,1,1,1],[1095,1,1,1],[1110,1,1,1],[1125,1,1,1],[1140,1,1,1],
+  [1155,1,1,1],[1170,1,1,1],[1185,1,1,1],[1200,1,1,1],[1215,1,1,1],[1230,1,1,1],
+  [1245,1,1,1],[1260,1,1,1],[1275,1,1,1],[1290,1,1,1],[1305,1,1,1],[1320,0,1,1],
+  [1335,0,1,1],[1350,0,1,1]
+];
+
+var MS_LANE_COUNTS = { 1:5, 2:5, 3:4, 4:8, 5:3, 6:7, 7:4 };
+var msActiveLanes = {};
+
+function getMSH(min) {
+  var row = null;
+  for (var i = 0; i < MS_H_SCHEDULE.length; i++) {
+    if (min >= MS_H_SCHEDULE[i][0]) row = MS_H_SCHEDULE[i]; else break;
+  }
+  return row ? { cr: row[1], l3: row[2], os: row[3] } : { cr: 0, l3: 0, os: 0 };
+}
+
+function getMSNPS(min) {
+  var l0 = (min >= 300 && min < 1320) ? 2 : 0;
+  var l2 = (min >= 180 && min < 1320) ? 3 : 0;
+  return { l0: l0, l1: 2, l2: l2, g: 3, v: 4 };
+}
+
+// Pure function: required staffing at any time given current toggle state
+function getStaffingState() {
+  var zbOn = document.getElementById('msZoneB').checked;
+  var zbSkelly = zbOn && document.getElementById('msSkB').checked;
+  var zaSkelly = document.getElementById('msSkA').checked;
+  return {
+    zbOn: zbOn, zbSkelly: zbSkelly, zaSkelly: zaSkelly,
+    lanes: Object.keys(msActiveLanes).map(Number),
+    hCr: document.getElementById('msHcr').checked,
+    hL3: document.getElementById('msHl3').checked,
+    hOs: document.getElementById('msHos').checked
+  };
+}
+
+function getRequiredStaffing(timeMins, state) {
+  var zbCount = state.zbOn ? (state.zbSkelly ? 7 : 14) : 0;
+  var zaCount = 0;
+  if (state.zaSkelly) {
+    zaCount = 9;
+  } else if (state.lanes.length > 0) {
+    zaCount = 3;
+    for (var k = 0; k < state.lanes.length; k++) {
+      zaCount += MS_LANE_COUNTS[state.lanes[k]] || 0;
+    }
+  }
+  var anySkelly = state.zbSkelly || state.zaSkelly;
+  var hCount;
+  if (anySkelly) {
+    hCount = (state.hCr ? 1 : 0) + (state.hL3 ? 1 : 0) + (state.hOs ? 1 : 0);
+  } else {
+    var h = getMSH(timeMins);
+    hCount = h.cr + h.l3 + h.os;
+  }
+  var nps = getMSNPS(timeMins);
+  var npsCount = nps.l0 + nps.l1 + nps.l2 + nps.g + nps.v;
+  return zbCount + zaCount + hCount + npsCount;
+}
+
+function toggleMSLane(el) {
+  var lane = parseInt(el.getAttribute('data-mslane'));
+  if (msActiveLanes[lane]) {
+    delete msActiveLanes[lane];
+    el.classList.remove('lp-on');
+  } else {
+    msActiveLanes[lane] = true;
+    el.classList.add('lp-on');
+  }
+  calcMiniStaffing();
+}
+
+function calcMiniStaffing() {
+  var min = currentTimeMins;
+  if (min === null) min = 360; // default 06:00 if no time set
+
+  // Zone B
+  var zbOn = document.getElementById('msZoneB').checked;
+  var zbSkWrap = document.getElementById('msSkBwrap');
+  zbSkWrap.hidden = !zbOn;
+  if (!zbOn) document.getElementById('msSkB').checked = false;
+  var zbSkelly = zbOn && document.getElementById('msSkB').checked;
+  var zbCount = zbOn ? (zbSkelly ? 7 : 14) : 0;
+
+  // Zone A
+  var zaSkelly = document.getElementById('msSkA').checked;
+  var zaCount = 0;
+  var pills = document.querySelectorAll('.lane-pill');
+  if (zaSkelly) {
+    zaCount = 9;
+    for (var p = 0; p < pills.length; p++) pills[p].classList.add('lp-disabled');
+  } else {
+    for (var p = 0; p < pills.length; p++) pills[p].classList.remove('lp-disabled');
+    var laneKeys = Object.keys(msActiveLanes);
+    if (laneKeys.length > 0) {
+      zaCount = 3; // baseline
+      for (var k = 0; k < laneKeys.length; k++) {
+        zaCount += MS_LANE_COUNTS[parseInt(laneKeys[k])] || 0;
+      }
+    }
+  }
+
+  // H
+  var anySkelly = zbSkelly || zaSkelly;
+  var hRow = document.getElementById('msHskellyRow');
+  hRow.hidden = !anySkelly;
+  var hCount;
+  if (anySkelly) {
+    var cr = document.getElementById('msHcr').checked ? 1 : 0;
+    var l3 = document.getElementById('msHl3').checked ? 1 : 0;
+    var os = document.getElementById('msHos').checked ? 1 : 0;
+    hCount = cr + l3 + os;
+  } else {
+    var h = getMSH(min);
+    hCount = h.cr + h.l3 + h.os;
+  }
+
+  // NPS
+  var nps = getMSNPS(min);
+  var npsCount = nps.l0 + nps.l1 + nps.l2 + nps.g + nps.v;
+
+  var total = zbCount + zaCount + hCount + npsCount;
+
+  // Render breakdown
+  var bd = document.getElementById('msBreakdown');
+  var html = '';
+  if (zbOn) html += '<div class="sb-chip"><span class="sb-chip-label">Zone B' + (zbSkelly ? ' (Skelly)' : '') + '</span><span class="sb-chip-val">' + zbCount + '</span></div>';
+  if (zaCount > 0) html += '<div class="sb-chip"><span class="sb-chip-label">Zone A' + (zaSkelly ? ' (Skelly)' : '') + '</span><span class="sb-chip-val">' + zaCount + '</span></div>';
+  html += '<div class="sb-chip"><span class="sb-chip-label">H' + (anySkelly ? ' (manual)' : '') + '</span><span class="sb-chip-val">' + hCount + '</span></div>';
+  html += '<div class="sb-chip"><span class="sb-chip-label">NPS</span><span class="sb-chip-val">' + npsCount + '</span></div>';
+  bd.innerHTML = html;
+
+  document.getElementById('msTotal').textContent = total;
+
+  // Save state
+  saveMSState();
+  runOTPrediction();
+}
+
+function saveMSState() {
+  var state = {
+    zbOn: document.getElementById('msZoneB').checked,
+    zbSk: document.getElementById('msSkB').checked,
+    zaSk: document.getElementById('msSkA').checked,
+    lanes: Object.keys(msActiveLanes).map(Number),
+    hCr: document.getElementById('msHcr').checked,
+    hL3: document.getElementById('msHl3').checked,
+    hOs: document.getElementById('msHos').checked
+  };
+  localStorage.setItem('bflab_staffing', JSON.stringify(state));
+}
+
+function loadMSState() {
+  try {
+    var s = JSON.parse(localStorage.getItem('bflab_staffing'));
+    if (!s) return;
+    document.getElementById('msZoneB').checked = s.zbOn || false;
+    document.getElementById('msSkB').checked = s.zbSk || false;
+    document.getElementById('msSkA').checked = s.zaSk || false;
+    document.getElementById('msHcr').checked = s.hCr || false;
+    document.getElementById('msHl3').checked = s.hL3 || false;
+    document.getElementById('msHos').checked = s.hOs || false;
+    if (s.lanes && s.lanes.length) {
+      s.lanes.forEach(function(l) {
+        msActiveLanes[l] = true;
+        var pill = document.querySelector('.lane-pill[data-mslane="' + l + '"]');
+        if (pill) pill.classList.add('lp-on');
+      });
+    }
+  } catch(e) {}
+}
+
+// Recalculate staffing whenever time updates
+var _origUpdateTimeDisplay = updateTimeDisplay;
+updateTimeDisplay = function() {
+  _origUpdateTimeDisplay();
+  calcMiniStaffing();
+};
+
+// Init on load
+document.addEventListener('DOMContentLoaded', function() {
+  loadMSState();
+  calcMiniStaffing();
+});
+
+var toastTimer;
+function showToast(msg, undoable) {
+  var t = document.getElementById('toast');
+  if (undoable) {
+    t.innerHTML = msg + ' <a class="toast-undo" onclick="undoRestore()">Undo</a>';
+  } else {
+    t.textContent = msg;
+  }
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  var duration = undoable ? 5000 : 2000;
+  toastTimer = setTimeout(function() {
+    t.classList.remove('show');
+    if (undoable) undoSnapshot = null;
+  }, duration);
+}
+</script>
+
+</body>
+</html>
