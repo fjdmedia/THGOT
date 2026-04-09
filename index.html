@@ -214,34 +214,34 @@
 
 <a class="tool-card" href="staffing-calculator.html">
     <div class="tool-top">
-      <div class="tool-name">Staffing Calculator</div>
+      <div class="tool-name">Are we cooked?</div>
       <div class="tool-arrow">→</div>
     </div>
     <div class="tool-desc">Calculate the minimum number of staff required to run an operation based on active zones, lanes, and time of day.</div>
     <div class="tool-tag">Staffing</div>
   </a>
 
-  <a class="tool-card" href="coverage-calculator.html">
+  <a class="tool-card" href="coverage.html">
     <div class="tool-top">
-      <div class="tool-name">H Coverage</div>
+      <div class="tool-name">We good for coverage?</div>
       <div class="tool-arrow">→</div>
     </div>
     <div class="tool-desc">Enter scheduled shifts to see coverage against the H requirement plan, including Zone B O/S. Variance color-scaled by slot.</div>
     <div class="tool-tag">Coverage</div>
   </a>
 
-  <a class="tool-card" href="hours-calculator.html">
+  <a class="tool-card" href="TWH.html">
     <div class="tool-top">
-      <div class="tool-name">Weekly Hours</div>
+      <div class="tool-name">Mathing for the Mathers</div>
       <div class="tool-arrow">→</div>
     </div>
     <div class="tool-desc">Paste a weekly schedule from Excel to calculate total working hours per day and per employee, including overnight shifts.</div>
     <div class="tool-tag">Scheduling</div>
   </a>
 
-  <a class="tool-card" href="callout.html">
+  <a class="tool-card" href="OT.html">
     <div class="tool-top">
-      <div class="tool-name">OT Tracking</div>
+      <div class="tool-name"><em>"There's never much love when we go OT"</em> — Drake</div>
       <div class="tool-arrow">→</div>
     </div>
     <div class="tool-desc">Track who was asked for overtime in seniority order. Log results, calculate totals, and get a day summary by shift.</div>
@@ -250,7 +250,7 @@
 
   <a class="tool-card" href="break-forecast.html">
     <div class="tool-top">
-      <div class="tool-name">Break Forecast</div>
+      <div class="tool-name">Brick Tamland's Break Forecast</div>
       <div class="tool-arrow">→</div>
     </div>
     <div class="tool-desc">Paste shift blocks to forecast when break clusters occur throughout the day. Color-coded 30-min grid with heat-mapped totals.</div>
@@ -266,7 +266,7 @@
     <div class="tool-tag">Classified</div>
   </a>
 
-  <a class="tool-card classified" href="break-forecast-lab.html" onclick="labGate(event)">
+  <a class="tool-card classified" href="dexters-lab.html" onclick="labGate(event)">
     <div class="tool-top">
       <div class="tool-name">🧪 Dexter's Lab <span class="classified-badge">Admin Only</span></div>
       <div class="tool-arrow">→</div>
@@ -293,7 +293,8 @@
 
   <script>
     function labGate(e) {
-      if (sessionStorage.getItem('thgot_auth') === 'admin') return;
+      var a = sessionStorage.getItem('thgot_auth');
+      if (a === 'admin' || a === 'viewer') return;
       e.preventDefault();
       var modal = document.getElementById('lab-gate');
       modal.style.display = 'flex';
@@ -303,12 +304,18 @@
       setTimeout(function() { inp.focus(); }, 50);
       inp.onkeydown = function(ev) { if (ev.key === 'Enter') submitLabPW(); };
     }
-    function submitLabPW() {
+    async function _h(v){var e=new TextEncoder().encode(v),b=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}
+    async function submitLabPW() {
       var val = document.getElementById('lab-pw-input').value;
-      if (val === '1781') {
+      var h = await _h(val);
+      if (h === '61697e084834fbb2cf9ceebd945b42bdb9cd7cee96e0eaeb3df2232ccc95a3f0') {
         sessionStorage.setItem('thgot_auth', 'admin');
         closeLabGate();
-        window.location.href = 'break-forecast-lab.html';
+        window.location.href = 'dexters-lab.html';
+      } else if (h === '7f30af648acdc85bfca44ba813cdf882bc5039b150ecfceba3822dc2ff75a4de') {
+        sessionStorage.setItem('thgot_auth', 'viewer');
+        closeLabGate();
+        window.location.href = 'dexters-lab.html';
       } else {
         var err = document.getElementById('lab-pw-error');
         err.textContent = 'Incorrect password.';
