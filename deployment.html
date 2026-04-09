@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deployment — THGOT</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e4e8ee;
+      --border: rgba(0,0,0,0.1);
+      --accent: #4a6fa5;
+      --accent-dim: rgba(74,111,165,0.12);
+      --text: #1e2a3a;
+      --muted: rgba(30,42,58,0.45);
+      --faint: rgba(30,42,58,0.25);
+      --green: #22c55e;
+      --green-dim: rgba(34,197,94,0.1);
+      --red: #ef4444;
+      --red-dim: rgba(239,68,68,0.1);
+      --yellow: #f59e0b;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0d14;
+      --surface: #12172a;
+      --surface2: #1a1f30;
+      --border: rgba(255,255,255,0.09);
+      --accent: #fb923c;
+      --accent-dim: rgba(251,146,60,0.10);
+      --text: #e8e2d9;
+      --muted: rgba(232,226,217,0.35);
+      --faint: rgba(232,226,217,0.12);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px 18px 40px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .header .title { font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; }
+    .header .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+    }
+    .theme-btn:hover { border-color: var(--accent); }
+
+    .section-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 10px;
+    }
+
+    .paste-wrap { margin-bottom: 24px; }
+
+    textarea.paste-area {
+      width: 100%;
+      min-height: 90px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      padding: 12px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea.paste-area:focus { border-color: var(--accent); }
+    textarea.paste-area::placeholder { color: var(--faint); }
+
+    .btn-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+
+    .btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 8px 18px;
+    }
+    .btn:hover { opacity: 0.85; }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 8px 14px;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+
+    .format-hint {
+      font-size: 0.6rem;
+      color: var(--faint);
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.7;
+    }
+
+    .summary-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .s-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      min-width: 80px;
+    }
+    .s-chip .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      display: block;
+    }
+    .s-chip .lbl {
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .s-chip.ok { border-color: rgba(34,197,94,0.35); }
+    .s-chip.ok .val { color: var(--green); }
+    .s-chip.warn { border-color: rgba(245,158,11,0.35); }
+    .s-chip.warn .val { color: var(--yellow); }
+
+    .grid-section { margin-bottom: 30px; }
+    .grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    table.grid {
+      border-collapse: separate;
+      border-spacing: 4px;
+      min-width: max-content;
+    }
+
+    table.grid thead th {
+      padding: 4px 2px 10px;
+      text-align: center;
+      vertical-align: bottom;
+    }
+    .th-emp { text-align: left; padding-left: 4px !important; }
+    .th-n { min-width: 46px; }
+    .day-head { min-width: 84px; }
+
+    .dname {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .dstat {
+      display: inline-block;
+      font-size: 0.58rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .dstat.ok  { color: var(--green);  background: var(--green-dim);               border: 1px solid rgba(34,197,94,0.2);  }
+    .dstat.warn{ color: var(--yellow); background: rgba(245,158,11,0.08);           border: 1px solid rgba(245,158,11,0.2); }
+    .dstat.bad { color: var(--red);    background: var(--red-dim);                  border: 1px solid rgba(239,68,68,0.2);  }
+
+    td.cell {
+      width: 84px;
+      height: 56px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      vertical-align: middle;
+      position: relative;
+      transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+      user-select: none;
+    }
+    td.cell:hover { border-color: var(--accent); }
+    td.cell.off   { background: var(--surface2); opacity: 0.45; }
+    td.cell.off:hover { opacity: 0.7; }
+    td.cell.n-on  { background: var(--accent-dim) !important; border-color: var(--accent) !important; opacity: 1 !important; }
+
+    .cshift {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.56rem;
+      color: var(--muted);
+      line-height: 1.3;
+      padding: 0 3px;
+    }
+    .coff { display: block; font-size: 0.6rem; color: var(--faint); font-weight: 500; }
+    .cn {
+      display: inline-block;
+      margin-top: 3px;
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 3px;
+      padding: 1px 5px;
+    }
+
+    td.emp-col { padding: 0 8px 0 4px; white-space: nowrap; vertical-align: middle; }
+    .eid { font-size: 0.7rem; font-weight: 500; margin-right: 4px; }
+    .gtag {
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      border-radius: 4px;
+      padding: 2px 5px;
+      vertical-align: middle;
+    }
+    .gtag.m { color: #60a5fa; background: rgba(96,165,250,0.1);  border: 1px solid rgba(96,165,250,0.25); }
+    .gtag.f { color: #f472b6; background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.25); }
+    .gtag.u { color: var(--muted); background: var(--surface2);  border: 1px solid var(--border); }
+
+    td.n-col { text-align: center; vertical-align: middle; padding: 0 4px; }
+    .ncb {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 4px 8px;
+      min-width: 38px;
+      text-align: center;
+    }
+    .ncb.z    { color: var(--faint);   background: var(--surface2);            border: 1px solid var(--border); }
+    .ncb.one  { color: var(--yellow);  background: rgba(245,158,11,0.1);        border: 1px solid rgba(245,158,11,0.3); }
+    .ncb.two  { color: var(--green);   background: var(--green-dim);            border: 1px solid rgba(34,197,94,0.3); }
+    .ncb.over { color: var(--red);     background: var(--red-dim);              border: 1px solid rgba(239,68,68,0.3); }
+
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--faint); font-size: 0.8rem; }
+
+    .powered-by { text-align: center; font-size: 0.65rem; color: var(--faint); padding: 28px 0 8px; letter-spacing: 0.05em; }
+    .powered-by a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .powered-by a:hover { text-decoration: underline; }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.78rem;
+      color: var(--text);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: transform 0.25s ease;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.err  { border-color: var(--red); color: var(--red); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-5px); }
+      40%     { transform: translateX(5px); }
+      60%     { transform: translateX(-3px); }
+      80%     { transform: translateX(3px); }
+    }
+    .shake { animation: shake 0.35s ease; }
+  </style>
+
+  <script>
+    (function() {
+      var saved = localStorage.getItem('deployTheme') || 'dark';
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+      });
+    })();
+    function toggleTheme() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next === 'dark' ? 'dark' : '');
+      localStorage.setItem('deployTheme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="title">Deployment</div>
+    <div class="subtitle">N Assignment Planner · CBA compliance tracker</div>
+  </div>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+</div>
+
+<div class="paste-wrap">
+  <div class="section-label">Schedule</div>
+  <textarea class="paste-area" id="pasteIn" placeholder="Paste schedule from Excel...&#10;&#10;Mon    Tue    Wed    Thu    Fri    Sat    Sun    Gender&#10;0400-1400  x  x  x  0400-1400  0400-1400  0400-1400  Male"></textarea>
+  <div class="btn-row">
+    <button class="btn" onclick="parsePaste()">Load</button>
+    <button class="btn-ghost" onclick="resetN()">Reset N</button>
+    <button class="btn-ghost" onclick="clearAll()">Clear</button>
+  </div>
+  <div class="format-hint">
+    Paste directly from Excel · 7 day columns + Gender column (Male / Female / M/F) · x = day off<br>
+    All employees eligible for N regardless of shift status · Max 2 N per employee (CBA)
+  </div>
+</div>
+
+<div id="summary-bar" class="summary-bar" style="display:none;"></div>
+
+<div class="grid-section">
+  <div class="section-label" id="grid-label" style="display:none;">Assignment Grid — Click to toggle N</div>
+  <div class="grid-wrap">
+    <div id="grid-con"><div class="empty-state">Paste a schedule above to begin.</div></div>
+  </div>
+</div>
+
+<footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
+<div id="toast"></div>
+
+<script>
+  var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var emps = [];
+  var toastT = null;
+
+  function gc(g) {
+    var s = (g || '').toLowerCase().trim();
+    if (s === 'male'   || s === 'm') return 'm';
+    if (s === 'female' || s === 'f') return 'f';
+    return 'u';
+  }
+
+  function parsePaste() {
+    var raw = document.getElementById('pasteIn').value.trim();
+    if (!raw) { toast('Nothing pasted', true); return; }
+
+    var lines = raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+    var result = [];
+
+    lines.forEach(function(line) {
+      var cols = line.split('\t').map(function(c){ return c.trim(); });
+      if (cols.length < 8) return;
+      var g = cols[cols.length - 1];
+      // Skip header rows
+      if (/^gender$/i.test(g) || /^(mon|day|date|sun|shift)/i.test(cols[0])) return;
+      result.push({
+        gender: g,
+        gc: gc(g),
+        days: cols.slice(0, 7),
+        n: [false,false,false,false,false,false,false]
+      });
+    });
+
+    if (!result.length) { toast('No valid rows found — check format', true); return; }
+    emps = result;
+    renderAll();
+    toast('Loaded ' + emps.length + ' employees');
+  }
+
+  function resetN() {
+    if (!emps.length) return;
+    emps.forEach(function(e){ e.n = [false,false,false,false,false,false,false]; });
+    renderAll();
+    toast('N assignments cleared');
+  }
+
+  function clearAll() {
+    emps = [];
+    document.getElementById('pasteIn').value = '';
+    document.getElementById('grid-con').innerHTML = '<div class="empty-state">Paste a schedule above to begin.</div>';
+    document.getElementById('summary-bar').style.display = 'none';
+    document.getElementById('grid-label').style.display = 'none';
+  }
+
+  function toggleN(ei, di) {
+    var emp = emps[ei];
+    var count = emp.n.filter(Boolean).length;
+    if (!emp.n[di]) {
+      if (count >= 2) {
+        var cell = document.getElementById('c-' + ei + '-' + di);
+        cell.classList.remove('shake');
+        void cell.offsetWidth;
+        cell.classList.add('shake');
+        toast('Max 2 N per employee', true);
+        return;
+      }
+      emp.n[di] = true;
+    } else {
+      emp.n[di] = false;
+    }
+    refreshCell(ei, di);
+    refreshNBadge(ei);
+    refreshDayHead(di);
+    refreshSummary();
+  }
+
+  function cellInner(emp, di) {
+    var isOff = emp.days[di].toLowerCase() === 'x';
+    var html = isOff
+      ? '<span class="coff">OFF</span>'
+      : '<span class="cshift">' + emp.days[di] + '</span>';
+    if (emp.n[di]) html += '<span class="cn">N</span>';
+    return html;
+  }
+
+  function refreshCell(ei, di) {
+    var emp = emps[ei];
+    var el = document.getElementById('c-' + ei + '-' + di);
+    if (!el) return;
+    var isOff = emp.days[di].toLowerCase() === 'x';
+    el.className = 'cell' + (isOff ? ' off' : '') + (emp.n[di] ? ' n-on' : '');
+    el.innerHTML = cellInner(emp, di);
+  }
+
+  function refreshNBadge(ei) {
+    var el = document.getElementById('nb-' + ei);
+    if (!el) return;
+    var c = emps[ei].n.filter(Boolean).length;
+    el.textContent = c + '/2';
+    el.className = 'ncb ' + (c === 0 ? 'z' : c === 1 ? 'one' : c === 2 ? 'two' : 'over');
+  }
+
+  function dayStats(di) {
+    var s = { total:0, m:0, f:0, u:0 };
+    emps.forEach(function(e){
+      if (e.n[di]) {
+        s.total++;
+        if      (e.gc === 'm') s.m++;
+        else if (e.gc === 'f') s.f++;
+        else                   s.u++;
+      }
+    });
+    return s;
+  }
+
+  // Target based on whole roster (day-off employees are eligible too)
+  function rosterTarget() {
+    var tm = emps.filter(function(e){ return e.gc === 'm'; }).length;
+    var tf = emps.filter(function(e){ return e.gc === 'f'; }).length;
+    if (tm >= 2 && tf >= 2) return { n:4, m:2, f:2 };
+    if (tm >= 2 && tf === 1) return { n:3, m:2, f:1 };
+    if (tm === 1 && tf >= 2) return { n:3, m:1, f:2 };
+    return { n: Math.min(tm + tf, 4), m: tm, f: tf };
+  }
+
+  function refreshDayHead(di) {
+    var el = document.getElementById('dstat-' + di);
+    if (!el) return;
+    var s = dayStats(di);
+    var t = rosterTarget();
+    var ok = s.total >= t.n && s.m >= t.m && s.f >= t.f;
+    var cls = ok ? 'dstat ok' : s.total > 0 ? 'dstat warn' : 'dstat bad';
+    var txt = s.total + '/' + t.n;
+    if (s.total > 0) {
+      txt += ' · ' + s.m + 'M ' + s.f + 'F';
+      if (s.u > 0) txt += ' ' + s.u + '?';
+    }
+    el.className = cls;
+    el.textContent = txt;
+  }
+
+  function refreshSummary() {
+    var t = rosterTarget();
+    var daysOk = 0;
+    for (var d = 0; d < 7; d++) {
+      var s = dayStats(d);
+      if (s.total >= t.n && s.m >= t.m && s.f >= t.f) daysOk++;
+    }
+    var at2 = emps.filter(function(e){ return e.n.filter(Boolean).length === 2; }).length;
+    var at0 = emps.filter(function(e){ return e.n.filter(Boolean).length === 0; }).length;
+
+    document.getElementById('summary-bar').innerHTML =
+      chip(daysOk + '/7',              'Days meeting req', daysOk === 7 ? 'ok' : '') +
+      chip(at2 + '/' + emps.length,    'At max N (2)',     at2 === emps.length ? 'ok' : '') +
+      chip(at0 + '/' + emps.length,    'No N assigned',    at0 > 0 ? 'warn' : 'ok');
+  }
+
+  function chip(val, lbl, cls) {
+    return '<div class="s-chip ' + (cls||'') + '"><span class="val">' + val + '</span><span class="lbl">' + lbl + '</span></div>';
+  }
+
+  function renderAll() {
+    var t = rosterTarget();
+    var html = '<table class="grid"><thead><tr>';
+    html += '<th class="th-emp"><span class="section-label" style="margin:0">Emp</span></th>';
+
+    DAYS.forEach(function(day, d) {
+      html += '<th class="day-head"><span class="dname">' + day + '</span>'
+            + '<span class="dstat bad" id="dstat-' + d + '">0/' + t.n + '</span></th>';
+    });
+
+    html += '<th class="th-n"><span class="section-label" style="margin:0">N</span></th>';
+    html += '</tr></thead><tbody>';
+
+    emps.forEach(function(emp, i) {
+      var gLabel = emp.gc === 'm' ? 'M' : emp.gc === 'f' ? 'F' : '?';
+      html += '<tr><td class="emp-col">'
+            + '<span class="eid">' + (i+1) + '</span>'
+            + '<span class="gtag ' + emp.gc + '">' + gLabel + '</span>'
+            + '</td>';
+
+      emp.days.forEach(function(day, d) {
+        var isOff = day.toLowerCase() === 'x';
+        var cls = 'cell' + (isOff ? ' off' : '') + (emp.n[d] ? ' n-on' : '');
+        html += '<td id="c-' + i + '-' + d + '" class="' + cls + '" onclick="toggleN(' + i + ',' + d + ')">'
+              + cellInner(emp, d) + '</td>';
+      });
+
+      var nc   = emp.n.filter(Boolean).length;
+      var ncls = nc === 0 ? 'z' : nc === 1 ? 'one' : nc === 2 ? 'two' : 'over';
+      html += '<td class="n-col"><span class="ncb ' + ncls + '" id="nb-' + i + '">' + nc + '/2</span></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('grid-con').innerHTML = html;
+    document.getElementById('summary-bar').style.display = 'flex';
+    document.getElementById('grid-label').style.display = 'block';
+    refreshSummary();
+  }
+
+  function toast(msg, isErr) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'show' + (isErr ? ' err' : '');
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ el.className = ''; }, 2500);
+  }
+</script>
+
+</body>
+</html>
