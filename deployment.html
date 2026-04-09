@@ -557,6 +557,8 @@
   }
 
   // ── Per-day target based on who is actually working ────────────────────────
+  // Always aims for the full quota (4 NPSV / 3 GSE) capped by staff available.
+  // Gender reqs reflect what's actually achievable, remaining slots open to any gender.
   // Returns { n, m, f, na } — na:true means no staff scheduled that day
   function dayTarget(di) {
     var working = emps.filter(function(e){ return !isOff(e.days[di]); });
@@ -566,16 +568,12 @@
     var tf = working.filter(function(e){ return e.gc === 'f'; }).length;
 
     if (MODE === 'gse') {
-      // 3 deployed/day: 1M + 1F + 1 either; adjust if gender-limited
-      if (tm >= 1 && tf >= 1) return { n:3, m:1, f:1 };
+      // Always aim for 3; gender req = how many M/F are actually available (cap at 1 each)
       return { n: Math.min(working.length, 3), m: Math.min(tm, 1), f: Math.min(tf, 1) };
     }
 
-    // NPSV: 4 deployed/day (2M + 2F)
-    if (tm >= 2 && tf >= 2) return { n:4, m:2, f:2 };
-    if (tm >= 2 && tf === 1) return { n:3, m:2, f:1 };
-    if (tm === 1 && tf >= 2) return { n:3, m:1, f:2 };
-    return { n: Math.min(working.length, 4), m: tm, f: tf };
+    // NPSV: always aim for 4; gender req = how many M/F are actually available (cap at 2 each)
+    return { n: Math.min(working.length, 4), m: Math.min(tm, 2), f: Math.min(tf, 2) };
   }
 
   // ── Shuffle: hardest day first, spread assignments, enforce mode min/max ──
@@ -607,7 +605,7 @@
       picked = picked.concat(pickBest(eligM, t.m, d));
       picked = picked.concat(pickBest(eligF, t.f, d));
 
-      // Remaining slots: any eligible (GSE 3rd slot = either gender; NPSV = unknowns)
+      // Remaining slots: fill from any eligible gender to hit full quota
       var rem = t.n - picked.length;
       if (rem > 0) {
         var avail = eligM.concat(eligF).concat(eligU).filter(function(e){
