@@ -61,8 +61,8 @@
       border-bottom: 1px solid var(--border);
       margin-bottom: 24px;
     }
-    .header .title   { font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; }
-    .header .subtitle{ font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
+    .header .title    { font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; }
+    .header .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
 
     .theme-btn {
       background: var(--surface2);
@@ -117,6 +117,18 @@
     }
     .btn:hover { opacity: 0.85; }
 
+    .btn-accent {
+      background: transparent;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 8px 14px;
+    }
+    .btn-accent:hover { background: var(--accent-dim); }
+
     .btn-ghost {
       background: transparent;
       border: 1px solid var(--border);
@@ -127,18 +139,6 @@
       padding: 8px 14px;
     }
     .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
-
-    .btn-shuffle {
-      background: transparent;
-      border: 1px solid var(--accent);
-      border-radius: 8px;
-      color: var(--accent);
-      cursor: pointer;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 8px 14px;
-    }
-    .btn-shuffle:hover { background: var(--accent-dim); }
 
     .format-hint {
       font-size: 0.6rem;
@@ -208,9 +208,10 @@
       border-radius: 4px;
       white-space: nowrap;
     }
-    .dstat.ok   { color: var(--green);  background: var(--green-dim); border: 1px solid rgba(22,163,74,0.25);  }
-    .dstat.warn { color: var(--yellow); background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.25); }
-    .dstat.bad  { color: var(--red);    background: var(--red-dim);   border: 1px solid rgba(220,38,38,0.25);  }
+    .dstat.ok   { color: var(--green);  background: var(--green-dim);      border: 1px solid rgba(22,163,74,0.25);  }
+    .dstat.warn { color: var(--yellow); background: rgba(217,119,6,0.1);   border: 1px solid rgba(217,119,6,0.25);  }
+    .dstat.bad  { color: var(--red);    background: var(--red-dim);        border: 1px solid rgba(220,38,38,0.25);  }
+    .dstat.na   { color: var(--faint);  background: var(--surface2);       border: 1px solid var(--border);         }
 
     td.cell {
       width: 84px;
@@ -272,7 +273,7 @@
     }
     .gtag.m { color: #3b82f6; background: rgba(59,130,246,0.1);  border: 1px solid rgba(59,130,246,0.3); }
     .gtag.f { color: #ec4899; background: rgba(236,72,153,0.1);  border: 1px solid rgba(236,72,153,0.3); }
-    .gtag.u { color: var(--muted); background: var(--surface2); border: 1px solid var(--border); }
+    .gtag.u { color: var(--muted); background: var(--surface2);  border: 1px solid var(--border); }
 
     td.n-col { text-align: center; vertical-align: middle; padding: 0 4px; }
     .ncb {
@@ -285,10 +286,10 @@
       min-width: 38px;
       text-align: center;
     }
-    .ncb.z    { color: var(--faint);   background: var(--surface2);         border: 1px solid var(--border); }
-    .ncb.one  { color: var(--yellow);  background: rgba(217,119,6,0.1);      border: 1px solid rgba(217,119,6,0.3); }
-    .ncb.two  { color: var(--green);   background: var(--green-dim);         border: 1px solid rgba(22,163,74,0.3); }
-    .ncb.over { color: var(--red);     background: var(--red-dim);           border: 1px solid rgba(220,38,38,0.3); }
+    .ncb.z    { color: var(--faint);   background: var(--surface2);       border: 1px solid var(--border); }
+    .ncb.one  { color: var(--yellow);  background: rgba(217,119,6,0.1);   border: 1px solid rgba(217,119,6,0.3); }
+    .ncb.two  { color: var(--green);   background: var(--green-dim);      border: 1px solid rgba(22,163,74,0.3); }
+    .ncb.over { color: var(--red);     background: var(--red-dim);        border: 1px solid rgba(220,38,38,0.3); }
 
     .empty-state { text-align: center; padding: 48px 20px; color: var(--faint); font-size: 0.8rem; }
 
@@ -356,14 +357,15 @@
   <div class="section-label">Schedule</div>
   <textarea class="paste-area" id="pasteIn" placeholder="Paste schedule from Excel...&#10;&#10;Mon    Tue    Wed    Thu    Fri    Sat    Sun    Gender&#10;0400-1400  x  x  x  0400-1400  0400-1400  0400-1400  Male"></textarea>
   <div class="btn-row">
-    <button class="btn" onclick="parsePaste()">Load</button>
-    <button class="btn-shuffle" onclick="shufflePattern()">Shuffle</button>
-    <button class="btn-ghost" onclick="resetN()">Reset N</button>
-    <button class="btn-ghost" onclick="clearAll()">Clear</button>
+    <button class="btn"        onclick="parsePaste()">Load</button>
+    <button class="btn-accent" onclick="shufflePattern()">Shuffle</button>
+    <button class="btn-ghost"  onclick="copyText()">Copy</button>
+    <button class="btn-ghost"  onclick="resetN()">Reset N</button>
+    <button class="btn-ghost"  onclick="clearAll()">Clear</button>
   </div>
   <div class="format-hint">
     Paste directly from Excel · 7 day columns + Gender (Male / Female / M/F) · x = day off<br>
-    Only scheduled employees eligible for N · Max 2 N per employee (CBA) · Shuffle auto-fills a balanced pattern
+    Only scheduled employees eligible for N · Max 2 N per employee (CBA)
   </div>
 </div>
 
@@ -380,7 +382,7 @@
 <div id="toast"></div>
 
 <script>
-  var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   var emps  = [];
   var toastT = null;
 
@@ -393,11 +395,18 @@
     return 'u';
   }
 
+  function nCount(e) { return e.n.filter(Boolean).length; }
+
+  // ── Parse ─────────────────────────────────────────────────────────────────
   function parsePaste() {
     var raw = document.getElementById('pasteIn').value.trim();
     if (!raw) { toast('Nothing pasted', true); return; }
 
-    var lines = raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+    // Warn before wiping existing N assignments
+    var hasN = emps.some(function(e){ return e.n.some(Boolean); });
+    if (hasN && !confirm('This will clear the current N assignments. Continue?')) return;
+
+    var lines  = raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
     var result = [];
 
     lines.forEach(function(line) {
@@ -431,27 +440,67 @@
     document.getElementById('pasteIn').value = '';
     document.getElementById('grid-con').innerHTML = '<div class="empty-state">Paste a schedule above to begin.</div>';
     document.getElementById('summary-bar').style.display = 'none';
-    document.getElementById('grid-label').style.display = 'none';
+    document.getElementById('grid-label').style.display  = 'none';
   }
 
-  // ── Per-day target based on who is actually working that day ──────────────
+  // ── Copy plain-text summary ────────────────────────────────────────────────
+  function copyText() {
+    if (!emps.length) { toast('Nothing to copy', true); return; }
+    var lines = ['N DEPLOYMENT PLAN', ''];
+    DAYS.forEach(function(day, d) {
+      var assigned = emps.filter(function(e){ return e.n[d]; });
+      if (!assigned.length) { lines.push(day + ': —'); return; }
+      var labels = assigned.map(function(e){
+        return '#' + (emps.indexOf(e)+1) + '(' + (e.gc === 'm' ? 'M' : e.gc === 'f' ? 'F' : '?') + ')';
+      });
+      var s = dayStats(d), t = dayTarget(d);
+      var flag = (s.total >= t.n && s.m >= t.m && s.f >= t.f) ? '' : ' ⚠';
+      lines.push(day + ': ' + labels.join(', ') + flag);
+    });
+    lines.push('');
+    lines.push('Generated ' + new Date().toLocaleDateString());
+    var text = lines.join('\n');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function(){ toast('Copied to clipboard'); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); toast('Copied to clipboard');
+    }
+  }
+
+  // ── Per-day target based on who is actually working ────────────────────────
+  // Returns { n, m, f, na } — na:true means no staff scheduled that day
   function dayTarget(di) {
-    var tm = emps.filter(function(e){ return e.gc === 'm' && !isOff(e.days[di]); }).length;
-    var tf = emps.filter(function(e){ return e.gc === 'f' && !isOff(e.days[di]); }).length;
+    var working = emps.filter(function(e){ return !isOff(e.days[di]); });
+    if (!working.length) return { n:0, m:0, f:0, na:true };
+
+    var tm = working.filter(function(e){ return e.gc === 'm'; }).length;
+    var tf = working.filter(function(e){ return e.gc === 'f'; }).length;
+
     if (tm >= 2 && tf >= 2) return { n:4, m:2, f:2 };
     if (tm >= 2 && tf === 1) return { n:3, m:2, f:1 };
     if (tm === 1 && tf >= 2) return { n:3, m:1, f:2 };
-    return { n: Math.min(tm + tf, 4), m: tm, f: tf };
+    // Only unknowns or single-gender day
+    return { n: Math.min(working.length, 4), m: tm, f: tf };
   }
 
-  // ── Shuffle: auto-fill balanced N pattern ─────────────────────────────────
+  // ── Shuffle: hardest day first, then spread assignments ───────────────────
   function shufflePattern() {
     if (!emps.length) { toast('Load a schedule first', true); return; }
-
     emps.forEach(function(e){ e.n = [false,false,false,false,false,false,false]; });
 
-    for (var d = 0; d < 7; d++) {
+    // Process days hardest-to-fill first so they get first pick of the pool
+    var dayOrder = [0,1,2,3,4,5,6].sort(function(a, b) {
+      var ea = emps.filter(function(e){ return !isOff(e.days[a]); }).length;
+      var eb = emps.filter(function(e){ return !isOff(e.days[b]); }).length;
+      return ea - eb;
+    });
+
+    dayOrder.forEach(function(d) {
       var t = dayTarget(d);
+      if (t.na || t.n === 0) return;
 
       var eligM = emps.filter(function(e){ return e.gc === 'm' && !isOff(e.days[d]) && nCount(e) < 2; });
       var eligF = emps.filter(function(e){ return e.gc === 'f' && !isOff(e.days[d]) && nCount(e) < 2; });
@@ -461,6 +510,7 @@
       picked = picked.concat(pickBest(eligM, t.m, d));
       picked = picked.concat(pickBest(eligF, t.f, d));
 
+      // Fill remaining slots with unknowns
       var rem = t.n - picked.length;
       if (rem > 0) {
         var avail = eligU.filter(function(e){ return picked.indexOf(e) === -1; });
@@ -468,16 +518,13 @@
       }
 
       picked.forEach(function(e){ e.n[d] = true; });
-    }
+    });
 
     renderAll();
     toast('Pattern generated');
   }
 
-  function nCount(e) { return e.n.filter(Boolean).length; }
-
-  // How many days since this employee's last N assignment before day d.
-  // Returns a large number if they haven't had N yet (highest priority).
+  // How many days since this employee's last N before day d
   function daysSinceLastN(emp, beforeDay) {
     for (var d = beforeDay - 1; d >= 0; d--) {
       if (emp.n[d]) return beforeDay - d;
@@ -485,18 +532,13 @@
     return 99;
   }
 
-  // Pick n employees from arr for a given day.
-  // Priority: (1) fewest N so far, (2) largest gap since last N — keeps
-  // each employee's two N days as far apart as possible across the week.
+  // Pick n employees: fewest N this week → largest gap → row order
   function pickBest(arr, n, forDay) {
     var sorted = arr.slice().sort(function(a, b) {
       var ca = nCount(a), cb = nCount(b);
       if (ca !== cb) return ca - cb;
-      // Tie-break: prefer the employee whose last N day is furthest back
-      var ga = daysSinceLastN(a, forDay);
-      var gb = daysSinceLastN(b, forDay);
+      var ga = daysSinceLastN(a, forDay), gb = daysSinceLastN(b, forDay);
       if (gb !== ga) return gb - ga;
-      // Final tie-break: employee index for determinism
       return emps.indexOf(a) - emps.indexOf(b);
     });
     return sorted.slice(0, n);
@@ -519,9 +561,9 @@
     refreshSummary();
   }
 
-  // ── Cell rendering ────────────────────────────────────────────────────────
+  // ── Cell rendering ─────────────────────────────────────────────────────────
   function cellInner(emp, di) {
-    var off = isOff(emp.days[di]);
+    var off  = isOff(emp.days[di]);
     var html = off ? '<span class="coff">OFF</span>' : '<span class="cshift">' + emp.days[di] + '</span>';
     if (emp.n[di]) html += '<span class="cn">N</span>';
     return html;
@@ -559,10 +601,17 @@
   function refreshDayHead(di) {
     var el = document.getElementById('dstat-' + di);
     if (!el) return;
-    var s = dayStats(di);
     var t = dayTarget(di);
-    var ok  = s.total >= t.n && s.m >= t.m && s.f >= t.f;
+
+    // No staff scheduled
+    if (t.na) { el.className = 'dstat na'; el.textContent = 'N/A'; return; }
+
+    var s = dayStats(di);
+
+    // Compliance: unknowns only count toward the total, not toward gender slots
+    var ok = s.total >= t.n && s.m >= t.m && s.f >= t.f;
     var cls = ok ? 'dstat ok' : s.total > 0 ? 'dstat warn' : 'dstat bad';
+
     var txt = s.total + '/' + t.n;
     if (s.total > 0) {
       txt += ' · ' + s.m + 'M ' + s.f + 'F';
@@ -573,32 +622,36 @@
   }
 
   function refreshSummary() {
-    var daysOk = 0;
+    var daysOk = 0, daysTotal = 0;
     for (var d = 0; d < 7; d++) {
-      var s = dayStats(d), t = dayTarget(d);
+      var t = dayTarget(d);
+      if (t.na) continue; // skip unstaffed days
+      daysTotal++;
+      var s = dayStats(d);
       if (s.total >= t.n && s.m >= t.m && s.f >= t.f) daysOk++;
     }
     var at2 = emps.filter(function(e){ return nCount(e) === 2; }).length;
     var at0 = emps.filter(function(e){ return nCount(e) === 0; }).length;
     document.getElementById('summary-bar').innerHTML =
-      chip(daysOk + '/7',           'Days meeting req', daysOk === 7 ? 'ok' : '') +
-      chip(at2 + '/' + emps.length, 'At max N (2)',     at2 === emps.length ? 'ok' : '') +
-      chip(at0 + '/' + emps.length, 'No N assigned',    at0 > 0 ? 'warn' : 'ok');
+      chip(daysOk + '/' + daysTotal, 'Days meeting req', daysOk === daysTotal ? 'ok' : '') +
+      chip(at2 + '/' + emps.length,  'At max N (2)',     at2 === emps.length ? 'ok' : '') +
+      chip(at0 + '/' + emps.length,  'No N assigned',    at0 > 0 ? 'warn' : 'ok');
   }
 
   function chip(val, lbl, cls) {
     return '<div class="s-chip ' + (cls||'') + '"><span class="val">' + val + '</span><span class="lbl">' + lbl + '</span></div>';
   }
 
-  // ── Full render ───────────────────────────────────────────────────────────
+  // ── Full render ────────────────────────────────────────────────────────────
   function renderAll() {
     var html = '<table class="grid"><thead><tr>';
     html += '<th class="th-emp"><span class="section-label" style="margin:0">Emp</span></th>';
 
     DAYS.forEach(function(day, d) {
       var t = dayTarget(d);
+      var initStat = t.na ? 'na" id="dstat-' + d + '">N/A' : 'bad" id="dstat-' + d + '">0/' + t.n;
       html += '<th class="day-head"><span class="dname">' + day + '</span>'
-            + '<span class="dstat bad" id="dstat-' + d + '">0/' + t.n + '</span></th>';
+            + '<span class="dstat ' + initStat + '</span></th>';
     });
 
     html += '<th class="th-n"><span class="section-label" style="margin:0">N</span></th>';
@@ -618,7 +671,7 @@
               + cellInner(emp, d) + '</td>';
       });
 
-      var c = nCount(emp);
+      var c    = nCount(emp);
       var ncls = c === 0 ? 'z' : c === 1 ? 'one' : c === 2 ? 'two' : 'over';
       html += '<td class="n-col"><span class="ncb ' + ncls + '" id="nb-' + i + '">' + c + '/2</span></td>';
       html += '</tr>';
@@ -627,7 +680,7 @@
     html += '</tbody></table>';
     document.getElementById('grid-con').innerHTML = html;
     document.getElementById('summary-bar').style.display = 'flex';
-    document.getElementById('grid-label').style.display = 'block';
+    document.getElementById('grid-label').style.display  = 'block';
     refreshSummary();
   }
 
