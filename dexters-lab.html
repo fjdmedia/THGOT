@@ -58,10 +58,17 @@
     .header .title { font-size: 1rem; font-weight: 600; }
     .header .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
 
+    .header-clock {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.03em;
+    }
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .save-btn {
       background: var(--accent);
@@ -288,26 +295,19 @@
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 
-    .legend {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
-    }
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; color: var(--muted); }
-    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-
     /* ── Mini Staffing ── */
     /* ── Staffing Bar (full-width) ── */
     .staffing-bar {
+      position: sticky;
+      bottom: 64px;
+      z-index: 50;
       max-width: 1500px;
       margin: 16px auto 0;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 16px 24px;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
     }
     .sb-label {
       font-size: 0.6rem;
@@ -419,7 +419,7 @@
     .grid-scroll-top {
       overflow-x: auto;
       overflow-y: hidden;
-      height: 12px;
+      height: 18px;
       margin-bottom: 4px;
     }
     .grid-scroll-top-inner { height: 1px; }
@@ -922,15 +922,15 @@
     .time-manual-input:focus { border-color: var(--accent); }
     /* Past / now / future columns */
     .th-past { color: var(--faint) !important; }
-    .th-now-col { color: var(--accent) !important; border-bottom: 2px solid var(--accent) !important; }
+    .th-now-col { color: #22d3ee !important; border-bottom: 2px solid #22d3ee !important; }
     .td-cell-past { opacity: 0.4; }
-    .td-cell-now { border-left: 2px solid var(--accent) !important; }
+    .td-cell-now { border-left: 2px solid #22d3ee !important; }
     /* Trackable break cells (past) */
     .b-track { cursor: pointer; font-size: 0.72rem; font-weight: 700; color: #1a1a2e; }
     .b-track:hover { filter: brightness(1.1); }
     [data-theme="dark"] .b-track { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.65); }
-    .b-done-cell { opacity: 0.25 !important; cursor: pointer; }
-    .b-grace-warn { border-left: 3px solid #f59e0b !important; }
+    .b-done-cell { opacity: 0.38 !important; cursor: pointer; }
+    .b-grace-warn { border-left: 3px solid #e879f9 !important; }
 
     /* Viewer mode — view only, no interaction */
     body.viewer-mode .admin-only { display: none !important; }
@@ -945,12 +945,13 @@
 
     @media (max-width: 1000px) {
       .main { grid-template-columns: 240px 1fr; }
-      .right-col { grid-column: 1 / -1; position: static; }
+      .right-col { grid-column: 1 / -1; position: static; order: -1; }
     }
     @media (max-width: 700px) {
       .main { grid-template-columns: 1fr; }
-      .input-panel { position: static; }
-      .right-col { position: static; }
+      .input-panel { position: static; order: 1; }
+      .grid-panel { order: 2; }
+      .right-col { position: static; order: 0; }
     }
   </style>
 
@@ -992,6 +993,7 @@
     <div class="subtitle">Break forecast sandbox</div>
   </div>
   <div class="header-actions">
+    <div class="header-clock" id="headerClock">--:--</div>
     <button class="save-btn admin-only" id="saveBtn" onclick="manualSave()">Save</button>
     <button class="save-btn admin-only" id="shareBtn" onclick="shareState()">Share</button>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
@@ -1039,24 +1041,6 @@
       </div>
     </div>
 
-    <div class="legend">
-      <div class="legend-item">
-        <div class="legend-dot" style="background:rgba(251,146,60,0.55)"></div>
-        1st Break (20 min)
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:rgba(59,130,246,0.55)"></div>
-        Lunch (35 min)
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:rgba(34,197,94,0.55)"></div>
-        3rd Break (20 min)
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:rgba(168,85,247,0.55)"></div>
-        4th Break (20 min)
-      </div>
-    </div>
 
     <div class="time-ctrl">
       <div class="section-label">Current Time</div>
@@ -1071,8 +1055,8 @@
         </label>
       </div>
       <button class="btn btn-ghost admin-only" style="width:100%;margin-top:10px;font-size:0.75rem;" onclick="completeAllDue()">Complete All Due</button>
-      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:6px;font-size:0.75rem;border-color:rgba(239,68,68,0.35);color:#ef4444;" onclick="clearBreaks()">Clear Breaks</button>
-      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:6px;font-size:0.75rem;border-color:rgba(239,68,68,0.35);color:#ef4444;" onclick="clearAll()">Reset Shifts</button>
+      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:6px;font-size:0.75rem;border-color:rgba(251,146,60,0.35);color:#fb923c;" onclick="clearBreaks()">Clear Breaks</button>
+      <button class="btn btn-ghost admin-only" style="width:100%;margin-top:6px;font-size:0.75rem;border-color:rgba(239,68,68,0.5);color:#ef4444;background:rgba(239,68,68,0.06);font-weight:600;" onclick="clearAll()">Reset Shifts</button>
     </div>
 
   </div>
@@ -1089,6 +1073,7 @@
         Overlap
       </div>
       <div class="gl-item"><div class="gl-dot" style="background:rgba(20,184,166,0.65)"></div> Headcount</div>
+      <div class="gl-item"><div class="gl-dot" style="border-left:3px solid #e879f9;background:var(--surface2);"></div> Grace (&lt;60m gap)</div>
       <div class="gl-hint">click to mark sent · right-click to undo</div>
     </div>
     <div class="grid-scroll-top" id="gridScrollTop">
@@ -1821,8 +1806,10 @@ function getNowMins() {
 
 function updateTimeDisplay() {
   var el = document.getElementById('timeDisplay');
-  if (!el) return;
-  el.textContent = currentTimeMins !== null ? formatTime(currentTimeMins) : '--:--';
+  var hc = document.getElementById('headerClock');
+  var txt = currentTimeMins !== null ? formatTime(currentTimeMins) : '--:--';
+  if (el) el.textContent = txt;
+  if (hc) hc.textContent = txt;
 }
 
 function startLive() {
@@ -1940,7 +1927,8 @@ function renderGrid() {
 
   shiftRows.forEach(function(row, rowIdx) {
     html += '<tr>';
-    html += '<td class="td-shift"><span class="row-remove" data-remove="' + rowIdx + '">✕</span>' + row.label + '</td>';
+    var otTag = row.isOT ? ' style="border-left:3px solid var(--accent);"' : '';
+    html += '<td class="td-shift"' + otTag + '><span class="row-remove" data-remove="' + rowIdx + '">✕</span>' + row.label + '</td>';
     html += '<td class="td-count">' + row.count + '</td>';
 
     // Grace period detection: flag break windows < 60min apart
