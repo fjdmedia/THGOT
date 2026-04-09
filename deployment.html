@@ -813,6 +813,7 @@
     document.getElementById('grid-con').innerHTML = html;
     document.getElementById('summary-bar').style.display = 'flex';
     document.getElementById('grid-label').style.display  = 'block';
+    for (var d = 0; d < 7; d++) refreshDayHead(d);
     refreshSummary();
   }
 
