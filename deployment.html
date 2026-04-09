@@ -286,12 +286,47 @@
       min-width: 38px;
       text-align: center;
     }
-    .ncb.z    { color: var(--faint);   background: var(--surface2);       border: 1px solid var(--border); }
-    .ncb.one  { color: var(--yellow);  background: rgba(217,119,6,0.1);   border: 1px solid rgba(217,119,6,0.3); }
-    .ncb.two  { color: var(--green);   background: var(--green-dim);      border: 1px solid rgba(22,163,74,0.3); }
-    .ncb.over { color: var(--red);     background: var(--red-dim);        border: 1px solid rgba(220,38,38,0.3); }
+    .ncb.z    { color: var(--red);     background: var(--red-dim);        border: 1px solid rgba(220,38,38,0.25); }  /* 0 N — below minimum */
+    .ncb.one  { color: var(--green);   background: var(--green-dim);      border: 1px solid rgba(22,163,74,0.3); }   /* 1 N — ideal */
+    .ncb.two  { color: var(--yellow);  background: rgba(217,119,6,0.1);   border: 1px solid rgba(217,119,6,0.3); }   /* 2 N — acceptable */
+    .ncb.over { color: var(--red);     background: var(--red-dim);        border: 1px solid rgba(220,38,38,0.3); }   /* 3+ N — over max */
 
     .empty-state { text-align: center; padding: 48px 20px; color: var(--faint); font-size: 0.8rem; }
+
+    .mode-toggle {
+      display: inline-flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .mode-btn {
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 5px 14px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .mode-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .mode-btn:not(.active):hover { color: var(--text); }
+    .mode-label {
+      font-size: 0.6rem;
+      color: var(--faint);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+      margin-left: 4px;
+      align-self: center;
+    }
 
     .powered-by { text-align: center; font-size: 0.65rem; color: var(--faint); padding: 28px 0 8px; letter-spacing: 0.05em; }
     .powered-by a { color: var(--accent); font-weight: 600; text-decoration: none; }
@@ -348,7 +383,7 @@
 <div class="header">
   <div>
     <div class="title">Deployment</div>
-    <div class="subtitle">N Assignment Planner · CBA compliance tracker</div>
+    <div class="subtitle" id="main-subtitle">NPSV · N Assignment Planner · CBA compliance tracker</div>
   </div>
   <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
 </div>
@@ -357,22 +392,27 @@
   <div class="section-label">Schedule</div>
   <textarea class="paste-area" id="pasteIn" placeholder="Paste schedule from Excel...&#10;&#10;Mon    Tue    Wed    Thu    Fri    Sat    Sun    Gender&#10;0400-1400  x  x  x  0400-1400  0400-1400  0400-1400  Male"></textarea>
   <div class="btn-row">
+    <div class="mode-toggle">
+      <button id="modeNpsv" class="mode-btn active" onclick="setMode('npsv')">NPSV</button>
+      <button id="modeGse"  class="mode-btn"        onclick="setMode('gse')">GSE</button>
+    </div>
+    <span class="mode-label" id="mode-hint">min 1 · max 2 · 4/day</span>
     <button class="btn"        onclick="parsePaste()">Load</button>
     <button class="btn-accent" onclick="shufflePattern()">Shuffle</button>
     <button class="btn-ghost"  onclick="copyText()">Copy</button>
-    <button class="btn-ghost"  onclick="resetN()">Reset N</button>
+    <button class="btn-ghost"  onclick="resetN()">Reset</button>
     <button class="btn-ghost"  onclick="clearAll()">Clear</button>
   </div>
   <div class="format-hint">
-    Paste directly from Excel · 7 day columns + Gender (Male / Female / M/F) · x = day off<br>
-    Only scheduled employees eligible for N · Max 2 N per employee (CBA)
+    Paste directly from Excel · 7 day cols + Designation (NPSV / GSE) + Gender (Male / Female / M/F) · x = day off<br>
+    <span id="hint-rules">NPSV: min 1 · max 2 per employee · 4 deployed/day (2M+2F)</span>
   </div>
 </div>
 
 <div id="summary-bar" class="summary-bar" style="display:none;"></div>
 
 <div class="grid-section">
-  <div class="section-label" id="grid-label" style="display:none;">Assignment Grid — Click to toggle N · Days off cannot be deployed</div>
+  <div class="section-label" id="grid-label" style="display:none;">Assignment Grid — Click to toggle · Days off cannot be deployed</div>
   <div class="grid-wrap">
     <div id="grid-con"><div class="empty-state">Paste a schedule above to begin.</div></div>
   </div>
@@ -385,6 +425,32 @@
   var DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   var emps  = [];
   var toastT = null;
+  var MODE  = 'npsv'; // 'npsv' or 'gse'
+
+  function modeMax()   { return MODE === 'gse' ? 4 : 2; }
+  function modeMin()   { return MODE === 'gse' ? 2 : 1; }
+  function modeLabel() { return MODE === 'gse' ? 'G' : 'N'; }
+
+  function setMode(m) {
+    MODE = m;
+    document.getElementById('modeNpsv').classList.toggle('active', m === 'npsv');
+    document.getElementById('modeGse').classList.toggle('active',  m === 'gse');
+    document.getElementById('mode-hint').textContent =
+      m === 'gse' ? 'min 2 · max 4 · 3/day' : 'min 1 · max 2 · 4/day';
+    document.getElementById('hint-rules').textContent =
+      m === 'gse'
+        ? 'GSE: min 2 · max 4 per employee · 3 deployed/day (1M+1F+1 any)'
+        : 'NPSV: min 1 · max 2 per employee · 4 deployed/day (2M+2F)';
+    document.getElementById('main-subtitle').textContent =
+      m === 'gse'
+        ? 'GSE · G Assignment Planner · CBA compliance tracker'
+        : 'NPSV · N Assignment Planner · CBA compliance tracker';
+    if (emps.length) {
+      emps.forEach(function(e){ e.n = [false,false,false,false,false,false,false]; });
+      renderAll();
+      toast('Switched to ' + m.toUpperCase() + ' mode — assignments reset');
+    }
+  }
 
   function isOff(day) { return (day || '').toLowerCase().trim() === 'x'; }
 
@@ -451,7 +517,7 @@
     var pad = function(s, w) { s = String(s); while (s.length < w) s += ' '; return s; };
     var sep = '------' + DAYS.map(function(){ return '------'; }).join('') + '-';
 
-    var lines = ['N DEPLOYMENT PLAN', new Date().toLocaleDateString(), ''];
+    var lines = [modeLabel() + ' DEPLOYMENT PLAN (' + MODE.toUpperCase() + ')', new Date().toLocaleDateString(), ''];
 
     // Header row
     lines.push(pad('', 6) + DAYS.map(function(d){ return pad(d, COL); }).join(''));
@@ -462,7 +528,7 @@
       var label = pad((i+1) + (emp.gc === 'm' ? 'M' : emp.gc === 'f' ? 'F' : '?'), 6);
       var cells = emp.days.map(function(day, d) {
         if (isOff(day))   return pad('—', COL);
-        if (emp.n[d])     return pad('N', COL);
+        if (emp.n[d])     return pad(modeLabel(), COL);
         return pad('·', COL);
       });
       lines.push(label + cells.join(''));
@@ -499,45 +565,75 @@
     var tm = working.filter(function(e){ return e.gc === 'm'; }).length;
     var tf = working.filter(function(e){ return e.gc === 'f'; }).length;
 
+    if (MODE === 'gse') {
+      // 3 deployed/day: 1M + 1F + 1 either; adjust if gender-limited
+      if (tm >= 1 && tf >= 1) return { n:3, m:1, f:1 };
+      return { n: Math.min(working.length, 3), m: Math.min(tm, 1), f: Math.min(tf, 1) };
+    }
+
+    // NPSV: 4 deployed/day (2M + 2F)
     if (tm >= 2 && tf >= 2) return { n:4, m:2, f:2 };
     if (tm >= 2 && tf === 1) return { n:3, m:2, f:1 };
     if (tm === 1 && tf >= 2) return { n:3, m:1, f:2 };
-    // Only unknowns or single-gender day
     return { n: Math.min(working.length, 4), m: tm, f: tf };
   }
 
-  // ── Shuffle: hardest day first, then spread assignments ───────────────────
+  // ── Shuffle: hardest day first, spread assignments, enforce mode min/max ──
   function shufflePattern() {
     if (!emps.length) { toast('Load a schedule first', true); return; }
     emps.forEach(function(e){ e.n = [false,false,false,false,false,false,false]; });
 
-    // Process days hardest-to-fill first so they get first pick of the pool
+    var max = modeMax();
+    var min = modeMin();
+
+    // Process days hardest-to-fill first so constrained days get first pick
     var dayOrder = [0,1,2,3,4,5,6].sort(function(a, b) {
       var ea = emps.filter(function(e){ return !isOff(e.days[a]); }).length;
       var eb = emps.filter(function(e){ return !isOff(e.days[b]); }).length;
       return ea - eb;
     });
 
+    // Pass 1: fill each day — pickBest sorts fewest assignments first,
+    // so employees with fewer deployments are always chosen before anyone stacks up.
     dayOrder.forEach(function(d) {
       var t = dayTarget(d);
       if (t.na || t.n === 0) return;
 
-      var eligM = emps.filter(function(e){ return e.gc === 'm' && !isOff(e.days[d]) && nCount(e) < 2; });
-      var eligF = emps.filter(function(e){ return e.gc === 'f' && !isOff(e.days[d]) && nCount(e) < 2; });
-      var eligU = emps.filter(function(e){ return e.gc === 'u' && !isOff(e.days[d]) && nCount(e) < 2; });
+      var eligM = emps.filter(function(e){ return e.gc === 'm' && !isOff(e.days[d]) && nCount(e) < max; });
+      var eligF = emps.filter(function(e){ return e.gc === 'f' && !isOff(e.days[d]) && nCount(e) < max; });
+      var eligU = emps.filter(function(e){ return e.gc === 'u' && !isOff(e.days[d]) && nCount(e) < max; });
 
       var picked = [];
       picked = picked.concat(pickBest(eligM, t.m, d));
       picked = picked.concat(pickBest(eligF, t.f, d));
 
-      // Fill remaining slots with unknowns
+      // Remaining slots: any eligible (GSE 3rd slot = either gender; NPSV = unknowns)
       var rem = t.n - picked.length;
       if (rem > 0) {
-        var avail = eligU.filter(function(e){ return picked.indexOf(e) === -1; });
+        var avail = eligM.concat(eligF).concat(eligU).filter(function(e){
+          return picked.indexOf(e) === -1;
+        });
         picked = picked.concat(pickBest(avail, rem, d));
       }
 
       picked.forEach(function(e){ e.n[d] = true; });
+    });
+
+    // Pass 2: minimum guarantee — push anyone under the mode minimum up to it,
+    // placing them on their least-loaded eligible working day.
+    emps.forEach(function(emp) {
+      while (nCount(emp) < min) {
+        var bestDay = -1, bestCount = Infinity;
+        for (var d = 0; d < 7; d++) {
+          if (isOff(emp.days[d]) || emp.n[d]) continue;
+          var t = dayTarget(d);
+          if (t.na) continue;
+          var s = dayStats(d);
+          if (s.total < bestCount) { bestCount = s.total; bestDay = d; }
+        }
+        if (bestDay >= 0) emp.n[bestDay] = true;
+        else break; // no more working days available
+      }
     });
 
     renderAll();
@@ -564,14 +660,15 @@
     return sorted.slice(0, n);
   }
 
-  // ── Toggle N on click ─────────────────────────────────────────────────────
+  // ── Toggle assignment on click ────────────────────────────────────────────
   function toggleN(ei, di) {
     var emp = emps[ei];
     if (isOff(emp.days[di])) { toast('Day off — cannot deploy', true); return; }
-    if (!emp.n[di] && nCount(emp) >= 2) {
+    var max = modeMax();
+    if (!emp.n[di] && nCount(emp) >= max) {
       var cell = document.getElementById('c-' + ei + '-' + di);
       cell.classList.remove('shake'); void cell.offsetWidth; cell.classList.add('shake');
-      toast('Max 2 N per employee', true);
+      toast('Max ' + max + ' ' + modeLabel() + ' per employee', true);
       return;
     }
     emp.n[di] = !emp.n[di];
@@ -585,7 +682,7 @@
   function cellInner(emp, di) {
     var off  = isOff(emp.days[di]);
     var html = off ? '<span class="coff">OFF</span>' : '<span class="cshift">' + emp.days[di] + '</span>';
-    if (emp.n[di]) html += '<span class="cn">N</span>';
+    if (emp.n[di]) html += '<span class="cn">' + modeLabel() + '</span>';
     return html;
   }
 
@@ -600,9 +697,19 @@
   function refreshNBadge(ei) {
     var el = document.getElementById('nb-' + ei);
     if (!el) return;
-    var c = nCount(emps[ei]);
-    el.textContent = c + '/2';
-    el.className = 'ncb ' + (c === 0 ? 'z' : c === 1 ? 'one' : c === 2 ? 'two' : 'over');
+    var c   = nCount(emps[ei]);
+    var max = modeMax();
+    var min = modeMin();
+    var lbl = modeLabel();
+    var cls;
+    if      (c === 0)   cls = 'z';
+    else if (c < min)   cls = 'z';    // below minimum
+    else if (c === min) cls = 'one';  // at minimum = ideal
+    else if (c <= max)  cls = 'two';  // above ideal but within max
+    else                cls = 'over';
+    var txt = c === 0 ? '0 ' + lbl : c === min ? c + ' ' + lbl + ' ✓' : c + '/' + max;
+    el.textContent = txt;
+    el.className = 'ncb ' + cls;
   }
 
   function dayStats(di) {
@@ -645,17 +752,22 @@
     var daysOk = 0, daysTotal = 0;
     for (var d = 0; d < 7; d++) {
       var t = dayTarget(d);
-      if (t.na) continue; // skip unstaffed days
+      if (t.na) continue;
       daysTotal++;
       var s = dayStats(d);
       if (s.total >= t.n && s.m >= t.m && s.f >= t.f) daysOk++;
     }
-    var at2 = emps.filter(function(e){ return nCount(e) === 2; }).length;
-    var at0 = emps.filter(function(e){ return nCount(e) === 0; }).length;
+    var min = modeMin();
+    var max = modeMax();
+    var lbl = modeLabel();
+    var belowMin = emps.filter(function(e){ return nCount(e) < min; }).length;
+    var atMin    = emps.filter(function(e){ return nCount(e) === min; }).length;
+    var aboveMin = emps.filter(function(e){ return nCount(e) > min && nCount(e) <= max; }).length;
     document.getElementById('summary-bar').innerHTML =
-      chip(daysOk + '/' + daysTotal, 'Days meeting req', daysOk === daysTotal ? 'ok' : '') +
-      chip(at2 + '/' + emps.length,  'At max N (2)',     at2 === emps.length ? 'ok' : '') +
-      chip(at0 + '/' + emps.length,  'No N assigned',    at0 > 0 ? 'warn' : 'ok');
+      chip(daysOk + '/' + daysTotal,     'Days compliant',         daysOk === daysTotal ? 'ok' : '') +
+      chip(atMin  + '/' + emps.length,   'At ideal (' + min + ' ' + lbl + ')', belowMin === 0 ? 'ok' : '') +
+      chip(belowMin + '/' + emps.length, 'Below min',              belowMin === 0 ? 'ok' : 'warn') +
+      chip(aboveMin + '/' + emps.length, 'Above min (ok)',         aboveMin > 0 ? 'warn' : '');
   }
 
   function chip(val, lbl, cls) {
@@ -692,8 +804,10 @@
       });
 
       var c    = nCount(emp);
-      var ncls = c === 0 ? 'z' : c === 1 ? 'one' : c === 2 ? 'two' : 'over';
-      html += '<td class="n-col"><span class="ncb ' + ncls + '" id="nb-' + i + '">' + c + '/2</span></td>';
+      var max  = modeMax(); var min = modeMin(); var lbl = modeLabel();
+      var ncls = c === 0 ? 'z' : c < min ? 'z' : c === min ? 'one' : c <= max ? 'two' : 'over';
+      var nlbl = c === 0 ? '0 ' + lbl : c === min ? c + ' ' + lbl + ' ✓' : c + '/' + max;
+      html += '<td class="n-col"><span class="ncb ' + ncls + '" id="nb-' + i + '">' + nlbl + '</span></td>';
       html += '</tr>';
     });
 
