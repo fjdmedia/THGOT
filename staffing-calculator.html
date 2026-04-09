@@ -883,9 +883,11 @@
     calculate();
   </script>
 <script>
+var _authed=false;
+(function(){var g=document.getElementById('pw-gate');if(g)new MutationObserver(function(){if(!_authed&&!document.getElementById('pw-gate')){document.body.innerHTML='';window.location.reload()}}).observe(g.parentNode,{childList:true})})();
 (function() {
   var auth = sessionStorage.getItem('thgot_auth');
-  if (auth) { document.getElementById('pw-gate').remove(); return; }
+  if (auth) { _authed=true;document.getElementById('pw-gate').remove(); return; }
   var inp = document.getElementById('pw-input');
   inp.focus();
   inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
@@ -896,10 +898,10 @@ async function checkPW() {
   var h = await _h(val);
   if (h === '61697e084834fbb2cf9ceebd945b42bdb9cd7cee96e0eaeb3df2232ccc95a3f0') {
     sessionStorage.setItem('thgot_auth', 'admin');
-    document.getElementById('pw-gate').remove();
+    _authed=true;document.getElementById('pw-gate').remove();
   } else if (h === '7f30af648acdc85bfca44ba813cdf882bc5039b150ecfceba3822dc2ff75a4de') {
     sessionStorage.setItem('thgot_auth', 'viewer');
-    document.getElementById('pw-gate').remove();
+    _authed=true;document.getElementById('pw-gate').remove();
   } else {
     var box = document.querySelector('.pw-box');
     box.classList.remove('pw-shake');
