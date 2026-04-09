@@ -599,9 +599,27 @@
     /* ── OT Prediction Panel ── */
     .ot-panel {
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 2px solid var(--border);
       border-radius: 14px;
       padding: 16px;
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    .ot-panel.ot-glow-green {
+      border-color: rgba(34,197,94,0.4);
+      box-shadow: 0 0 12px rgba(34,197,94,0.08);
+    }
+    .ot-panel.ot-glow-amber {
+      border-color: rgba(251,146,60,0.5);
+      box-shadow: 0 0 16px rgba(251,146,60,0.12);
+    }
+    .ot-panel.ot-glow-red {
+      border-color: rgba(239,68,68,0.55);
+      box-shadow: 0 0 20px rgba(239,68,68,0.15);
+      animation: ot-pulse-red 2s ease-in-out infinite;
+    }
+    @keyframes ot-pulse-red {
+      0%,100% { box-shadow: 0 0 20px rgba(239,68,68,0.15); }
+      50% { box-shadow: 0 0 28px rgba(239,68,68,0.28); }
     }
     .ot-panel-title {
       font-size: 0.6rem;
@@ -611,11 +629,19 @@
       color: var(--faint);
       margin-bottom: 10px;
     }
+    .ot-summary {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .ot-summary strong { color: var(--text); font-weight: 600; }
     .ot-badge {
       display: inline-block;
-      font-size: 0.72rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      padding: 3px 12px;
+      padding: 5px 16px;
       border-radius: 20px;
       margin-bottom: 12px;
     }
@@ -636,7 +662,8 @@
     }
     .ot-bottleneck {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
+      font-size: 0.85rem;
+      font-weight: 600;
       color: var(--text);
       padding: 6px 0;
     }
@@ -644,20 +671,20 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 5px 0;
+      padding: 6px 0;
       border-bottom: 1px solid var(--border);
-      font-size: 0.7rem;
+      font-size: 0.74rem;
     }
     .ot-miss-item:last-child { border-bottom: none; }
     .ot-miss-shift { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text); }
     .ot-miss-type { color: var(--muted); }
-    .ot-miss-time { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+    .ot-miss-time { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-weight: 600; }
     .ot-extension {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: #ef4444;
-      padding: 6px 0;
+      padding: 8px 0;
     }
     .next-up-title {
       font-size: 0.6rem;
@@ -724,22 +751,29 @@
     .next-up-countdown {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      font-size: 0.78rem;
-      padding: 2px 8px;
-      border-radius: 5px;
+      font-size: 0.88rem;
+      padding: 4px 10px;
+      border-radius: 6px;
       white-space: nowrap;
     }
     .cd-ok   { background: rgba(34,197,94,0.15); color: #22c55e; }
-    .cd-warn { background: rgba(251,146,60,0.18); color: #fb923c; }
-    .cd-crit { background: rgba(239,68,68,0.18); color: #ef4444; }
-    .cd-late { background: rgba(239,68,68,0.25); color: #ef4444; animation: pulse-late 1s ease-in-out infinite; }
-    @keyframes pulse-late { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
+    .cd-warn { background: rgba(251,146,60,0.22); color: #fb923c; }
+    .cd-crit { background: rgba(239,68,68,0.22); color: #ef4444; font-size: 0.92rem; }
+    .cd-late {
+      background: rgba(239,68,68,0.30); color: #ef4444;
+      font-size: 0.92rem;
+      animation: pulse-late 0.8s ease-in-out infinite;
+    }
+    @keyframes pulse-late {
+      0%,100% { opacity:1; transform: scale(1); }
+      50% { opacity:0.6; transform: scale(1.04); }
+    }
     .next-up-urgent {
-      border-color: rgba(239,68,68,0.3);
-      background: rgba(239,68,68,0.06);
+      border-color: rgba(239,68,68,0.4);
+      background: rgba(239,68,68,0.08);
     }
     [data-theme="dark"] .next-up-urgent {
-      background: rgba(239,68,68,0.08);
+      background: rgba(239,68,68,0.10);
     }
     .next-up-empty {
       color: var(--muted);
@@ -898,8 +932,16 @@
     .b-done-cell { opacity: 0.25 !important; cursor: pointer; }
     .b-grace-warn { border-left: 3px solid #f59e0b !important; }
 
-    /* Viewer mode — hide admin-only controls */
+    /* Viewer mode — view only, no interaction */
     body.viewer-mode .admin-only { display: none !important; }
+    body.viewer-mode .header,
+    body.viewer-mode .main,
+    body.viewer-mode .input-panel,
+    body.viewer-mode .grid-container,
+    body.viewer-mode .right-col { pointer-events: none; user-select: text; }
+    body.viewer-mode .bottom-nav { pointer-events: auto; }
+    .viewer-banner { display:none; background:#f59e0b; color:#000; text-align:center; padding:6px; font-size:0.85rem; font-weight:600; }
+    body.viewer-mode .viewer-banner { display:block; }
 
     @media (max-width: 1000px) {
       .main { grid-template-columns: 240px 1fr; }
@@ -941,6 +983,8 @@
     <div class="pw-error" id="pw-error"></div>
   </div>
 </div>
+
+<div class="viewer-banner">View Only</div>
 
 <div class="header">
   <div>
@@ -1063,6 +1107,7 @@
 
     <div class="ot-panel" id="otPanel">
       <div class="ot-panel-title">OT Prediction</div>
+      <div id="otSummary" class="ot-summary"></div>
       <div id="otBadge" class="ot-badge ot-badge-empty">--</div>
       <div id="otBody" class="ot-body">
         <div class="ot-empty">Add shifts and set time to see predictions</div>
@@ -1573,9 +1618,19 @@ function renderNextUp() {
 }
 
 // ── OT Prediction Engine ───────────────────────────────────────────────────
+function setOTGlow(status) {
+  var panel = document.getElementById('otPanel');
+  if (!panel) return;
+  panel.className = 'ot-panel';
+  if (status === 'green') panel.classList.add('ot-glow-green');
+  else if (status === 'amber') panel.classList.add('ot-glow-amber');
+  else if (status === 'red') panel.classList.add('ot-glow-red');
+}
+
 function runOTPrediction() {
   var badge = document.getElementById('otBadge');
   var body  = document.getElementById('otBody');
+  var summary = document.getElementById('otSummary');
   if (!badge || !body) return;
 
   // Empty state
@@ -1583,6 +1638,8 @@ function runOTPrediction() {
     badge.className = 'ot-badge ot-badge-empty';
     badge.textContent = '--';
     body.innerHTML = '<div class="ot-empty">Add shifts and set time to see predictions</div>';
+    if (summary) summary.textContent = '';
+    setOTGlow('');
     return;
   }
 
@@ -1610,6 +1667,8 @@ function runOTPrediction() {
     badge.className = 'ot-badge ot-badge-green';
     badge.textContent = 'On Track';
     body.innerHTML = '<div class="ot-empty">All breaks completed or windows closed</div>';
+    if (summary) summary.innerHTML = '<strong>0</strong> unsent';
+    setOTGlow('green');
     return;
   }
 
@@ -1704,6 +1763,16 @@ function runOTPrediction() {
 
   badge.className = 'ot-badge ' + statusCls;
   badge.textContent = statusText;
+  setOTGlow(status);
+
+  // Build summary line
+  var totalUnsent = unsent.reduce(function(s, u) { return s + u.remaining; }, 0);
+  if (summary) {
+    var sumParts = ['<strong>' + totalUnsent + '</strong> unsent'];
+    if (bottleneckSlot !== null) sumParts.push('Crunch ' + formatTime(bottleneckSlot));
+    if (totalMissedMins > 0) sumParts.push('+' + totalMissedMins + 'm OT');
+    summary.innerHTML = sumParts.join(' &middot; ');
+  }
 
   // Build body HTML
   var html = '';
