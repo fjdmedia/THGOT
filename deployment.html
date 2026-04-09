@@ -405,7 +405,7 @@
   </div>
   <div class="format-hint">
     Paste directly from Excel · 7 day cols + Designation (NPSV / GSE) + Gender (Male / Female / M/F) · x = day off<br>
-    <span id="hint-rules">NPSV: min 1 · max 2 per employee · 4 deployed/day (2M+2F)</span>
+    <span id="hint-rules">NPSV: 1 N per employee (ideal) · 4 deployed/day (2M+2F) · manual override allowed</span>
   </div>
 </div>
 
@@ -427,7 +427,7 @@
   var toastT = null;
   var MODE  = 'npsv'; // 'npsv' or 'gse'
 
-  function modeMax()   { return MODE === 'gse' ? 4 : 2; }
+  function modeMax()   { return MODE === 'gse' ? 4 : 1; }
   function modeMin()   { return MODE === 'gse' ? 2 : 1; }
   function modeLabel() { return MODE === 'gse' ? 'G' : 'N'; }
 
@@ -436,11 +436,11 @@
     document.getElementById('modeNpsv').classList.toggle('active', m === 'npsv');
     document.getElementById('modeGse').classList.toggle('active',  m === 'gse');
     document.getElementById('mode-hint').textContent =
-      m === 'gse' ? 'min 2 · max 4 · 3/day' : 'min 1 · max 2 · 4/day';
+      m === 'gse' ? 'min 2 · max 4 · 3/day' : 'min 1 · max 1 · 4/day';
     document.getElementById('hint-rules').textContent =
       m === 'gse'
         ? 'GSE: min 2 · max 4 per employee · 3 deployed/day (1M+1F+1 any)'
-        : 'NPSV: min 1 · max 2 per employee · 4 deployed/day (2M+2F)';
+        : 'NPSV: 1 N per employee (ideal) · 4 deployed/day (2M+2F) · manual override allowed';
     document.getElementById('main-subtitle').textContent =
       m === 'gse'
         ? 'GSE · G Assignment Planner · CBA compliance tracker'
@@ -663,13 +663,18 @@
     var emp = emps[ei];
     if (isOff(emp.days[di])) { toast('Day off — cannot deploy', true); return; }
     var max = modeMax();
-    if (!emp.n[di] && nCount(emp) >= max) {
+    // GSE hard cap — block at max
+    if (MODE === 'gse' && !emp.n[di] && nCount(emp) >= max) {
       var cell = document.getElementById('c-' + ei + '-' + di);
       cell.classList.remove('shake'); void cell.offsetWidth; cell.classList.add('shake');
-      toast('Max ' + max + ' ' + modeLabel() + ' per employee', true);
+      toast('Max ' + max + ' ' + modeLabel() + ' per employee (GSE)', true);
       return;
     }
     emp.n[di] = !emp.n[di];
+    // NPSV: warn if now over the 1 N ideal but allow it
+    if (MODE === 'npsv' && emp.n[di] && nCount(emp) > max) {
+      toast('Above max — ' + nCount(emp) + ' N assigned', true);
+    }
     refreshCell(ei, di);
     refreshNBadge(ei);
     refreshDayHead(di);
