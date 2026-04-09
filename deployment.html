@@ -448,7 +448,6 @@
   function shufflePattern() {
     if (!emps.length) { toast('Load a schedule first', true); return; }
 
-    // Reset
     emps.forEach(function(e){ e.n = [false,false,false,false,false,false,false]; });
 
     for (var d = 0; d < 7; d++) {
@@ -459,14 +458,13 @@
       var eligU = emps.filter(function(e){ return e.gc === 'u' && !isOff(e.days[d]) && nCount(e) < 2; });
 
       var picked = [];
-      picked = picked.concat(pickBest(eligM, t.m));
-      picked = picked.concat(pickBest(eligF, t.f));
+      picked = picked.concat(pickBest(eligM, t.m, d));
+      picked = picked.concat(pickBest(eligF, t.f, d));
 
-      // Fill any remaining slots with unknowns
       var rem = t.n - picked.length;
       if (rem > 0) {
         var avail = eligU.filter(function(e){ return picked.indexOf(e) === -1; });
-        picked = picked.concat(pickBest(avail, rem));
+        picked = picked.concat(pickBest(avail, rem, d));
       }
 
       picked.forEach(function(e){ e.n[d] = true; });
@@ -478,24 +476,30 @@
 
   function nCount(e) { return e.n.filter(Boolean).length; }
 
-  // Pick n employees from arr, prioritising fewest N so far (fair spread).
-  // Within tied groups, randomise so repeated shuffles vary slightly.
-  function pickBest(arr, n) {
-    var sorted = arr.slice().sort(function(a, b){ return nCount(a) - nCount(b); });
-    var result = [];
-    var i = 0;
-    while (result.length < n && i < sorted.length) {
-      var cur = nCount(sorted[i]);
-      var group = [];
-      while (i < sorted.length && nCount(sorted[i]) === cur) group.push(sorted[i++]);
-      // Fisher-Yates shuffle within tied group
-      for (var j = group.length - 1; j > 0; j--) {
-        var k = Math.floor(Math.random() * (j + 1));
-        var tmp = group[j]; group[j] = group[k]; group[k] = tmp;
-      }
-      for (var g = 0; g < group.length && result.length < n; g++) result.push(group[g]);
+  // How many days since this employee's last N assignment before day d.
+  // Returns a large number if they haven't had N yet (highest priority).
+  function daysSinceLastN(emp, beforeDay) {
+    for (var d = beforeDay - 1; d >= 0; d--) {
+      if (emp.n[d]) return beforeDay - d;
     }
-    return result;
+    return 99;
+  }
+
+  // Pick n employees from arr for a given day.
+  // Priority: (1) fewest N so far, (2) largest gap since last N — keeps
+  // each employee's two N days as far apart as possible across the week.
+  function pickBest(arr, n, forDay) {
+    var sorted = arr.slice().sort(function(a, b) {
+      var ca = nCount(a), cb = nCount(b);
+      if (ca !== cb) return ca - cb;
+      // Tie-break: prefer the employee whose last N day is furthest back
+      var ga = daysSinceLastN(a, forDay);
+      var gb = daysSinceLastN(b, forDay);
+      if (gb !== ga) return gb - ga;
+      // Final tie-break: employee index for determinism
+      return emps.indexOf(a) - emps.indexOf(b);
+    });
+    return sorted.slice(0, n);
   }
 
   // ── Toggle N on click ─────────────────────────────────────────────────────
