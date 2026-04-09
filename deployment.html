@@ -10,32 +10,37 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f0f2f5;
+      --bg: #e8ebf0;
       --surface: #ffffff;
-      --surface2: #e4e8ee;
-      --border: rgba(0,0,0,0.1);
+      --surface2: #d8dce4;
+      --border: rgba(0,0,0,0.13);
       --accent: #4a6fa5;
-      --accent-dim: rgba(74,111,165,0.12);
+      --accent-dim: rgba(74,111,165,0.14);
       --text: #1e2a3a;
-      --muted: rgba(30,42,58,0.45);
-      --faint: rgba(30,42,58,0.25);
-      --green: #22c55e;
-      --green-dim: rgba(34,197,94,0.1);
-      --red: #ef4444;
-      --red-dim: rgba(239,68,68,0.1);
-      --yellow: #f59e0b;
+      --muted: rgba(30,42,58,0.65);
+      --faint: rgba(30,42,58,0.45);
+      --green: #16a34a;
+      --green-dim: rgba(22,163,74,0.1);
+      --red: #dc2626;
+      --red-dim: rgba(220,38,38,0.1);
+      --yellow: #d97706;
     }
 
     [data-theme="dark"] {
       --bg: #0a0d14;
-      --surface: #12172a;
-      --surface2: #1a1f30;
-      --border: rgba(255,255,255,0.09);
+      --surface: #141929;
+      --surface2: #1c2236;
+      --border: rgba(255,255,255,0.11);
       --accent: #fb923c;
-      --accent-dim: rgba(251,146,60,0.10);
-      --text: #e8e2d9;
-      --muted: rgba(232,226,217,0.35);
-      --faint: rgba(232,226,217,0.12);
+      --accent-dim: rgba(251,146,60,0.12);
+      --text: #f0ece5;
+      --muted: rgba(240,236,229,0.65);
+      --faint: rgba(240,236,229,0.4);
+      --green: #4ade80;
+      --green-dim: rgba(74,222,128,0.1);
+      --red: #f87171;
+      --red-dim: rgba(248,113,113,0.1);
+      --yellow: #fbbf24;
     }
 
     body {
@@ -56,8 +61,8 @@
       border-bottom: 1px solid var(--border);
       margin-bottom: 24px;
     }
-    .header .title { font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; }
-    .header .subtitle { font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
+    .header .title   { font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; }
+    .header .subtitle{ font-size: 0.7rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.03em; }
 
     .theme-btn {
       background: var(--surface2);
@@ -123,6 +128,18 @@
     }
     .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
 
+    .btn-shuffle {
+      background: transparent;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 8px 14px;
+    }
+    .btn-shuffle:hover { background: var(--accent-dim); }
+
     .format-hint {
       font-size: 0.6rem;
       color: var(--faint);
@@ -131,12 +148,7 @@
       line-height: 1.7;
     }
 
-    .summary-bar {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
+    .summary-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .s-chip {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -157,9 +169,9 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
-    .s-chip.ok { border-color: rgba(34,197,94,0.35); }
-    .s-chip.ok .val { color: var(--green); }
-    .s-chip.warn { border-color: rgba(245,158,11,0.35); }
+    .s-chip.ok   { border-color: rgba(22,163,74,0.4); }
+    .s-chip.ok   .val { color: var(--green); }
+    .s-chip.warn { border-color: rgba(217,119,6,0.4); }
     .s-chip.warn .val { color: var(--yellow); }
 
     .grid-section { margin-bottom: 30px; }
@@ -170,14 +182,13 @@
       border-spacing: 4px;
       min-width: max-content;
     }
-
     table.grid thead th {
       padding: 4px 2px 10px;
       text-align: center;
       vertical-align: bottom;
     }
     .th-emp { text-align: left; padding-left: 4px !important; }
-    .th-n { min-width: 46px; }
+    .th-n   { min-width: 46px; }
     .day-head { min-width: 84px; }
 
     .dname {
@@ -197,9 +208,9 @@
       border-radius: 4px;
       white-space: nowrap;
     }
-    .dstat.ok  { color: var(--green);  background: var(--green-dim);               border: 1px solid rgba(34,197,94,0.2);  }
-    .dstat.warn{ color: var(--yellow); background: rgba(245,158,11,0.08);           border: 1px solid rgba(245,158,11,0.2); }
-    .dstat.bad { color: var(--red);    background: var(--red-dim);                  border: 1px solid rgba(239,68,68,0.2);  }
+    .dstat.ok   { color: var(--green);  background: var(--green-dim); border: 1px solid rgba(22,163,74,0.25);  }
+    .dstat.warn { color: var(--yellow); background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.25); }
+    .dstat.bad  { color: var(--red);    background: var(--red-dim);   border: 1px solid rgba(220,38,38,0.25);  }
 
     td.cell {
       width: 84px;
@@ -215,9 +226,17 @@
       user-select: none;
     }
     td.cell:hover { border-color: var(--accent); }
-    td.cell.off   { background: var(--surface2); opacity: 0.45; }
-    td.cell.off:hover { opacity: 0.7; }
-    td.cell.n-on  { background: var(--accent-dim) !important; border-color: var(--accent) !important; opacity: 1 !important; }
+    td.cell.off {
+      background: var(--surface2);
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    td.cell.off:hover { border-color: var(--border); opacity: 0.4; }
+    td.cell.n-on {
+      background: var(--accent-dim) !important;
+      border-color: var(--accent) !important;
+      opacity: 1 !important;
+    }
 
     .cshift {
       display: block;
@@ -242,7 +261,7 @@
     }
 
     td.emp-col { padding: 0 8px 0 4px; white-space: nowrap; vertical-align: middle; }
-    .eid { font-size: 0.7rem; font-weight: 500; margin-right: 4px; }
+    .eid  { font-size: 0.7rem; font-weight: 500; margin-right: 4px; }
     .gtag {
       font-size: 0.55rem;
       font-weight: 700;
@@ -251,9 +270,9 @@
       padding: 2px 5px;
       vertical-align: middle;
     }
-    .gtag.m { color: #60a5fa; background: rgba(96,165,250,0.1);  border: 1px solid rgba(96,165,250,0.25); }
-    .gtag.f { color: #f472b6; background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.25); }
-    .gtag.u { color: var(--muted); background: var(--surface2);  border: 1px solid var(--border); }
+    .gtag.m { color: #3b82f6; background: rgba(59,130,246,0.1);  border: 1px solid rgba(59,130,246,0.3); }
+    .gtag.f { color: #ec4899; background: rgba(236,72,153,0.1);  border: 1px solid rgba(236,72,153,0.3); }
+    .gtag.u { color: var(--muted); background: var(--surface2); border: 1px solid var(--border); }
 
     td.n-col { text-align: center; vertical-align: middle; padding: 0 4px; }
     .ncb {
@@ -266,10 +285,10 @@
       min-width: 38px;
       text-align: center;
     }
-    .ncb.z    { color: var(--faint);   background: var(--surface2);            border: 1px solid var(--border); }
-    .ncb.one  { color: var(--yellow);  background: rgba(245,158,11,0.1);        border: 1px solid rgba(245,158,11,0.3); }
-    .ncb.two  { color: var(--green);   background: var(--green-dim);            border: 1px solid rgba(34,197,94,0.3); }
-    .ncb.over { color: var(--red);     background: var(--red-dim);              border: 1px solid rgba(239,68,68,0.3); }
+    .ncb.z    { color: var(--faint);   background: var(--surface2);         border: 1px solid var(--border); }
+    .ncb.one  { color: var(--yellow);  background: rgba(217,119,6,0.1);      border: 1px solid rgba(217,119,6,0.3); }
+    .ncb.two  { color: var(--green);   background: var(--green-dim);         border: 1px solid rgba(22,163,74,0.3); }
+    .ncb.over { color: var(--red);     background: var(--red-dim);           border: 1px solid rgba(220,38,38,0.3); }
 
     .empty-state { text-align: center; padding: 48px 20px; color: var(--faint); font-size: 0.8rem; }
 
@@ -338,19 +357,20 @@
   <textarea class="paste-area" id="pasteIn" placeholder="Paste schedule from Excel...&#10;&#10;Mon    Tue    Wed    Thu    Fri    Sat    Sun    Gender&#10;0400-1400  x  x  x  0400-1400  0400-1400  0400-1400  Male"></textarea>
   <div class="btn-row">
     <button class="btn" onclick="parsePaste()">Load</button>
+    <button class="btn-shuffle" onclick="shufflePattern()">Shuffle</button>
     <button class="btn-ghost" onclick="resetN()">Reset N</button>
     <button class="btn-ghost" onclick="clearAll()">Clear</button>
   </div>
   <div class="format-hint">
-    Paste directly from Excel · 7 day columns + Gender column (Male / Female / M/F) · x = day off<br>
-    All employees eligible for N regardless of shift status · Max 2 N per employee (CBA)
+    Paste directly from Excel · 7 day columns + Gender (Male / Female / M/F) · x = day off<br>
+    Only scheduled employees eligible for N · Max 2 N per employee (CBA) · Shuffle auto-fills a balanced pattern
   </div>
 </div>
 
 <div id="summary-bar" class="summary-bar" style="display:none;"></div>
 
 <div class="grid-section">
-  <div class="section-label" id="grid-label" style="display:none;">Assignment Grid — Click to toggle N</div>
+  <div class="section-label" id="grid-label" style="display:none;">Assignment Grid — Click to toggle N · Days off cannot be deployed</div>
   <div class="grid-wrap">
     <div id="grid-con"><div class="empty-state">Paste a schedule above to begin.</div></div>
   </div>
@@ -361,8 +381,10 @@
 
 <script>
   var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  var emps = [];
+  var emps  = [];
   var toastT = null;
+
+  function isOff(day) { return (day || '').toLowerCase().trim() === 'x'; }
 
   function gc(g) {
     var s = (g || '').toLowerCase().trim();
@@ -382,7 +404,6 @@
       var cols = line.split('\t').map(function(c){ return c.trim(); });
       if (cols.length < 8) return;
       var g = cols[cols.length - 1];
-      // Skip header rows
       if (/^gender$/i.test(g) || /^(mon|day|date|sun|shift)/i.test(cols[0])) return;
       result.push({
         gender: g,
@@ -413,50 +434,107 @@
     document.getElementById('grid-label').style.display = 'none';
   }
 
+  // ── Per-day target based on who is actually working that day ──────────────
+  function dayTarget(di) {
+    var tm = emps.filter(function(e){ return e.gc === 'm' && !isOff(e.days[di]); }).length;
+    var tf = emps.filter(function(e){ return e.gc === 'f' && !isOff(e.days[di]); }).length;
+    if (tm >= 2 && tf >= 2) return { n:4, m:2, f:2 };
+    if (tm >= 2 && tf === 1) return { n:3, m:2, f:1 };
+    if (tm === 1 && tf >= 2) return { n:3, m:1, f:2 };
+    return { n: Math.min(tm + tf, 4), m: tm, f: tf };
+  }
+
+  // ── Shuffle: auto-fill balanced N pattern ─────────────────────────────────
+  function shufflePattern() {
+    if (!emps.length) { toast('Load a schedule first', true); return; }
+
+    // Reset
+    emps.forEach(function(e){ e.n = [false,false,false,false,false,false,false]; });
+
+    for (var d = 0; d < 7; d++) {
+      var t = dayTarget(d);
+
+      var eligM = emps.filter(function(e){ return e.gc === 'm' && !isOff(e.days[d]) && nCount(e) < 2; });
+      var eligF = emps.filter(function(e){ return e.gc === 'f' && !isOff(e.days[d]) && nCount(e) < 2; });
+      var eligU = emps.filter(function(e){ return e.gc === 'u' && !isOff(e.days[d]) && nCount(e) < 2; });
+
+      var picked = [];
+      picked = picked.concat(pickBest(eligM, t.m));
+      picked = picked.concat(pickBest(eligF, t.f));
+
+      // Fill any remaining slots with unknowns
+      var rem = t.n - picked.length;
+      if (rem > 0) {
+        var avail = eligU.filter(function(e){ return picked.indexOf(e) === -1; });
+        picked = picked.concat(pickBest(avail, rem));
+      }
+
+      picked.forEach(function(e){ e.n[d] = true; });
+    }
+
+    renderAll();
+    toast('Pattern generated');
+  }
+
+  function nCount(e) { return e.n.filter(Boolean).length; }
+
+  // Pick n employees from arr, prioritising fewest N so far (fair spread).
+  // Within tied groups, randomise so repeated shuffles vary slightly.
+  function pickBest(arr, n) {
+    var sorted = arr.slice().sort(function(a, b){ return nCount(a) - nCount(b); });
+    var result = [];
+    var i = 0;
+    while (result.length < n && i < sorted.length) {
+      var cur = nCount(sorted[i]);
+      var group = [];
+      while (i < sorted.length && nCount(sorted[i]) === cur) group.push(sorted[i++]);
+      // Fisher-Yates shuffle within tied group
+      for (var j = group.length - 1; j > 0; j--) {
+        var k = Math.floor(Math.random() * (j + 1));
+        var tmp = group[j]; group[j] = group[k]; group[k] = tmp;
+      }
+      for (var g = 0; g < group.length && result.length < n; g++) result.push(group[g]);
+    }
+    return result;
+  }
+
+  // ── Toggle N on click ─────────────────────────────────────────────────────
   function toggleN(ei, di) {
     var emp = emps[ei];
-    var count = emp.n.filter(Boolean).length;
-    if (!emp.n[di]) {
-      if (count >= 2) {
-        var cell = document.getElementById('c-' + ei + '-' + di);
-        cell.classList.remove('shake');
-        void cell.offsetWidth;
-        cell.classList.add('shake');
-        toast('Max 2 N per employee', true);
-        return;
-      }
-      emp.n[di] = true;
-    } else {
-      emp.n[di] = false;
+    if (isOff(emp.days[di])) { toast('Day off — cannot deploy', true); return; }
+    if (!emp.n[di] && nCount(emp) >= 2) {
+      var cell = document.getElementById('c-' + ei + '-' + di);
+      cell.classList.remove('shake'); void cell.offsetWidth; cell.classList.add('shake');
+      toast('Max 2 N per employee', true);
+      return;
     }
+    emp.n[di] = !emp.n[di];
     refreshCell(ei, di);
     refreshNBadge(ei);
     refreshDayHead(di);
     refreshSummary();
   }
 
+  // ── Cell rendering ────────────────────────────────────────────────────────
   function cellInner(emp, di) {
-    var isOff = emp.days[di].toLowerCase() === 'x';
-    var html = isOff
-      ? '<span class="coff">OFF</span>'
-      : '<span class="cshift">' + emp.days[di] + '</span>';
+    var off = isOff(emp.days[di]);
+    var html = off ? '<span class="coff">OFF</span>' : '<span class="cshift">' + emp.days[di] + '</span>';
     if (emp.n[di]) html += '<span class="cn">N</span>';
     return html;
   }
 
   function refreshCell(ei, di) {
     var emp = emps[ei];
-    var el = document.getElementById('c-' + ei + '-' + di);
+    var el  = document.getElementById('c-' + ei + '-' + di);
     if (!el) return;
-    var isOff = emp.days[di].toLowerCase() === 'x';
-    el.className = 'cell' + (isOff ? ' off' : '') + (emp.n[di] ? ' n-on' : '');
+    el.className = 'cell' + (isOff(emp.days[di]) ? ' off' : '') + (emp.n[di] ? ' n-on' : '');
     el.innerHTML = cellInner(emp, di);
   }
 
   function refreshNBadge(ei) {
     var el = document.getElementById('nb-' + ei);
     if (!el) return;
-    var c = emps[ei].n.filter(Boolean).length;
+    var c = nCount(emps[ei]);
     el.textContent = c + '/2';
     el.className = 'ncb ' + (c === 0 ? 'z' : c === 1 ? 'one' : c === 2 ? 'two' : 'over');
   }
@@ -474,22 +552,12 @@
     return s;
   }
 
-  // Target based on whole roster (day-off employees are eligible too)
-  function rosterTarget() {
-    var tm = emps.filter(function(e){ return e.gc === 'm'; }).length;
-    var tf = emps.filter(function(e){ return e.gc === 'f'; }).length;
-    if (tm >= 2 && tf >= 2) return { n:4, m:2, f:2 };
-    if (tm >= 2 && tf === 1) return { n:3, m:2, f:1 };
-    if (tm === 1 && tf >= 2) return { n:3, m:1, f:2 };
-    return { n: Math.min(tm + tf, 4), m: tm, f: tf };
-  }
-
   function refreshDayHead(di) {
     var el = document.getElementById('dstat-' + di);
     if (!el) return;
     var s = dayStats(di);
-    var t = rosterTarget();
-    var ok = s.total >= t.n && s.m >= t.m && s.f >= t.f;
+    var t = dayTarget(di);
+    var ok  = s.total >= t.n && s.m >= t.m && s.f >= t.f;
     var cls = ok ? 'dstat ok' : s.total > 0 ? 'dstat warn' : 'dstat bad';
     var txt = s.total + '/' + t.n;
     if (s.total > 0) {
@@ -501,31 +569,30 @@
   }
 
   function refreshSummary() {
-    var t = rosterTarget();
     var daysOk = 0;
     for (var d = 0; d < 7; d++) {
-      var s = dayStats(d);
+      var s = dayStats(d), t = dayTarget(d);
       if (s.total >= t.n && s.m >= t.m && s.f >= t.f) daysOk++;
     }
-    var at2 = emps.filter(function(e){ return e.n.filter(Boolean).length === 2; }).length;
-    var at0 = emps.filter(function(e){ return e.n.filter(Boolean).length === 0; }).length;
-
+    var at2 = emps.filter(function(e){ return nCount(e) === 2; }).length;
+    var at0 = emps.filter(function(e){ return nCount(e) === 0; }).length;
     document.getElementById('summary-bar').innerHTML =
-      chip(daysOk + '/7',              'Days meeting req', daysOk === 7 ? 'ok' : '') +
-      chip(at2 + '/' + emps.length,    'At max N (2)',     at2 === emps.length ? 'ok' : '') +
-      chip(at0 + '/' + emps.length,    'No N assigned',    at0 > 0 ? 'warn' : 'ok');
+      chip(daysOk + '/7',           'Days meeting req', daysOk === 7 ? 'ok' : '') +
+      chip(at2 + '/' + emps.length, 'At max N (2)',     at2 === emps.length ? 'ok' : '') +
+      chip(at0 + '/' + emps.length, 'No N assigned',    at0 > 0 ? 'warn' : 'ok');
   }
 
   function chip(val, lbl, cls) {
     return '<div class="s-chip ' + (cls||'') + '"><span class="val">' + val + '</span><span class="lbl">' + lbl + '</span></div>';
   }
 
+  // ── Full render ───────────────────────────────────────────────────────────
   function renderAll() {
-    var t = rosterTarget();
     var html = '<table class="grid"><thead><tr>';
     html += '<th class="th-emp"><span class="section-label" style="margin:0">Emp</span></th>';
 
     DAYS.forEach(function(day, d) {
+      var t = dayTarget(d);
       html += '<th class="day-head"><span class="dname">' + day + '</span>'
             + '<span class="dstat bad" id="dstat-' + d + '">0/' + t.n + '</span></th>';
     });
@@ -541,15 +608,15 @@
             + '</td>';
 
       emp.days.forEach(function(day, d) {
-        var isOff = day.toLowerCase() === 'x';
-        var cls = 'cell' + (isOff ? ' off' : '') + (emp.n[d] ? ' n-on' : '');
+        var off = isOff(day);
+        var cls = 'cell' + (off ? ' off' : '') + (emp.n[d] ? ' n-on' : '');
         html += '<td id="c-' + i + '-' + d + '" class="' + cls + '" onclick="toggleN(' + i + ',' + d + ')">'
               + cellInner(emp, d) + '</td>';
       });
 
-      var nc   = emp.n.filter(Boolean).length;
-      var ncls = nc === 0 ? 'z' : nc === 1 ? 'one' : nc === 2 ? 'two' : 'over';
-      html += '<td class="n-col"><span class="ncb ' + ncls + '" id="nb-' + i + '">' + nc + '/2</span></td>';
+      var c = nCount(emp);
+      var ncls = c === 0 ? 'z' : c === 1 ? 'one' : c === 2 ? 'two' : 'over';
+      html += '<td class="n-col"><span class="ncb ' + ncls + '" id="nb-' + i + '">' + c + '/2</span></td>';
       html += '</tr>';
     });
 
