@@ -443,22 +443,42 @@
     document.getElementById('grid-label').style.display  = 'none';
   }
 
-  // ── Copy plain-text summary ────────────────────────────────────────────────
+  // ── Copy plain-text table ─────────────────────────────────────────────────
   function copyText() {
     if (!emps.length) { toast('Nothing to copy', true); return; }
-    var lines = ['N DEPLOYMENT PLAN', ''];
-    DAYS.forEach(function(day, d) {
-      var assigned = emps.filter(function(e){ return e.n[d]; });
-      if (!assigned.length) { lines.push(day + ': —'); return; }
-      var labels = assigned.map(function(e){
-        return '#' + (emps.indexOf(e)+1) + '(' + (e.gc === 'm' ? 'M' : e.gc === 'f' ? 'F' : '?') + ')';
+
+    var COL = 6; // chars per day column
+    var pad = function(s, w) { s = String(s); while (s.length < w) s += ' '; return s; };
+    var sep = '------' + DAYS.map(function(){ return '------'; }).join('') + '-';
+
+    var lines = ['N DEPLOYMENT PLAN', new Date().toLocaleDateString(), ''];
+
+    // Header row
+    lines.push(pad('', 6) + DAYS.map(function(d){ return pad(d, COL); }).join(''));
+    lines.push(sep);
+
+    // One row per employee
+    emps.forEach(function(emp, i) {
+      var label = pad((i+1) + (emp.gc === 'm' ? 'M' : emp.gc === 'f' ? 'F' : '?'), 6);
+      var cells = emp.days.map(function(day, d) {
+        if (isOff(day))   return pad('—', COL);
+        if (emp.n[d])     return pad('N', COL);
+        return pad('·', COL);
       });
-      var s = dayStats(d), t = dayTarget(d);
-      var flag = (s.total >= t.n && s.m >= t.m && s.f >= t.f) ? '' : ' ⚠';
-      lines.push(day + ': ' + labels.join(', ') + flag);
+      lines.push(label + cells.join(''));
     });
-    lines.push('');
-    lines.push('Generated ' + new Date().toLocaleDateString());
+
+    lines.push(sep);
+
+    // Footer row: daily totals
+    var totals = pad('', 6) + DAYS.map(function(day, d) {
+      var s = dayStats(d), t = dayTarget(d);
+      if (t.na) return pad('N/A', COL);
+      var ok = s.total >= t.n && s.m >= t.m && s.f >= t.f;
+      return pad(s.m + 'M' + s.f + 'F' + (ok ? '' : '⚠'), COL);
+    }).join('');
+    lines.push(totals);
+
     var text = lines.join('\n');
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(function(){ toast('Copied to clipboard'); });
