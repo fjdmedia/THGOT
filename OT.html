@@ -8,26 +8,26 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --navy:   #0d1b2e;
+    --navy:   #18181b;
     --navy2:  #071520;
     --gold:   #c9a84c;
-    --bg:     #f4f6f9;
+    --bg:     #fafafa;
     --white:  #ffffff;
     --gray:   #f2f2f2;
     --border: #dde1e7;
     --text:   #1a1a2e;
     --muted:  #6b7280;
-    --nav-bg: rgba(240,242,245,0.92);
+    --nav-bg: rgba(250,250,250,0.92);
   }
 
   [data-theme="dark"] {
-    --bg:     #0a0d14;
-    --white:  #12172a;
-    --gray:   #1a1f30;
-    --border: rgba(255,255,255,0.11);
-    --text:   #e8e2d9;
-    --muted:  rgba(232,226,217,0.5);
-    --nav-bg: rgba(10,13,20,0.92);
+    --bg:     #09090b;
+    --white:  #18181b;
+    --gray:   #27272a;
+    --border: rgba(255,255,255,0.08);
+    --text:   #fafafa;
+    --muted:  rgba(250,250,250,0.62);
+    --nav-bg: rgba(9,9,11,0.95);
   }
 
   body {
@@ -53,7 +53,7 @@
     letter-spacing: 0.03em;
   }
   header p {
-    color: #8ca0b8;
+    color: rgba(250,250,250,0.5);
     font-size: 0.8rem;
   }
 
@@ -184,7 +184,7 @@
   .btn-clear {
     background: transparent;
     border: 1.5px solid #e74c3c;
-    color: #e74c3c;
+    color: #ff4444;
     border-radius: 6px;
     padding: 0.3rem 0.9rem;
     font-size: 0.78rem;
@@ -247,8 +247,8 @@
     border-radius: 4px;
     transition: background 0.15s;
   }
-  .log-table td input:focus { background: rgba(201,168,76,0.1); }
-  [data-theme="dark"] .log-table td input:focus { background: rgba(201,168,76,0.15); }
+  .log-table td input:focus { background: rgba(0,212,255,0.5); }
+  [data-theme="dark"] .log-table td input:focus { background: rgba(0,212,255,0.5); }
 
   .btn-result {
     background: transparent;
@@ -278,7 +278,7 @@
     line-height: 1;
     transition: color 0.15s;
   }
-  .btn-remove:hover { color: #e74c3c; }
+  .btn-remove:hover { color: #ff4444; }
 
   .log-empty {
     text-align: center;
@@ -323,7 +323,7 @@
   }
   .info-field label {
     display: block;
-    color: #8ca0b8;
+    color: rgba(250,250,250,0.5);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -332,8 +332,8 @@
   }
   .info-field input {
     width: 100%;
-    background: #0a1829;
-    border: 1.5px solid #2e4a6a;
+    background: #09090b;
+    border: 1.5px solid rgba(0,212,255,0.25);
     border-radius: 6px;
     color: var(--gold);
     font-size: 0.88rem;
@@ -364,7 +364,7 @@
   }
   .summary-stat:last-child { border-bottom: none; }
   .summary-stat .s-label {
-    color: #8ca0b8;
+    color: rgba(250,250,250,0.5);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.07em;
@@ -377,11 +377,11 @@
   }
   .summary-divider {
     border: none;
-    border-top: 1px solid #2e4a6a;
+    border-top: 1px solid rgba(0,212,255,0.25);
     margin: 0.6rem 0;
   }
   .breakdown-title {
-    color: #8ca0b8;
+    color: rgba(250,250,250,0.5);
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -432,7 +432,7 @@
   }
   .nav-btn:hover { border-color: var(--gold); color: var(--text); }
   .nav-btn.active {
-    background: rgba(201,168,76,0.12);
+    background: rgba(0,212,255,0.5);
     border-color: var(--gold);
     color: var(--text);
   }
@@ -441,7 +441,7 @@
   /* ── Theme button ── */
   .theme-btn {
     background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(201,168,76,0.4);
+    border: 1px solid rgba(0,212,255,0.5);
     border-radius: 8px;
     color: var(--gold);
     cursor: pointer;
@@ -468,40 +468,40 @@
   /* ── Password Gate ── */
   #pw-gate {
     position: fixed; inset: 0; z-index: 9999;
-    background: #0a1220;
+    background: #09090b;
     display: flex; align-items: center; justify-content: center;
   }
   .pw-box {
-    background: #0d1b2e;
-    border: 1px solid #c9a84c;
+    background: #18181b;
+    border: 1px solid #00d4ff;
     border-radius: 14px;
     padding: 2.5rem 2.8rem;
     text-align: center;
     min-width: 300px;
   }
   .pw-lock { font-size: 2rem; margin-bottom: 0.6rem; }
-  .pw-title { color: #c9a84c; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
-  .pw-sub { color: #8ca0b8; font-size: 0.82rem; margin-bottom: 1.4rem; }
+  .pw-title { color: #00d4ff; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+  .pw-sub { color: rgba(250,250,250,0.5); font-size: 0.82rem; margin-bottom: 1.4rem; }
   .pw-box input[type="password"] {
     width: 100%; padding: 0.6rem 0.9rem;
-    background: #0a1829; border: 1.5px solid #2e4a6a;
-    border-radius: 7px; color: #e8e2d9;
+    background: #09090b; border: 1.5px solid rgba(0,212,255,0.25);
+    border-radius: 7px; color: #fafafa;
     font-size: 0.95rem; font-family: inherit;
     outline: none; text-align: center;
     letter-spacing: 0.05em; margin-bottom: 0.9rem;
     transition: border-color 0.2s;
   }
-  .pw-box input[type="password"]:focus { border-color: #c9a84c; }
+  .pw-box input[type="password"]:focus { border-color: #00d4ff; }
   .pw-btn {
     width: 100%; padding: 0.6rem;
-    background: #c9a84c; color: #0d1b2e;
+    background: #00d4ff; color: #18181b;
     border: none; border-radius: 7px;
     font-size: 0.95rem; font-weight: 700;
     cursor: pointer; letter-spacing: 0.05em;
     transition: background 0.15s;
   }
-  .pw-btn:hover { background: #e0bc6a; }
-  .pw-error { color: #e74c3c; font-size: 0.8rem; margin-top: 0.7rem; min-height: 1.1em; }
+  .pw-btn:hover { background: rgba(0,212,255,0.85); }
+  .pw-error { color: #ff4444; font-size: 0.8rem; margin-top: 0.7rem; min-height: 1.1em; }
   @keyframes pw-shake {
     0%,100%{ transform: translateX(0); }
     20%{ transform: translateX(-8px); }

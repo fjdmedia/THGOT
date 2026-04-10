@@ -10,27 +10,27 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #e8ebf0;
+      --bg: #fafafa;
       --surface: #ffffff;
-      --surface2: #d8dce4;
-      --border: rgba(0,0,0,0.13);
-      --accent: #4a6fa5;
-      --accent-dim: rgba(74,111,165,0.12);
-      --text: #1e2a3a;
-      --muted: rgba(30,42,58,0.65);
-      --faint: rgba(30,42,58,0.45);
+      --surface2: #f0f0f0;
+      --border: rgba(0,0,0,0.08);
+      --accent: #2563eb;
+      --accent-dim: rgba(37,99,235,0.09);
+      --text: #0f0f0f;
+      --muted: rgba(15,15,15,0.65);
+      --faint: rgba(15,15,15,0.37);
     }
 
     [data-theme="dark"] {
-      --bg: #0a0d14;
-      --surface: #141929;
-      --surface2: #1c2236;
-      --border: rgba(255,255,255,0.11);
-      --accent: #fb923c;
-      --accent-dim: rgba(251,146,60,0.10);
-      --text: #f0ece5;
-      --muted: rgba(240,236,229,0.65);
-      --faint: rgba(240,236,229,0.4);
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface2: #27272a;
+      --border: rgba(255,255,255,0.08);
+      --accent: #00d4ff;
+      --accent-dim: rgba(0,212,255,0.09);
+      --text: #fafafa;
+      --muted: rgba(250,250,250,0.62);
+      --faint: rgba(250,250,250,0.33);
     }
 
     body {
@@ -170,13 +170,13 @@
     .tool-card.classified:hover { border-color: rgba(231,76,60,0.5); }
     .tool-card.classified .tool-name { display: flex; align-items: center; gap: 8px; }
     .tool-card.classified .tool-tag {
-      color: #e74c3c;
+      color: #ff4444;
       background: rgba(231,76,60,0.1);
       border-color: rgba(231,76,60,0.25);
     }
     .classified-badge {
       font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; color: #e74c3c;
+      text-transform: uppercase; color: #ff4444;
       background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.25);
       border-radius: 4px; padding: 2px 6px;
     }
@@ -288,15 +288,15 @@
 
   <!-- Lab Password Gate Modal -->
   <div id="lab-gate" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;">
-    <div style="background:#0d1b2e;border:1px solid #c9a84c;border-radius:14px;padding:2.5rem 2.8rem;text-align:center;min-width:300px;">
+    <div style="background:#18181b;border:1px solid #00d4ff;border-radius:14px;padding:2.5rem 2.8rem;text-align:center;min-width:300px;">
       <div style="font-size:2rem;margin-bottom:12px;">🔒</div>
-      <div style="font-size:1.1rem;font-weight:600;color:#c9a84c;margin-bottom:4px;">Admin Access</div>
-      <div style="font-size:0.75rem;color:rgba(201,168,76,0.6);margin-bottom:20px;">Enter password to continue</div>
+      <div style="font-size:1.1rem;font-weight:600;color:#00d4ff;margin-bottom:4px;">Admin Access</div>
+      <div style="font-size:0.75rem;color:rgba(0,212,255,0.6);margin-bottom:20px;">Enter password to continue</div>
       <input type="password" id="lab-pw-input" placeholder="Password" autocomplete="off"
-        style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.3);border-radius:8px;color:#e8e2d9;font-size:0.9rem;outline:none;margin-bottom:10px;">
-      <button onclick="submitLabPW()" style="width:100%;padding:10px;background:#c9a84c;border:none;border-radius:8px;color:#0d1b2e;font-weight:600;font-size:0.9rem;cursor:pointer;">Enter</button>
+        style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.3);border-radius:8px;color:#fafafa;font-size:0.9rem;outline:none;margin-bottom:10px;">
+      <button onclick="submitLabPW()" style="width:100%;padding:10px;background:#00d4ff;border:none;border-radius:8px;color:#18181b;font-weight:600;font-size:0.9rem;cursor:pointer;">Enter</button>
       <div id="lab-pw-error" style="font-size:0.72rem;color:#ef4444;margin-top:8px;min-height:18px;"></div>
-      <div style="margin-top:12px;"><button onclick="closeLabGate()" style="background:none;border:none;color:rgba(201,168,76,0.5);font-size:0.75rem;cursor:pointer;">Cancel</button></div>
+      <div style="margin-top:12px;"><button onclick="closeLabGate()" style="background:none;border:none;color:rgba(0,212,255,0.5);font-size:0.75rem;cursor:pointer;">Cancel</button></div>
     </div>
   </div>
 
