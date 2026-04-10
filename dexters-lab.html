@@ -209,6 +209,7 @@
 <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
 
 <nav class="bottom-nav">
+  <a class="nav-btn" href="index.html"><span class="nav-icon">🏠</span> Home</a>
   <a class="nav-btn" href="staffing-calculator.html"><span class="nav-icon">👮</span> Staffing</a>
   <a class="nav-btn" href="coverage.html"><span class="nav-icon">📋</span> Coverage</a>
   <a class="nav-btn" href="TWH.html"><span class="nav-icon">🕐</span> Hours</a>
@@ -421,6 +422,7 @@ function quickAdd() {
   });
 
   document.getElementById('quickShift').value = '';
+  document.getElementById('quickCount').value = '1';
   document.getElementById('quickOT').checked = false;
   document.getElementById('quickShift').focus();
   saveShifts();
@@ -433,6 +435,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById(id).addEventListener('keydown', function(e) {
       if (e.key === 'Enter') { e.preventDefault(); quickAdd(); }
     });
+  });
+  // Ctrl+Enter on paste textarea submits shifts
+  document.getElementById('pasteArea').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); addShifts(); }
   });
   // Auto-format 8 digits → HHMM-HHMM on blur
   document.getElementById('quickShift').addEventListener('blur', function() {
@@ -926,7 +932,7 @@ function completeAllDue() {
   shiftRows.forEach(function(row) {
     if (!row.sentAt) row.sentAt = {};
     row.breaks.forEach(function(b) {
-      if (b.wEnd <= currentTimeMins) {
+      if (b.wStart <= currentTimeMins && currentTimeMins < b.wEnd) {
         var already = (row.sent[b.type] || 0);
         row.sent[b.type] = row.count;
         // Fill sentAt with window midpoint for bulk-completed breaks
@@ -1248,8 +1254,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var idx = parseInt(rm.getAttribute('data-remove'));
       var row = shiftRows[idx];
       if (row) {
-        row.count--;
-        if (row.count <= 0) shiftRows.splice(idx, 1);
+        shiftRows.splice(idx, 1);
       }
       saveShifts();
       renderGrid();
