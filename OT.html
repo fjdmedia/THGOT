@@ -721,6 +721,7 @@
           <option value="Time">
           <option value="Name">
           <option value="Result">
+          <option value="Total">
         </datalist>
         <span class="sort-then">then</span>
         <div class="sort-field-wrap">
@@ -730,6 +731,7 @@
             <option value="Time">Time</option>
             <option value="Name">Name</option>
             <option value="Result">Result</option>
+            <option value="Total">Total</option>
           </select>
           <button class="sort-dir-btn" id="sortSecondaryDir" title="Toggle direction" onclick="toggleSortDir('secondary')">↑</button>
         </div>
@@ -899,6 +901,7 @@ function sortValue(e, field) {
   if (f === 'time')   { return parseShiftStart(e.shift); }
   if (f === 'name')   { return getFirstName(e.name).toUpperCase(); }
   if (f === 'result') { const order = { yes: 0, no: 1, '': 2 }; return order[e.result] ?? 2; }
+  if (f === 'total')  { const h = calcHours(e.shift); return h === null ? -Infinity : h; }
   return 0;
 }
 function sortCompare(a, b, field, dir) {
@@ -1022,7 +1025,7 @@ function toggleSort() {
 }
 
 // ── Multi-sort: read inputs and apply ────────────────────────────────────
-const SORT_FIELDS = ['rank','time','name','result'];
+const SORT_FIELDS = ['rank','time','name','result','total'];
 function applyMultiSort() {
   const raw = document.getElementById('sortPrimaryInput').value.trim().toLowerCase();
   sortConfig.primary.field = SORT_FIELDS.includes(raw) ? raw.charAt(0).toUpperCase() + raw.slice(1) : '';
