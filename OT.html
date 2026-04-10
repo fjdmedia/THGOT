@@ -264,8 +264,23 @@
     border-radius: 4px;
     transition: background 0.15s;
   }
-  .log-table td input:focus { background: rgba(0,212,255,0.5); }
-  [data-theme="dark"] .log-table td input:focus { background: rgba(0,212,255,0.5); }
+  .log-table td input:focus { background: rgba(0,212,255,0.12); }
+  [data-theme="dark"] .log-table td input:focus { background: rgba(0,212,255,0.18); }
+
+  /* FM cell — visually editable */
+  .fm-input {
+    border: 1.5px solid var(--border) !important;
+    border-radius: 5px !important;
+    background: var(--gray) !important;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.04em;
+    cursor: text;
+    transition: border-color 0.15s, background 0.15s !important;
+  }
+  .fm-input:hover { border-color: var(--gold) !important; background: var(--white) !important; }
+  .fm-input:focus { border-color: var(--gold) !important; background: var(--white) !important; outline: none; }
 
   .btn-result {
     background: transparent;
@@ -948,7 +963,7 @@ function renderLog() {
       <td>${e.date || '—'}</td>
       <td>${e.shift || '—'}</td>
       <td>${fmtHrs(calcHours(e.shift))}</td>
-      <td><input type="text" value="${e.fm || ''}" placeholder="FM" style="text-transform:uppercase;width:100%" oninput="logEntries[${e._i}].fm=this.value.toUpperCase()"></td>
+      <td><input type="text" class="fm-input" value="${e.fm || ''}" placeholder="FM" style="text-transform:uppercase;width:100%" oninput="logEntries[${e._i}].fm=this.value.toUpperCase();saveOTState()"></td>
       <td><button class="btn-result${e.result === 'yes' ? ' res-yes' : e.result === 'no' ? ' res-no' : ''}" onclick="toggleResult(${e._i})">${e.result === 'yes' ? '✓ Yes' : e.result === 'no' ? '✗ No' : '—'}</button></td>
       <td><input type="text" value="${e.notes}" placeholder="Notes..." oninput="logEntries[${e._i}].notes=this.value"></td>
       <td><button class="btn-remove" onclick="removeFromLog(${e._i})" title="Remove">✕</button></td>
