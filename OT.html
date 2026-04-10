@@ -723,6 +723,7 @@
     <div class="panel-body">
       <div class="log-header-row">
         <span class="log-count" id="logCount">0 employees logged</span>
+        <button class="btn-clear" style="border-color:rgba(201,168,76,0.5);color:var(--gold);" onclick="clearFM()">Clear FM</button>
         <button class="btn-clear" onclick="clearLog()">Clear Log</button>
       </div>
       <div class="sort-row" style="margin-bottom:0.85rem;">
@@ -1114,6 +1115,15 @@ function addDragListeners() {
 function removeFromLog(i) {
   logEntries.splice(i, 1);
   renderLog();
+}
+
+// ── Clear FM ──────────────────────────────────────────────────────────────
+function clearFM() {
+  if (!logEntries.length) return;
+  logEntries.forEach(e => e.fm = '');
+  renderLog();
+  saveOTState();
+  showToast('FM cleared');
 }
 
 // ── Clear log ─────────────────────────────────────────────────────────────
