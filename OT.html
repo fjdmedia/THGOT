@@ -60,9 +60,16 @@
   /* ── Layout ── */
   .layout {
     display: grid;
-    grid-template-columns: 190px 340px 1fr 220px;
+    grid-template-columns: 200px 280px 1fr;
     gap: 1.2rem;
     padding: 1.2rem 1.2rem;
+    align-items: start;
+  }
+
+  .side-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
   }
 
   /* ── Panel shared ── */
@@ -199,31 +206,31 @@
   .log-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     table-layout: fixed;
   }
   .log-table thead tr { background: var(--navy); color: var(--gold); }
   .log-table thead th {
-    padding: 0.5rem 0.5rem;
+    padding: 0.6rem 0.65rem;
     text-align: left;
     font-weight: 700;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     letter-spacing: 0.07em;
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
   }
-  /* col widths: Rank | Name | EE | Date | OT Shift | Total | Asked By | Result | Notes | × */
-  .log-table colgroup col:nth-child(1) { width: 48px; }
-  .log-table colgroup col:nth-child(2) { width: 13%; }
-  .log-table colgroup col:nth-child(3) { width: 62px; }
-  .log-table colgroup col:nth-child(4) { width: 96px; }
-  .log-table colgroup col:nth-child(5) { width: 80px; }
-  .log-table colgroup col:nth-child(6) { width: 52px; }
-  .log-table colgroup col:nth-child(7) { width: 56px; }
-  .log-table colgroup col:nth-child(8) { width: 13%; }
-  .log-table colgroup col:nth-child(9) { }
-  .log-table colgroup col:nth-child(10) { width: 28px; }
+  /* col widths: Rank | Name | EE | Date | OT Shift | Total | FM | Result | Notes | × */
+  .log-table colgroup col:nth-child(1)  { width: 56px; }
+  .log-table colgroup col:nth-child(2)  { width: 15%; }
+  .log-table colgroup col:nth-child(3)  { width: 70px; }
+  .log-table colgroup col:nth-child(4)  { width: 110px; }
+  .log-table colgroup col:nth-child(5)  { width: 96px; }
+  .log-table colgroup col:nth-child(6)  { width: 60px; }
+  .log-table colgroup col:nth-child(7)  { width: 64px; }
+  .log-table colgroup col:nth-child(8)  { width: 100px; }
+  .log-table colgroup col:nth-child(9)  { }
+  .log-table colgroup col:nth-child(10) { width: 32px; }
 
   .log-table thead th:first-child { text-align: center; cursor: pointer; user-select: none; }
   .log-table thead th:first-child:hover { background: #1a3050; }
@@ -232,7 +239,7 @@
   .log-table tbody tr { border-bottom: 1px solid var(--border); }
   .log-table tbody tr:nth-child(even) { background: var(--gray); }
 
-  .log-table td { padding: 0.4rem 0.5rem; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-table td { padding: 0.55rem 0.65rem; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .log-table td:first-child { text-align: center; font-weight: 700; color: var(--text); }
 
   .log-table td input {
@@ -475,6 +482,7 @@
 
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
+    .side-stack { flex-direction: row; flex-wrap: wrap; }
   }
 
   .powered-by {
@@ -558,26 +566,35 @@
 
 <div class="layout">
 
-  <!-- INFO: Date + OT Shift -->
-  <div class="info-panel panel">
-    <div class="panel-header">Shift Info</div>
-    <div class="panel-body">
-      <div class="info-field">
-        <label for="sessionDate">Date</label>
-        <input type="date" id="sessionDate">
+  <!-- COL 1: Shift Info + Day Summary stacked -->
+  <div class="side-stack">
+    <div class="info-panel panel">
+      <div class="panel-header">Shift Info</div>
+      <div class="panel-body">
+        <div class="info-field">
+          <label for="sessionDate">Date</label>
+          <input type="date" id="sessionDate">
+        </div>
+        <div class="info-field">
+          <label for="sessionShift">OT Shift</label>
+          <input type="text" id="sessionShift" placeholder="e.g. 0700-1500">
+        </div>
+        <div class="info-field">
+          <label for="sessionFM">FM</label>
+          <input type="text" id="sessionFM" placeholder="Initials" maxlength="5" style="text-transform:uppercase">
+        </div>
       </div>
-      <div class="info-field">
-        <label for="sessionShift">OT Shift</label>
-        <input type="text" id="sessionShift" placeholder="e.g. 0700-1500">
-      </div>
-      <div class="info-field">
-        <label for="sessionFM">FM</label>
-        <input type="text" id="sessionFM" placeholder="Initials" maxlength="5" style="text-transform:uppercase">
+    </div>
+
+    <div class="summary-panel panel">
+      <div class="panel-header">Day Summary</div>
+      <div class="panel-body" id="summaryBody">
+        <p class="summary-empty">No entries yet</p>
       </div>
     </div>
   </div>
 
-  <!-- MIDDLE: Search -->
+  <!-- COL 2: Search -->
   <div class="panel">
     <div class="panel-header">Search Employees</div>
     <div class="panel-body">
@@ -602,7 +619,7 @@
     </div>
   </div>
 
-  <!-- RIGHT: Log -->
+  <!-- COL 3: OT Log — takes all remaining width -->
   <div class="panel">
     <div class="panel-header">OT</div>
     <div class="panel-body">
@@ -638,12 +655,8 @@
     </div>
   </div>
 
-  <!-- RIGHT: Summary -->
-  <div class="summary-panel panel">
-    <div class="panel-header">Day Summary</div>
-    <div class="panel-body" id="summaryBody">
-      <p class="summary-empty">No entries yet</p>
-    </div>
+  <!-- placeholder div to close old summary location -->
+  <div style="display:none">
   </div>
 
 </div>
