@@ -31,7 +31,7 @@
   }
 
   body {
-    font-family: 'Calibri', 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', 'Calibri', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -41,20 +41,22 @@
   /* ── Header ── */
   header {
     background: var(--navy);
-    padding: 1rem 2rem;
+    padding: 0.85rem 1.8rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 2px solid var(--gold);
   }
   header h1 {
     color: var(--gold);
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
   }
   header p {
-    color: rgba(250,250,250,0.5);
-    font-size: 0.8rem;
+    color: rgba(250,250,250,0.45);
+    font-size: 0.75rem;
+    margin-top: 2px;
   }
 
   /* ── Layout ── */
@@ -78,17 +80,19 @@
     border-radius: 10px;
     border: 1px solid var(--border);
     overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   }
   .panel-header {
     background: var(--navy);
     color: var(--gold);
     font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 0.75rem 1.2rem;
+    padding: 0.6rem 1.1rem;
+    border-bottom: 1px solid rgba(201,168,76,0.25);
   }
-  .panel-body { padding: 1.2rem; }
+  .panel-body { padding: 1rem; }
 
   /* ── Search ── */
   .search-wrap { position: relative; margin-bottom: 1rem; }
@@ -141,10 +145,10 @@
   .results-table thead th:first-child { width: 52px; text-align: center; }
   .results-table thead th:last-child  { width: 60px; text-align: center; }
 
-  .results-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .results-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
   .results-table tbody tr:nth-child(even) { background: var(--gray); }
-  .results-table tbody tr:hover { background: #e8f0fb; }
-  [data-theme="dark"] .results-table tbody tr:hover { background: #1a2540; }
+  .results-table tbody tr:hover { background: rgba(201,168,76,0.09); }
+  [data-theme="dark"] .results-table tbody tr:hover { background: rgba(201,168,76,0.09); }
 
   .results-table td {
     padding: 0.55rem 0.75rem;
@@ -162,18 +166,18 @@
 
   /* ── Add button ── */
   .btn-add {
-    background: var(--navy);
-    color: var(--gold);
+    background: var(--gold);
+    color: #18181b;
     border: none;
     border-radius: 5px;
-    padding: 0.3rem 0.7rem;
-    font-size: 0.75rem;
-    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 800;
     cursor: pointer;
-    letter-spacing: 0.05em;
-    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.06em;
+    transition: opacity 0.15s, transform 0.1s;
   }
-  .btn-add:hover  { background: #1a3050; }
+  .btn-add:hover  { opacity: 0.85; }
   .btn-add:active { transform: scale(0.95); }
 
   /* ── Log panel ── */
@@ -181,26 +185,27 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
   }
   .log-count {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     color: var(--muted);
     font-weight: 600;
+    letter-spacing: 0.02em;
   }
   .btn-clear {
     background: transparent;
-    border: 1.5px solid #e74c3c;
-    color: #ff4444;
+    border: 1.5px solid rgba(239,68,68,0.5);
+    color: #ef4444;
     border-radius: 6px;
-    padding: 0.3rem 0.9rem;
-    font-size: 0.78rem;
+    padding: 0.28rem 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
     letter-spacing: 0.05em;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
   }
-  .btn-clear:hover { background: #e74c3c; color: #fff; }
+  .btn-clear:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
 
   .log-table-wrap { overflow: hidden; }
   .log-table {
@@ -262,18 +267,19 @@
     border: 1.5px solid var(--border);
     border-radius: 5px;
     width: 100%;
-    padding: 0.25rem 0.4rem;
-    font-size: 0.82rem;
+    padding: 0.28rem 0.4rem;
+    font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s;
     color: var(--muted);
     text-align: center;
+    letter-spacing: 0.02em;
   }
-  .btn-result:hover { border-color: var(--gold); }
-  .btn-result.res-yes { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.5); color: #22c55e; }
-  .btn-result.res-no  { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); color: #ef4444; }
+  .btn-result:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-result.res-yes { background: #16a34a; border-color: #16a34a; color: #fff; }
+  .btn-result.res-no  { background: #dc2626; border-color: #dc2626; color: #fff; }
 
   .btn-remove {
     background: transparent;
@@ -352,27 +358,27 @@
   }
   .info-field label {
     display: block;
-    color: rgba(250,250,250,0.5);
-    font-size: 0.72rem;
+    color: rgba(250,250,250,0.45);
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.3rem;
   }
   .info-field input {
     width: 100%;
-    background: #09090b;
-    border: 1.5px solid rgba(0,212,255,0.25);
-    border-radius: 6px;
+    background: rgba(0,0,0,0.35);
+    border: 1.5px solid rgba(201,168,76,0.2);
+    border-radius: 7px;
     color: var(--gold);
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-family: inherit;
-    padding: 0.45rem 0.6rem;
+    padding: 0.5rem 0.65rem;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background 0.2s;
     color-scheme: dark;
   }
-  .info-field input:focus { border-color: var(--gold); }
+  .info-field input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
 
   /* ── Summary panel ── */
   .summary-panel {
@@ -393,16 +399,16 @@
   }
   .summary-stat:last-child { border-bottom: none; }
   .summary-stat .s-label {
-    color: rgba(250,250,250,0.5);
-    font-size: 0.72rem;
+    color: rgba(250,250,250,0.45);
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
   .summary-stat .s-val {
     color: var(--gold);
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1.15rem;
+    font-weight: 800;
   }
   .summary-divider {
     border: none;
@@ -687,13 +693,21 @@ function maskEE(ee) {
   const s = String(ee);
   return '***' + s.slice(-3);
 }
+function normalizeShift(shift) {
+  // Accept "0700-1500" or "0700 - 1500" or "07001500" etc.
+  if (!shift) return shift;
+  const s = shift.trim().replace(/\s*-\s*/, '-');
+  if (/^\d{8}$/.test(s)) return s.slice(0,4) + '-' + s.slice(4);
+  return s;
+}
 function parseShiftStart(shift) {
-  const m = shift && shift.match(/^(\d{4})-(\d{4})$/);
+  const m = normalizeShift(shift) && normalizeShift(shift).match(/^(\d{4})-(\d{4})$/);
   if (!m) return Infinity;
   return parseInt(m[1].slice(0,2)) * 60 + parseInt(m[1].slice(2));
 }
 function calcHours(shift) {
-  const m = shift && shift.match(/^(\d{4})-(\d{4})$/);
+  const n = normalizeShift(shift);
+  const m = n && n.match(/^(\d{4})-(\d{4})$/);
   if (!m) return null;
   const start = parseInt(m[1].slice(0,2)) * 60 + parseInt(m[1].slice(2));
   const end   = parseInt(m[2].slice(0,2)) * 60 + parseInt(m[2].slice(2));
@@ -744,7 +758,9 @@ function addToLog(idx) {
     return;
   }
   const date  = document.getElementById('sessionDate').value;
-  const shift = document.getElementById('sessionShift').value;
+  const rawShift = document.getElementById('sessionShift').value;
+  const shift = normalizeShift(rawShift) || rawShift;
+  document.getElementById('sessionShift').value = shift;
   const fm    = document.getElementById('sessionFM').value.toUpperCase();
   logEntries.push({ rank: o.rank, name: o.name, ee: o.ee, date, shift, fm, result: '', notes: '' });
   renderLog();
@@ -766,10 +782,8 @@ function toggleResult(i) {
 
 // ── OT Shift auto-format (08 digits no dash → insert dash) ──────────────
 document.getElementById('sessionShift').addEventListener('blur', function() {
-  const v = this.value.trim();
-  if (/^\d{8}$/.test(v)) {
-    this.value = v.slice(0, 4) + '-' + v.slice(4);
-  }
+  const n = normalizeShift(this.value);
+  if (n) this.value = n;
 });
 
 // ── Enter key adds top search result ─────────────────────────────────────
