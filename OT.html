@@ -280,6 +280,28 @@
   }
   .btn-remove:hover { color: #ff4444; }
 
+  /* ── Sort Time→Rank button ── */
+  .btn-sort-time {
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    border-radius: 6px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-sort-time:hover { background: var(--gold); color: var(--navy); }
+  .btn-sort-time.active { background: var(--gold); color: var(--navy); }
+
+  /* ── Drag-to-reorder ── */
+  .log-table tbody tr[draggable="true"] { cursor: grab; }
+  .log-table tbody tr[draggable="true"]:active { cursor: grabbing; }
+  .log-table tbody tr.drag-over { background: rgba(201,168,76,0.18) !important; outline: 2px dashed var(--gold); outline-offset: -2px; }
+  .log-table tbody tr.dragging { opacity: 0.4; }
+
   .log-empty {
     text-align: center;
     color: var(--muted);
@@ -586,7 +608,10 @@
     <div class="panel-body">
       <div class="log-header-row">
         <span class="log-count" id="logCount">0 employees logged</span>
-        <button class="btn-clear" onclick="clearLog()">Clear Log</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-sort-time" id="sortTimeBtn" onclick="sortByTimeRank()">⏱ Time → Rank</button>
+          <button class="btn-clear" onclick="clearLog()">Clear Log</button>
+        </div>
       </div>
       <div class="log-table-wrap">
         <table class="log-table">
@@ -636,7 +661,9 @@ const logBody     = document.getElementById('logBody');
 const logCount    = document.getElementById('logCount');
 
 let logEntries = [];
-let sortDir = null; // null = insertion order, 'asc', 'desc'
+let sortDir = null; // null = insertion order, 'asc', 'desc', 'time-rank'
+let currentView = [];
+let dragSrcVidx = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function getFirstName(name) {
@@ -646,6 +673,11 @@ function getFirstName(name) {
 function maskEE(ee) {
   const s = String(ee);
   return '***' + s.slice(-3);
+}
+function parseShiftStart(shift) {
+  const m = shift && shift.match(/^(\d{4})-(\d{4})$/);
+  if (!m) return Infinity;
+  return parseInt(m[1].slice(0,2)) * 60 + parseInt(m[1].slice(2));
 }
 function calcHours(shift) {
   const m = shift && shift.match(/^(\d{4})-(\d{4})$/);
@@ -742,8 +774,13 @@ function renderLog() {
   const ind = document.getElementById('sortIndicator');
   ind.textContent = sortDir === 'asc' ? '▲' : sortDir === 'desc' ? '▼' : '↕';
 
+  // Update Time→Rank button active state
+  const stBtn = document.getElementById('sortTimeBtn');
+  if (stBtn) stBtn.classList.toggle('active', sortDir === 'time-rank');
+
   if (!logEntries.length) {
     logBody.innerHTML = '<tr><td colspan="10" class="log-empty">No employees logged yet</td></tr>';
+    currentView = [];
     return;
   }
 
@@ -763,11 +800,22 @@ function renderLog() {
       if (b.rank === '') return -1;
       return b.rank - a.rank;
     });
+  } else if (sortDir === 'time-rank') {
+    view.sort((a, b) => {
+      const tA = parseShiftStart(a.shift), tB = parseShiftStart(b.shift);
+      if (tA !== tB) return tA - tB;
+      // tiebreak by seniority (lower rank = more senior)
+      if (a.rank === '' && b.rank === '') return 0;
+      if (a.rank === '') return 1;
+      if (b.rank === '') return -1;
+      return a.rank - b.rank;
+    });
   }
 
+  currentView = view;
   renderSummary();
-  logBody.innerHTML = view.map(e => `
-    <tr>
+  logBody.innerHTML = view.map((e, vi) => `
+    <tr draggable="true" data-vidx="${vi}">
       <td>${e.rank !== '' ? e.rank : '—'}</td>
       <td>${getFirstName(e.name)}</td>
       <td>${maskEE(e.ee)}</td>
@@ -780,6 +828,8 @@ function renderLog() {
       <td><button class="btn-remove" onclick="removeFromLog(${e._i})" title="Remove">✕</button></td>
     </tr>
   `).join('');
+
+  addDragListeners();
 }
 
 // ── Summary panel ─────────────────────────────────────────────────────────
@@ -832,12 +882,57 @@ function renderSummary() {
   `;
 }
 
-// ── Sort toggle ───────────────────────────────────────────────────────────
+// ── Sort toggle (Rank column header) ─────────────────────────────────────
 function toggleSort() {
-  if (sortDir === null)       sortDir = 'asc';
-  else if (sortDir === 'asc') sortDir = 'desc';
-  else                        sortDir = null;
+  if (sortDir === null || sortDir === 'time-rank') sortDir = 'asc';
+  else if (sortDir === 'asc')                      sortDir = 'desc';
+  else                                             sortDir = null;
   renderLog();
+}
+
+// ── Sort: Time → Rank ─────────────────────────────────────────────────────
+function sortByTimeRank() {
+  sortDir = sortDir === 'time-rank' ? null : 'time-rank';
+  renderLog();
+}
+
+// ── Drag-to-reorder ───────────────────────────────────────────────────────
+function addDragListeners() {
+  const rows = logBody.querySelectorAll('tr[data-vidx]');
+  rows.forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragSrcVidx = parseInt(row.dataset.vidx);
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => row.classList.add('dragging'), 0);
+    });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+    row.addEventListener('dragenter', () => {
+      rows.forEach(r => r.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', e => {
+      // only remove if leaving the row entirely
+      if (!row.contains(e.relatedTarget)) row.classList.remove('drag-over');
+    });
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      rows.forEach(r => r.classList.remove('drag-over', 'dragging'));
+      const dstVidx = parseInt(row.dataset.vidx);
+      if (dragSrcVidx === null || dragSrcVidx === dstVidx) return;
+      // Reorder logEntries based on view positions
+      const newView = [...currentView];
+      const [moved] = newView.splice(dragSrcVidx, 1);
+      newView.splice(dstVidx, 0, moved);
+      logEntries = newView.map(({ _i, ...rest }) => rest);
+      sortDir = null;
+      renderLog();
+      saveOTState();
+    });
+  });
 }
 
 // ── Remove row ────────────────────────────────────────────────────────────
