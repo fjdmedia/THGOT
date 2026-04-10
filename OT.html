@@ -153,9 +153,14 @@
   .results-table td {
     padding: 0.55rem 0.75rem;
     vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0;
   }
-  .results-table td:first-child { text-align: center; font-weight: 700; color: var(--text); }
-  .results-table td:last-child  { text-align: center; }
+  .results-table td:first-child { text-align: center; font-weight: 700; color: var(--text); width: 52px; max-width: 52px; }
+  .results-table td:last-child  { text-align: center; width: 60px; max-width: 60px; }
+  .results-table { table-layout: fixed; }
 
   .no-results {
     text-align: center;
@@ -293,21 +298,93 @@
   }
   .btn-remove:hover { color: #ff4444; }
 
-  /* ── Sort Time→Rank button ── */
-  .btn-sort-time {
-    background: transparent;
-    border: 1.5px solid var(--gold);
-    color: var(--gold);
-    border-radius: 6px;
-    padding: 0.3rem 0.9rem;
-    font-size: 0.78rem;
+  /* ── Multi-sort UI ── */
+  .sort-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .sort-label-text {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .sort-field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .sort-input {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 6px 0 0 6px;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-family: inherit;
+    padding: 0.28rem 0.6rem;
+    outline: none;
+    width: 90px;
+    transition: border-color 0.15s;
+  }
+  .sort-input:focus { border-color: var(--gold); }
+  .sort-dir-btn {
+    background: var(--gray);
+    border: 1.5px solid var(--border);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    color: var(--muted);
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
-    letter-spacing: 0.05em;
+    padding: 0.28rem 0.5rem;
+    line-height: 1;
     transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
   }
-  .btn-sort-time:hover { background: var(--gold); color: var(--navy); }
-  .btn-sort-time.active { background: var(--gold); color: var(--navy); }
+  .sort-dir-btn:hover, .sort-dir-btn.active { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+  .sort-then {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0 2px;
+  }
+  .sort-select {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 6px 0 0 6px;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-family: inherit;
+    padding: 0.28rem 0.5rem;
+    outline: none;
+    width: 90px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    appearance: none;
+  }
+  .sort-select:focus { border-color: var(--gold); }
+  [data-theme="dark"] .sort-input,
+  [data-theme="dark"] .sort-select { background: #27272a; color: #fafafa; border-color: rgba(255,255,255,0.12); }
+  [data-theme="dark"] .sort-dir-btn { background: #27272a; color: rgba(250,250,250,0.6); border-color: rgba(255,255,255,0.12); }
+  .sort-clear-btn {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.28rem 0.6rem;
+    letter-spacing: 0.04em;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .sort-clear-btn:hover { border-color: var(--gold); color: var(--gold); }
 
   /* ── Drag-to-reorder ── */
   .log-table tbody tr[draggable="true"] { cursor: grab; }
@@ -631,10 +708,32 @@
     <div class="panel-body">
       <div class="log-header-row">
         <span class="log-count" id="logCount">0 employees logged</span>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button class="btn-sort-time" id="sortTimeBtn" onclick="sortByTimeRank()">⏱ Time → Rank</button>
-          <button class="btn-clear" onclick="clearLog()">Clear Log</button>
+        <button class="btn-clear" onclick="clearLog()">Clear Log</button>
+      </div>
+      <div class="sort-row" style="margin-bottom:0.85rem;">
+        <span class="sort-label-text">Sort</span>
+        <div class="sort-field-wrap">
+          <input class="sort-input" id="sortPrimaryInput" list="sort-options-list" placeholder="primary…" oninput="applyMultiSort()" autocomplete="off">
+          <button class="sort-dir-btn" id="sortPrimaryDir" title="Toggle direction" onclick="toggleSortDir('primary')">↑</button>
         </div>
+        <datalist id="sort-options-list">
+          <option value="Rank">
+          <option value="Time">
+          <option value="Name">
+          <option value="Result">
+        </datalist>
+        <span class="sort-then">then</span>
+        <div class="sort-field-wrap">
+          <select class="sort-select" id="sortSecondarySelect" onchange="applyMultiSort()">
+            <option value="">— none —</option>
+            <option value="Rank">Rank</option>
+            <option value="Time">Time</option>
+            <option value="Name">Name</option>
+            <option value="Result">Result</option>
+          </select>
+          <button class="sort-dir-btn" id="sortSecondaryDir" title="Toggle direction" onclick="toggleSortDir('secondary')">↑</button>
+        </div>
+        <button class="sort-clear-btn" onclick="clearSort()">✕ Clear</button>
       </div>
       <div class="log-table-wrap">
         <table class="log-table">
@@ -680,7 +779,7 @@ const logBody     = document.getElementById('logBody');
 const logCount    = document.getElementById('logCount');
 
 let logEntries = [];
-let sortDir = null; // null = insertion order, 'asc', 'desc', 'time-rank'
+let sortConfig = { primary: { field: '', dir: 'asc' }, secondary: { field: '', dir: 'asc' } };
 let currentView = [];
 let dragSrcVidx = null;
 
@@ -793,17 +892,30 @@ searchInput.addEventListener('keydown', function(e) {
   if (btn) btn.click();
 });
 
+// ── Multi-sort comparator ─────────────────────────────────────────────────
+function sortValue(e, field) {
+  const f = (field || '').toLowerCase();
+  if (f === 'rank')   { return e.rank === '' ? Infinity : Number(e.rank); }
+  if (f === 'time')   { return parseShiftStart(e.shift); }
+  if (f === 'name')   { return getFirstName(e.name).toUpperCase(); }
+  if (f === 'result') { const order = { yes: 0, no: 1, '': 2 }; return order[e.result] ?? 2; }
+  return 0;
+}
+function sortCompare(a, b, field, dir) {
+  const va = sortValue(a, field), vb = sortValue(b, field);
+  if (va === vb) return 0;
+  const asc = va < vb ? -1 : 1;
+  return dir === 'desc' ? -asc : asc;
+}
+
 // ── Render log ────────────────────────────────────────────────────────────
 function renderLog() {
   logCount.textContent = `${logEntries.length} employee${logEntries.length !== 1 ? 's' : ''} logged`;
 
-  // Update sort indicator
+  // Sync rank column header indicator
   const ind = document.getElementById('sortIndicator');
-  ind.textContent = sortDir === 'asc' ? '▲' : sortDir === 'desc' ? '▼' : '↕';
-
-  // Update Time→Rank button active state
-  const stBtn = document.getElementById('sortTimeBtn');
-  if (stBtn) stBtn.classList.toggle('active', sortDir === 'time-rank');
+  const pf = (sortConfig.primary.field || '').toLowerCase();
+  ind.textContent = pf === 'rank' ? (sortConfig.primary.dir === 'asc' ? '▲' : '▼') : '↕';
 
   if (!logEntries.length) {
     logBody.innerHTML = '<tr><td colspan="10" class="log-empty">No employees logged yet</td></tr>';
@@ -811,31 +923,15 @@ function renderLog() {
     return;
   }
 
-  // Build sorted view — don't mutate logEntries so insertion order is preserved
+  // Build sorted view — don't mutate logEntries
   let view = logEntries.map((e, i) => ({ ...e, _i: i }));
-  if (sortDir === 'asc') {
+  const pField = sortConfig.primary.field;
+  const sField = sortConfig.secondary.field;
+  if (pField) {
     view.sort((a, b) => {
-      if (a.rank === '' && b.rank === '') return 0;
-      if (a.rank === '') return 1;
-      if (b.rank === '') return -1;
-      return a.rank - b.rank;
-    });
-  } else if (sortDir === 'desc') {
-    view.sort((a, b) => {
-      if (a.rank === '' && b.rank === '') return 0;
-      if (a.rank === '') return 1;
-      if (b.rank === '') return -1;
-      return b.rank - a.rank;
-    });
-  } else if (sortDir === 'time-rank') {
-    view.sort((a, b) => {
-      const tA = parseShiftStart(a.shift), tB = parseShiftStart(b.shift);
-      if (tA !== tB) return tA - tB;
-      // tiebreak by seniority (lower rank = more senior)
-      if (a.rank === '' && b.rank === '') return 0;
-      if (a.rank === '') return 1;
-      if (b.rank === '') return -1;
-      return a.rank - b.rank;
+      const primary = sortCompare(a, b, pField, sortConfig.primary.dir);
+      if (primary !== 0 || !sField) return primary;
+      return sortCompare(a, b, sField, sortConfig.secondary.dir);
     });
   }
 
@@ -909,17 +1005,51 @@ function renderSummary() {
   `;
 }
 
-// ── Sort toggle (Rank column header) ─────────────────────────────────────
+// ── Sort: rank column header click (sets primary to Rank, toggles dir) ───
 function toggleSort() {
-  if (sortDir === null || sortDir === 'time-rank') sortDir = 'asc';
-  else if (sortDir === 'asc')                      sortDir = 'desc';
-  else                                             sortDir = null;
+  const pf = (sortConfig.primary.field || '').toLowerCase();
+  if (pf !== 'rank') {
+    sortConfig.primary = { field: 'Rank', dir: 'asc' };
+    document.getElementById('sortPrimaryInput').value = 'Rank';
+    document.getElementById('sortPrimaryDir').textContent = '↑';
+    document.getElementById('sortPrimaryDir').classList.add('active');
+  } else {
+    const newDir = sortConfig.primary.dir === 'asc' ? 'desc' : 'asc';
+    sortConfig.primary.dir = newDir;
+    document.getElementById('sortPrimaryDir').textContent = newDir === 'asc' ? '↑' : '↓';
+  }
   renderLog();
 }
 
-// ── Sort: Time → Rank ─────────────────────────────────────────────────────
-function sortByTimeRank() {
-  sortDir = sortDir === 'time-rank' ? null : 'time-rank';
+// ── Multi-sort: read inputs and apply ────────────────────────────────────
+const SORT_FIELDS = ['rank','time','name','result'];
+function applyMultiSort() {
+  const raw = document.getElementById('sortPrimaryInput').value.trim().toLowerCase();
+  sortConfig.primary.field = SORT_FIELDS.includes(raw) ? raw.charAt(0).toUpperCase() + raw.slice(1) : '';
+  const sel = document.getElementById('sortSecondarySelect').value;
+  sortConfig.secondary.field = sel || '';
+  // Update dir button active states
+  document.getElementById('sortPrimaryDir').classList.toggle('active', !!sortConfig.primary.field);
+  document.getElementById('sortSecondaryDir').classList.toggle('active', !!sortConfig.secondary.field);
+  renderLog();
+}
+
+function toggleSortDir(which) {
+  const key = which === 'primary' ? 'sortPrimaryDir' : 'sortSecondaryDir';
+  const cur = sortConfig[which].dir;
+  sortConfig[which].dir = cur === 'asc' ? 'desc' : 'asc';
+  document.getElementById(key).textContent = sortConfig[which].dir === 'asc' ? '↑' : '↓';
+  renderLog();
+}
+
+function clearSort() {
+  sortConfig = { primary: { field: '', dir: 'asc' }, secondary: { field: '', dir: 'asc' } };
+  document.getElementById('sortPrimaryInput').value = '';
+  document.getElementById('sortSecondarySelect').value = '';
+  document.getElementById('sortPrimaryDir').textContent = '↑';
+  document.getElementById('sortPrimaryDir').classList.remove('active');
+  document.getElementById('sortSecondaryDir').textContent = '↑';
+  document.getElementById('sortSecondaryDir').classList.remove('active');
   renderLog();
 }
 
@@ -955,7 +1085,7 @@ function addDragListeners() {
       const [moved] = newView.splice(dragSrcVidx, 1);
       newView.splice(dstVidx, 0, moved);
       logEntries = newView.map(({ _i, ...rest }) => rest);
-      sortDir = null;
+      clearSort();
       renderLog();
       saveOTState();
     });
