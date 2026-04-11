@@ -46,13 +46,18 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .ss-lbl{color:var(--muted)}.ss-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text)}
 .ss-val.green{color:#16a34a}[data-theme="dark"] .ss-val.green{color:#22c55e}
 .ss-val.red{color:#dc2626}[data-theme="dark"] .ss-val.red{color:#ef4444}
-.ins-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
-.ins-tbl th{background:var(--surface2);color:var(--muted);font-weight:500;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
-.ins-tbl td{padding:3px 12px;border-bottom:1px solid var(--border)}
-.ins-tbl tr:last-child td{border-bottom:none}
-.ins-time{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);width:60px}
-.ins-inp{width:90px;background:transparent;border:1px solid transparent;border-radius:5px;padding:4px 8px;color:var(--text);font-size:.8rem;font-family:'JetBrains Mono',monospace;text-align:center;outline:none;transition:border-color .15s}
+.ins-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:auto}
+.ins-tbl{border-collapse:collapse;font-size:.8rem;white-space:nowrap}
+.ins-tbl th{background:var(--surface2);color:var(--muted);font-weight:500;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;border:1px solid var(--border);text-align:center;position:sticky;top:0;z-index:2;min-width:110px}
+.ins-tbl th.th-time{text-align:left;position:sticky;left:0;z-index:3;min-width:65px}
+.ins-tbl td{border:1px solid var(--border);padding:2px 6px;text-align:center}
+.ins-time{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);background:var(--surface2)!important;position:sticky;left:0;z-index:1;padding:4px 10px;text-align:left;white-space:nowrap}
+.ins-inp{width:80px;background:transparent;border:1px solid transparent;border-radius:5px;padding:4px 6px;color:var(--text);font-size:.8rem;font-family:'JetBrains Mono',monospace;text-align:center;outline:none;transition:border-color .15s;-moz-appearance:textfield}
+.ins-inp::-webkit-inner-spin-button,.ins-inp::-webkit-outer-spin-button{-webkit-appearance:none}
 .ins-inp:hover{border-color:var(--border)}.ins-inp:focus{border-color:var(--accent);background:var(--surface2)}
+.ins-inp.filled{font-weight:600}
+.ins-total-row td{background:var(--surface2)!important;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;color:var(--text);padding:5px 6px}
+.ins-total-row .ins-time{font-weight:600;color:var(--text)}
 
 /* Daily */
 .daily-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
@@ -200,18 +205,8 @@ function toggleTheme(){
 
   <!-- INSIGHTS -->
   <div id="panel-insights" class="tab-panel">
-    <div class="day-tabs" id="insDayTabs"></div>
-    <div class="two-col">
-      <div class="panel-card">
-        <table class="ins-tbl">
-          <thead><tr><th style="width:65px">Time</th><th>Insights Count</th></tr></thead>
-          <tbody id="insBody"></tbody>
-        </table>
-      </div>
-      <div class="side-card">
-        <div class="side-title">Day Summary</div>
-        <div id="insSummary"></div>
-      </div>
+    <div class="ins-wrap">
+      <table class="ins-tbl" id="insTable"></table>
     </div>
   </div>
 
@@ -353,53 +348,61 @@ function renderPills() {
 }
 
 // ── INSIGHTS ──
-function renderInsDayTabs() {
-  document.getElementById('insDayTabs').innerHTML = DSHORT.map((d,i) =>
-    `<button class="day-tab${i===insDay?' active':''}" onclick="switchInsDay(${i})">${d}</button>`
-  ).join('');
-}
-function switchInsDay(d) { insDay=d; renderInsDayTabs(); renderInsTable(); renderInsSummary(); }
 function renderInsTable() {
-  document.getElementById('insBody').innerHTML = SLOTS.map((slot,i) => {
-    const v = state.insights[insDay][slot] ?? '';
-    return `<tr><td class="ins-time">${slot}</td><td>
-      <input type="number" class="ins-inp" value="${v}" placeholder="—" min="0" max="9999"
-        data-i="${i}" data-slot="${slot}"
-        oninput="setIns(${insDay},'${slot}',this.value)"
-        onkeydown="insNav(event,${i})">
-    </td></tr>`;
+  const base = state.weekStart ? new Date(state.weekStart+'T00:00:00') : null;
+  const dayHeaders = DSHORT.map((d,i) => {
+    let dt = '';
+    if (base) {
+      const b = new Date(base); b.setDate(base.getDate()+i);
+      dt = `<br><span style="font-size:.55rem;opacity:.6">${(b.getMonth()+1).toString().padStart(2,'0')}/${b.getDate().toString().padStart(2,'0')}</span>`;
+    }
+    return `<th>${d}${dt}</th>`;
   }).join('');
+
+  const bodyRows = SLOTS.map((slot, si) => {
+    const cells = [0,1,2,3,4,5,6].map(d => {
+      const v = state.insights[d][slot] ?? '';
+      return `<td><input type="number" class="ins-inp${v!==''?' filled':''}" value="${v}" placeholder="—"
+        min="0" max="9999" data-d="${d}" data-si="${si}"
+        oninput="setIns(${d},'${slot}',this.value)"
+        onkeydown="insNav(event,${d},${si})"></td>`;
+    }).join('');
+    return `<tr><td class="ins-time">${slot}</td>${cells}</tr>`;
+  }).join('');
+
+  // Totals row
+  const totCells = [0,1,2,3,4,5,6].map(d => {
+    const t = SLOTS.reduce((s,sl) => s+(state.insights[d][sl]||0), 0);
+    return `<td>${t||'—'}</td>`;
+  }).join('');
+
+  document.getElementById('insTable').innerHTML = `
+    <thead><tr><th class="th-time">Time</th>${dayHeaders}</tr></thead>
+    <tbody>${bodyRows}</tbody>
+    <tfoot><tr class="ins-total-row"><td class="ins-time">Total</td>${totCells}</tr></tfoot>`;
 }
 function setIns(day, slot, val) {
   const n = parseInt(val);
   if (isNaN(n) || val==='') delete state.insights[day][slot];
   else state.insights[day][slot] = n;
-  save(); renderInsSummary();
+  save();
+  // update totals row live
+  const totCells = document.querySelectorAll('.ins-total-row td:not(.ins-time)');
+  [0,1,2,3,4,5,6].forEach(d => {
+    const t = SLOTS.reduce((s,sl) => s+(state.insights[d][sl]||0), 0);
+    if (totCells[d]) totCells[d].textContent = t||'—';
+  });
 }
-function insNav(e, i) {
-  if (e.key==='Enter'||e.key==='ArrowDown') {
-    e.preventDefault();
-    const inp = document.querySelector(`[data-i="${i+1}"]`);
-    if (inp) inp.focus();
-  } else if (e.key==='ArrowUp') {
-    e.preventDefault();
-    const inp = document.querySelector(`[data-i="${i-1}"]`);
-    if (inp) inp.focus();
-  }
-}
-function renderInsSummary() {
-  const d = state.insights[insDay]||{};
-  const vals = SLOTS.map(s => d[s]??0);
-  const filled = SLOTS.filter(s => d[s]!==undefined).length;
-  const peak = Math.max(...vals, 0);
-  const peakSlot = SLOTS.find(s => d[s]===peak)||'—';
-  const avg = filled ? Math.round(vals.reduce((a,b)=>a+b,0)/filled) : 0;
-  document.getElementById('insSummary').innerHTML = `
-    <div class="side-stat"><span class="ss-lbl">Slots filled</span><span class="ss-val">${filled} / ${SLOTS.length}</span></div>
-    <div class="side-stat"><span class="ss-lbl">Peak count</span><span class="ss-val">${peak||'—'}</span></div>
-    <div class="side-stat"><span class="ss-lbl">Peak time</span><span class="ss-val">${peakSlot}</span></div>
-    <div class="side-stat"><span class="ss-lbl">Avg (filled slots)</span><span class="ss-val">${avg||'—'}</span></div>
-  `;
+function insNav(e, d, si) {
+  let nd=d, nsi=si;
+  if (e.key==='Enter'||e.key==='ArrowDown') { e.preventDefault(); nsi++; }
+  else if (e.key==='ArrowUp') { e.preventDefault(); nsi--; }
+  else if (e.key==='Tab'&&!e.shiftKey) { /* natural tab, let it flow */ return; }
+  else return;
+  nd = Math.max(0, Math.min(6, nd));
+  nsi = Math.max(0, Math.min(SLOTS.length-1, nsi));
+  const inp = document.querySelector(`[data-d="${nd}"][data-si="${nsi}"]`);
+  if (inp) { e.preventDefault(); inp.focus(); }
 }
 
 // ── DAILY VIEW ──
@@ -527,7 +530,7 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (name==='insights') { renderInsTable(); renderInsSummary(); }
+  if (name==='insights') renderInsTable();
   if (name==='daily') renderDailyTable();
   if (name==='shifts') renderShiftsList();
   if (name==='summary') renderSummary();
@@ -585,7 +588,7 @@ function initApp() {
   load();
   if (state.weekStart) document.getElementById('weekStartInput').value=state.weekStart;
   renderPills();
-  renderInsDayTabs(); renderInsTable(); renderInsSummary();
+  renderInsTable();
   renderDailyDayTabs(); renderDailyTable();
   renderShiftsList();
 }
