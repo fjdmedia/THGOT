@@ -487,8 +487,7 @@ function renderDailyDayTabs() {
 function switchDailyDay(d) { dailyDay=d; renderDailyDayTabs(); renderDailyTable(); }
 function varClass(v, hasIns) {
   if (!hasIns) return 'vno';
-  if (v === 0) return 'vzero';
-  if (v > 0) return 'vpos';   // positive = good (surplus)
+  if (v >= 0) return 'vpos';   // 0 or positive = good
   if (v >= -3) return 'vlow';
   if (v >= -7) return 'vmid';
   return 'vhigh';              // very negative = red
