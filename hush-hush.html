@@ -487,10 +487,10 @@ function renderDailyDayTabs() {
 function switchDailyDay(d) { dailyDay=d; renderDailyDayTabs(); renderDailyTable(); }
 function varClass(v, hasIns) {
   if (!hasIns) return 'vno';
-  if (v > 0) return 'vpos';
+  if (v < 0) return 'vpos';   // negative = surplus (good)
   if (v === 0) return 'vzero';
-  if (v >= -3) return 'vlow';
-  if (v >= -7) return 'vmid';
+  if (v <= 3) return 'vlow';  // positive = demand exceeds staff (bad)
+  if (v <= 7) return 'vmid';
   return 'vhigh';
 }
 function renderDailyTable() {
@@ -501,8 +501,8 @@ function renderDailyTable() {
     const insDisp = hasIns ? ins : '—';
     const ahc = AHC[slot] ? AHC[slot][dailyDay] : null;
     const ali = ALLIN[slot] ? ALLIN[slot][dailyDay] : null;
-    const vL = (hasIns && ahc !== null) ? ahc - ins : null;
-    const vR = (hasIns && ali !== null) ? ali - ins : null;
+    const vL = (hasIns && ahc !== null) ? ins - ahc : null;
+    const vR = (hasIns && ali !== null) ? ins - ali : null;
     const fmtV = v => v === null ? '<span class="d-var vno">—</span>' : `<span class="d-var ${varClass(v, hasIns)}">${v>0?'+'+v:v}</span>`;
     rowsL.push(`<tr>
       <td class="d-time">${slot}</td>
