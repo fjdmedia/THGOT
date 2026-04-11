@@ -58,6 +58,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .ins-inp.filled{font-weight:600}
 .ins-total-row td{background:var(--surface2)!important;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;color:var(--text);padding:5px 6px}
 .ins-total-row .ins-time{font-weight:600;color:var(--text)}
+.day-hd{display:flex;flex-direction:column;align-items:center;gap:4px}
+.day-hd-btns{display:flex;gap:3px}
+.cp-btn{font-size:.55rem;padding:2px 6px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0;text-transform:none;font-weight:500;transition:all .15s;line-height:1.4}
+.cp-btn:hover{border-color:var(--accent);color:var(--text)}
+.cp-btn.copied{border-color:var(--gold);color:var(--gold);background:rgba(212,160,23,.08)}
+.cp-btn.paste{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 
 /* Daily */
 .daily-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
@@ -348,15 +354,45 @@ function renderPills() {
 }
 
 // ── INSIGHTS ──
+let copiedDay = null; // { d: int, data: {slot: val} }
+
+function copyDay(d) {
+  copiedDay = { d, data: Object.assign({}, state.insights[d]) };
+  renderInsHeaders();
+  showToast(`${DSHORT[d]} copied — click Paste on another day`);
+}
+function pasteDay(d) {
+  if (!copiedDay) return;
+  state.insights[d] = Object.assign({}, copiedDay.data);
+  save();
+  renderInsTable();
+  showToast(`Pasted to ${DSHORT[d]}`);
+}
+function renderInsHeaders() {
+  const ths = document.querySelectorAll('.ins-day-th');
+  ths.forEach(th => {
+    const d = parseInt(th.dataset.d);
+    const isCopied = copiedDay && copiedDay.d === d;
+    const canPaste = copiedDay && copiedDay.d !== d;
+    th.querySelector('.day-hd-btns').innerHTML =
+      `<button class="cp-btn${isCopied?' copied':''}" onclick="copyDay(${d})">${isCopied?'Copied':'Copy'}</button>` +
+      (canPaste ? `<button class="cp-btn paste" onclick="pasteDay(${d})">Paste</button>` : '');
+  });
+}
+
 function renderInsTable() {
   const base = state.weekStart ? new Date(state.weekStart+'T00:00:00') : null;
   const dayHeaders = DSHORT.map((d,i) => {
     let dt = '';
     if (base) {
       const b = new Date(base); b.setDate(base.getDate()+i);
-      dt = `<br><span style="font-size:.55rem;opacity:.6">${(b.getMonth()+1).toString().padStart(2,'0')}/${b.getDate().toString().padStart(2,'0')}</span>`;
+      dt = `<span style="font-size:.55rem;opacity:.6">${(b.getMonth()+1).toString().padStart(2,'0')}/${b.getDate().toString().padStart(2,'0')}</span>`;
     }
-    return `<th>${d}${dt}</th>`;
+    const isCopied = copiedDay && copiedDay.d === i;
+    const canPaste = copiedDay && copiedDay.d !== i;
+    const btns = `<button class="cp-btn${isCopied?' copied':''}" onclick="copyDay(${i})">${isCopied?'Copied':'Copy'}</button>` +
+      (canPaste ? `<button class="cp-btn paste" onclick="pasteDay(${i})">Paste</button>` : '');
+    return `<th class="ins-day-th" data-d="${i}"><div class="day-hd"><span>${DSHORT[i]}${dt?'<br>'+dt:''}</span><div class="day-hd-btns">${btns}</div></div></th>`;
   }).join('');
 
   const bodyRows = SLOTS.map((slot, si) => {
