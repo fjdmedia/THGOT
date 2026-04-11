@@ -217,6 +217,10 @@ function toggleTheme(){
 
   <!-- INSIGHTS -->
   <div id="panel-insights" class="tab-panel">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <button onclick="testFill()" style="padding:6px 16px;border:1px solid var(--gold);border-radius:8px;background:rgba(212,160,23,.08);color:var(--gold);font-size:.75rem;font-weight:600;cursor:pointer;" onmouseover="this.style.background='rgba(212,160,23,.18)'" onmouseout="this.style.background='rgba(212,160,23,.08)'">Test Fill (All In −2)</button>
+      <button onclick="clearInsights()" style="padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:.75rem;cursor:pointer;" onmouseover="this.style.borderColor='#dc2626';this.style.color='#dc2626'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Clear Insights</button>
+    </div>
     <div class="ins-wrap">
       <table class="ins-tbl" id="insTable"></table>
     </div>
@@ -344,6 +348,17 @@ function staffing(day, slot) {
 
 // ── WEEK SETUP ──
 function setWeekStart(v) {
+  if (!v) return;
+  const hasData = SLOTS.some(s => [0,1,2,3,4,5,6].some(d => state.insights[d][s] !== undefined)) || state.shifts.length > 0;
+  if (hasData && state.weekStart && state.weekStart !== v) {
+    if (confirm('Clear all insights and shifts for the new week?')) {
+      state.insights = {0:{},1:{},2:{},3:{},4:{},5:{},6:{}};
+      state.shifts = [];
+    } else {
+      document.getElementById('weekStartInput').value = state.weekStart;
+      return;
+    }
+  }
   state.weekStart = v; save(); renderPills();
 }
 function renderPills() {
@@ -357,6 +372,21 @@ function renderPills() {
 }
 
 // ── INSIGHTS ──
+function testFill() {
+  SLOTS.forEach(slot => {
+    if (!ALLIN[slot]) return;
+    [0,1,2,3,4,5,6].forEach(d => {
+      state.insights[d][slot] = Math.max(0, ALLIN[slot][d] - 2);
+    });
+  });
+  save(); renderInsTable(); showToast('Test data filled — All In −2');
+}
+function clearInsights() {
+  if (!confirm('Clear all insights data?')) return;
+  state.insights = {0:{},1:{},2:{},3:{},4:{},5:{},6:{}};
+  save(); renderInsTable(); showToast('Insights cleared');
+}
+
 let copiedDay = null; // { d: int, data: {slot: val} }
 
 function copyDay(d) {
