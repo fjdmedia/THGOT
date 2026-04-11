@@ -284,6 +284,15 @@
     <div class="tool-tag">Lab</div>
   </a>
 
+  <a class="tool-card classified" href="hush-hush.html" data-admin-only="1" onclick="labGate(event,this)">
+    <div class="tool-top">
+      <div class="tool-name">🤫 Hush Hush <span class="classified-badge">Admin Only</span></div>
+      <div class="tool-arrow">→</div>
+    </div>
+    <div class="tool-desc">Weekly staffing &amp; coverage planner</div>
+    <div class="tool-tag">Ops</div>
+  </a>
+
   <footer class="powered-by">Powered by <a href="https://fjdmedia.github.io/FJMedia/" target="_blank">FJMedia</a></footer>
 
   <!-- Lab Password Gate Modal -->
@@ -301,10 +310,17 @@
   </div>
 
   <script>
-    function labGate(e) {
+    var _pendingHref = 'dexters-lab.html';
+    var _adminOnly = false;
+    function labGate(e, el) {
       var a = sessionStorage.getItem('thgot_auth');
-      if (a === 'admin' || a === 'viewer') return;
+      var href = el ? el.getAttribute('href') : 'dexters-lab.html';
+      var adminOnly = el ? !!el.getAttribute('data-admin-only') : false;
+      if (a === 'admin') return;
+      if (a === 'viewer' && !adminOnly) return;
       e.preventDefault();
+      _pendingHref = href;
+      _adminOnly = adminOnly;
       var modal = document.getElementById('lab-gate');
       modal.style.display = 'flex';
       var inp = document.getElementById('lab-pw-input');
@@ -320,14 +336,14 @@
       if (h === '61697e084834fbb2cf9ceebd945b42bdb9cd7cee96e0eaeb3df2232ccc95a3f0') {
         sessionStorage.setItem('thgot_auth', 'admin');
         closeLabGate();
-        window.location.href = 'dexters-lab.html';
-      } else if (h === '7f30af648acdc85bfca44ba813cdf882bc5039b150ecfceba3822dc2ff75a4de') {
+        window.location.href = _pendingHref;
+      } else if (!_adminOnly && h === '7f30af648acdc85bfca44ba813cdf882bc5039b150ecfceba3822dc2ff75a4de') {
         sessionStorage.setItem('thgot_auth', 'viewer');
         closeLabGate();
-        window.location.href = 'dexters-lab.html';
+        window.location.href = _pendingHref;
       } else {
         var err = document.getElementById('lab-pw-error');
-        err.textContent = 'Incorrect password.';
+        err.textContent = _adminOnly ? 'Admin password required.' : 'Incorrect password.';
         document.getElementById('lab-pw-input').value = '';
       }
     }

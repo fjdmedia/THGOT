@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hush Hush</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#fafafa;--surface:#ffffff;--surface2:#f0f0f0;--border:rgba(0,0,0,0.08);--accent:#2563eb;--accent-dim:rgba(37,99,235,0.09);--gold:#d4a017;--text:#0f0f0f;--muted:rgba(15,15,15,0.65);--faint:rgba(15,15,15,0.37);--nav-bg:rgba(250,250,250,0.92)}
+[data-theme="dark"]{--bg:#09090b;--surface:#18181b;--surface2:#27272a;--border:rgba(255,255,255,0.08);--accent:#00d4ff;--accent-dim:rgba(0,212,255,0.09);--gold:#f5c518;--text:#fafafa;--muted:rgba(250,250,250,0.62);--faint:rgba(250,250,250,0.33);--nav-bg:rgba(9,9,11,0.95)}
+body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;min-height:100vh;padding:16px 18px 80px}
+.header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:18px;max-width:1400px;margin-left:auto;margin-right:auto}
+.htitle{font-size:1rem;font-weight:600}.hsub{font-size:0.68rem;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.hright{display:flex;align-items:center;gap:10px}
+.hclock{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;color:var(--accent)}
+.tbtn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.9rem;padding:4px 8px}
+.tbtn:hover{border-color:var(--accent)}
+.content{max-width:1400px;margin:0 auto}
+.tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.tab-btn{padding:8px 16px;border:none;border-radius:8px 8px 0 0;background:transparent;color:var(--muted);font-size:.78rem;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--text);border-bottom:2px solid var(--accent);background:var(--accent-dim)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* Setup */
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:520px}
+.slabel{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.date-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:.9rem;outline:none;width:200px}
+.date-input:focus{border-color:var(--accent)}
+.week-pills{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.wdp{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;min-width:62px}
+.wdp-d{font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.wdp-dt{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:var(--text);margin-top:2px}
+
+/* Insights */
+.day-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.day-tab{padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--muted);font-size:.75rem;font-weight:500;cursor:pointer;transition:all .15s}
+.day-tab:hover{border-color:var(--accent);color:var(--text)}
+.day-tab.active{background:var(--accent-dim);border-color:var(--accent);color:var(--text);font-weight:600}
+.two-col{display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start}
+.panel-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.side-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;position:sticky;top:16px}
+.side-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+.side-stat{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.78rem}
+.side-stat:last-child{border-bottom:none}
+.ss-lbl{color:var(--muted)}.ss-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text)}
+.ss-val.green{color:#16a34a}[data-theme="dark"] .ss-val.green{color:#22c55e}
+.ss-val.red{color:#dc2626}[data-theme="dark"] .ss-val.red{color:#ef4444}
+.ins-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.ins-tbl th{background:var(--surface2);color:var(--muted);font-weight:500;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
+.ins-tbl td{padding:3px 12px;border-bottom:1px solid var(--border)}
+.ins-tbl tr:last-child td{border-bottom:none}
+.ins-time{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);width:60px}
+.ins-inp{width:90px;background:transparent;border:1px solid transparent;border-radius:5px;padding:4px 8px;color:var(--text);font-size:.8rem;font-family:'JetBrains Mono',monospace;text-align:center;outline:none;transition:border-color .15s}
+.ins-inp:hover{border-color:var(--border)}.ins-inp:focus{border-color:var(--accent);background:var(--surface2)}
+
+/* Daily */
+.daily-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.daily-tbl th{background:var(--surface2);color:var(--muted);font-weight:500;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
+.daily-tbl td{padding:5px 12px;border-bottom:1px solid var(--border)}
+.daily-tbl tr:last-child td{border-bottom:none}
+.d-time{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted)}
+.d-num{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:500;text-align:center}
+.d-var{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:600;text-align:center;border-radius:4px;padding:2px 8px;display:inline-block}
+.vpos{background:rgba(22,163,74,.15);color:#16a34a}[data-theme="dark"] .vpos{color:#4ade80}
+.vzero{background:var(--surface2);color:var(--muted)}
+.vlow{background:rgba(234,179,8,.15);color:#ca8a04}[data-theme="dark"] .vlow{color:#eab308}
+.vmid{background:rgba(220,38,38,.15);color:#dc2626}[data-theme="dark"] .vmid{color:#f87171}
+.vhigh{background:rgba(220,38,38,.28);color:#b91c1c;font-weight:700}[data-theme="dark"] .vhigh{color:#ef4444}
+
+/* Shifts */
+.shifts-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;position:sticky;top:16px}
+.fc-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+.fc-row{margin-bottom:10px}
+.fc-lbl{font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.fc-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.82rem;outline:none}
+.fc-inp:focus{border-color:var(--accent)}
+.fc-sel{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.82rem;outline:none;cursor:pointer}
+.fc-sel:focus{border-color:var(--accent)}
+.add-btn{width:100%;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#18181b;font-weight:700;font-size:.82rem;cursor:pointer;margin-top:4px}
+.add-btn:hover{opacity:.9}
+.list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.lc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.lc-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.lc-cnt{font-size:.72rem;color:var(--muted)}
+.lc-clear{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--muted);font-size:.7rem;cursor:pointer}
+.lc-clear:hover{border-color:#dc2626;color:#dc2626}
+.s-tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.s-tbl th{background:var(--surface2);color:var(--muted);font-weight:500;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid var(--border);text-align:left}
+.s-tbl td{padding:6px 10px;border-bottom:1px solid var(--border)}
+.s-tbl tr:last-child td{border-bottom:none}
+.s-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;padding:2px 4px;border-radius:4px}
+.s-del:hover{background:rgba(239,68,68,.1);color:#ef4444}
+.s-mono{font-family:'JetBrains Mono',monospace}
+.no-data{color:var(--muted);font-size:.78rem;font-style:italic;padding:16px 0;text-align:center}
+.day-section-label{font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px;margin-top:12px}
+.day-section-label:first-child{margin-top:0}
+
+/* Summary */
+.sum-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:auto}
+.sum-tbl{border-collapse:collapse;font-size:.72rem;white-space:nowrap;min-width:100%}
+.sum-tbl th{background:var(--surface2);color:var(--muted);font-weight:500;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 10px;border:1px solid var(--border);text-align:center;position:sticky;top:0;z-index:2}
+.sum-tbl th.th-time{text-align:left;position:sticky;left:0;z-index:3;min-width:65px}
+.sum-tbl td{border:1px solid var(--border);padding:4px 6px;text-align:center;min-width:90px}
+.td-time{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);background:var(--surface2)!important;position:sticky;left:0;z-index:1;padding:4px 8px;text-align:left}
+.sc{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:500}
+.sc-empty{background:var(--surface2);color:var(--faint)}
+.sc-pos{background:rgba(22,163,74,.12);color:#16a34a}[data-theme="dark"] .sc-pos{color:#4ade80}
+.sc-zero{background:rgba(22,163,74,.05);color:var(--muted)}
+.sc-low{background:rgba(234,179,8,.15);color:#ca8a04}[data-theme="dark"] .sc-low{color:#eab308}
+.sc-mid{background:rgba(220,38,38,.12);color:#dc2626}[data-theme="dark"] .sc-mid{color:#f87171}
+.sc-high{background:rgba(220,38,38,.28);color:#b91c1c;font-weight:700}[data-theme="dark"] .sc-high{color:#ef4444}
+.sum-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:.68rem;color:var(--muted)}
+.leg-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+
+/* PW Gate */
+#pw-gate{position:fixed;inset:0;z-index:9999;background:#09090b;display:flex;align-items:center;justify-content:center}
+.pw-box{background:#18181b;border:1px solid #00d4ff;border-radius:14px;padding:2.5rem 2.8rem;text-align:center;min-width:300px}
+.pw-lock{font-size:2rem;margin-bottom:12px}.pw-title{font-size:1.1rem;font-weight:600;color:#00d4ff;margin-bottom:4px}
+.pw-sub{font-size:.75rem;color:rgba(0,212,255,.6);margin-bottom:20px}
+#pw-inp{width:100%;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(0,212,255,.3);border-radius:8px;color:#fafafa;font-size:.9rem;outline:none;margin-bottom:10px}
+#pw-inp:focus{border-color:#00d4ff}
+.pw-btn{width:100%;padding:10px;background:#00d4ff;border:none;border-radius:8px;color:#18181b;font-weight:600;font-size:.9rem;cursor:pointer}
+.pw-err{font-size:.72rem;color:#ef4444;margin-top:8px;min-height:18px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.pw-shake{animation:shake .4s ease}
+
+/* Toast */
+#toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 20px;border-radius:10px;font-size:.78rem;font-weight:500;opacity:0;z-index:200;transition:opacity .2s,transform .2s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Bottom nav */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;justify-content:center;gap:8px;padding:10px 18px 18px;z-index:100}
+.nav-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;font-size:.72rem;font-weight:500;text-decoration:none;color:var(--muted);background:transparent;border:1px solid transparent;cursor:pointer;transition:all .15s}
+.nav-btn:hover{border-color:var(--accent);color:var(--text)}
+</style>
+<script>
+(function(){
+  var s=localStorage.getItem('passTheme')||'dark';
+  if(s==='dark')document.documentElement.setAttribute('data-theme','dark');
+  document.addEventListener('DOMContentLoaded',function(){
+    document.getElementById('themeBtn').textContent=s==='dark'?'☀️':'🌙';
+  });
+})();
+function toggleTheme(){
+  var d=document.documentElement.getAttribute('data-theme')==='dark';
+  var n=d?'light':'dark';
+  document.documentElement.setAttribute('data-theme',n==='dark'?'dark':'');
+  localStorage.setItem('passTheme',n);
+  document.getElementById('themeBtn').textContent=n==='dark'?'☀️':'🌙';
+}
+</script>
+</head>
+<body>
+
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-lock">🔒</div>
+    <div class="pw-title">THGOT</div>
+    <div class="pw-sub">Admin access required</div>
+    <input type="password" id="pw-inp" placeholder="Password" autocomplete="off">
+    <button class="pw-btn" onclick="checkPW()">Enter</button>
+    <div class="pw-err" id="pw-err"></div>
+  </div>
+</div>
+
+<div class="header">
+  <div>
+    <div class="htitle">Hush Hush</div>
+    <div class="hsub">Weekly staffing &amp; coverage planner</div>
+  </div>
+  <div class="hright">
+    <div class="hclock" id="headerClock">--:--</div>
+    <button class="tbtn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('setup',this)">Week Setup</button>
+    <button class="tab-btn" onclick="switchTab('insights',this)">Insights</button>
+    <button class="tab-btn" onclick="switchTab('daily',this)">Daily View</button>
+    <button class="tab-btn" onclick="switchTab('shifts',this)">Shifts</button>
+    <button class="tab-btn" onclick="switchTab('summary',this)">Week Summary</button>
+  </div>
+
+  <!-- SETUP -->
+  <div id="panel-setup" class="tab-panel active">
+    <div class="setup-card">
+      <div class="slabel">Week Start (Sunday)</div>
+      <input type="date" id="weekStartInput" class="date-input" oninput="setWeekStart(this.value)">
+      <div class="week-pills" id="weekPills"></div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <div class="slabel" style="margin-bottom:8px">Danger zone</div>
+        <button onclick="clearAll()" style="padding:6px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--muted);font-size:.75rem;cursor:pointer" onmouseover="this.style.borderColor='#dc2626';this.style.color='#dc2626'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Clear All Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div id="panel-insights" class="tab-panel">
+    <div class="day-tabs" id="insDayTabs"></div>
+    <div class="two-col">
+      <div class="panel-card">
+        <table class="ins-tbl">
+          <thead><tr><th style="width:65px">Time</th><th>Insights Count</th></tr></thead>
+          <tbody id="insBody"></tbody>
+        </table>
+      </div>
+      <div class="side-card">
+        <div class="side-title">Day Summary</div>
+        <div id="insSummary"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY VIEW -->
+  <div id="panel-daily" class="tab-panel">
+    <div class="day-tabs" id="dailyDayTabs"></div>
+    <div class="two-col">
+      <div class="panel-card">
+        <table class="daily-tbl">
+          <thead>
+            <tr>
+              <th style="width:65px">Time</th>
+              <th style="width:90px;text-align:center">Insights</th>
+              <th style="width:90px;text-align:center">Staffing</th>
+              <th style="width:100px;text-align:center">Variance</th>
+            </tr>
+          </thead>
+          <tbody id="dailyBody"></tbody>
+        </table>
+      </div>
+      <div class="side-card">
+        <div class="side-title">Coverage Stats</div>
+        <div id="dailyStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHIFTS -->
+  <div id="panel-shifts" class="tab-panel">
+    <div class="shifts-grid">
+      <div class="form-card">
+        <div class="fc-title">Add Shift</div>
+        <div class="fc-row"><div class="fc-lbl">Employee #</div><input type="text" id="sfEE" class="fc-inp" placeholder="e.g. 167166" maxlength="10"></div>
+        <div class="fc-row"><div class="fc-lbl">Name</div><input type="text" id="sfName" class="fc-inp" placeholder="LAST, FIRST" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="fc-row"><div class="fc-lbl">Shift</div><input type="text" id="sfShift" class="fc-inp" placeholder="0700-1500" maxlength="12" onkeydown="if(event.key==='Enter')addShift()"></div>
+        <div class="fc-row">
+          <div class="fc-lbl">Day</div>
+          <select id="sfDay" class="fc-sel">
+            <option value="">— select day —</option>
+            <option value="0">Sunday</option><option value="1">Monday</option>
+            <option value="2">Tuesday</option><option value="3">Wednesday</option>
+            <option value="4">Thursday</option><option value="5">Friday</option>
+            <option value="6">Saturday</option>
+          </select>
+        </div>
+        <button class="add-btn" onclick="addShift()">+ Add Shift</button>
+      </div>
+      <div class="list-card">
+        <div class="lc-head">
+          <div class="lc-title">Shift Roster</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="lc-cnt" id="shiftCount">0 shifts</div>
+            <button class="lc-clear" onclick="clearShifts()">Clear All</button>
+          </div>
+        </div>
+        <div id="shiftsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div id="panel-summary" class="tab-panel">
+    <div class="sum-legend">
+      <span><span class="leg-dot" style="background:rgba(22,163,74,.4)"></span>Surplus</span>
+      <span><span class="leg-dot" style="background:rgba(22,163,74,.1)"></span>On target</span>
+      <span><span class="leg-dot" style="background:rgba(234,179,8,.4)"></span>Slight gap (1–3)</span>
+      <span><span class="leg-dot" style="background:rgba(220,38,38,.2)"></span>Gap (4–7)</span>
+      <span><span class="leg-dot" style="background:rgba(220,38,38,.5)"></span>Critical (&gt;7)</span>
+      <span><span class="leg-dot" style="background:var(--surface2)"></span>No data</span>
+    </div>
+    <div class="sum-wrap" id="sumWrap"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="bnav">
+  <a class="nav-btn" href="index.html">← Home</a>
+  <button class="nav-btn" onclick="exportData()">Export JSON</button>
+</div>
+
+<script>
+// ── CONSTANTS ──
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DSHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const SLOTS = [];
+for (let m = 3*60; m < 24*60; m += 30) {
+  const h = Math.floor(m/60), mn = m%60;
+  SLOTS.push(h.toString().padStart(2,'0') + mn.toString().padStart(2,'0'));
+}
+
+// ── STATE ──
+let state = { weekStart:'', insights:{0:{},1:{},2:{},3:{},4:{},5:{},6:{}}, shifts:[] };
+let insDay = 0, dailyDay = 0;
+
+function save() { localStorage.setItem('hush_hush_v1', JSON.stringify(state)); }
+function load() {
+  const raw = localStorage.getItem('hush_hush_v1');
+  if (!raw) return;
+  try {
+    const s = JSON.parse(raw);
+    state = Object.assign(state, s);
+    for (let d = 0; d < 7; d++) if (!state.insights[d]) state.insights[d] = {};
+    if (!state.shifts) state.shifts = [];
+  } catch(e) {}
+}
+
+// ── TIME UTILS ──
+function slotMins(s) { return parseInt(s.slice(0,2))*60 + parseInt(s.slice(2,4)); }
+function normShift(s) { return (s||'').trim().replace(/\s*-\s*/,'-').replace(/\s/g,''); }
+function parseShift(s) {
+  const n = normShift(s);
+  const m = n.match(/^(\d{3,4})-(\d{3,4})$/);
+  if (!m) return null;
+  return { start: m[1].padStart(4,'0'), end: m[2].padStart(4,'0') };
+}
+function covers(shiftStr, slot) {
+  const p = parseShift(shiftStr);
+  if (!p) return false;
+  const sM = slotMins(p.start), eM = slotMins(p.end), slM = slotMins(slot);
+  return eM > sM ? (slM >= sM && slM < eM) : (slM >= sM || slM < eM);
+}
+function staffing(day, slot) {
+  return state.shifts.filter(s => s.day == day && covers(s.shift, slot)).length;
+}
+
+// ── WEEK SETUP ──
+function setWeekStart(v) {
+  state.weekStart = v; save(); renderPills();
+}
+function renderPills() {
+  const el = document.getElementById('weekPills');
+  if (!state.weekStart) { el.innerHTML = ''; return; }
+  const base = new Date(state.weekStart + 'T00:00:00');
+  el.innerHTML = DSHORT.map((d,i) => {
+    const dt = new Date(base); dt.setDate(base.getDate()+i);
+    return `<div class="wdp"><div class="wdp-d">${d}</div><div class="wdp-dt">${(dt.getMonth()+1).toString().padStart(2,'0')}/${dt.getDate().toString().padStart(2,'0')}</div></div>`;
+  }).join('');
+}
+
+// ── INSIGHTS ──
+function renderInsDayTabs() {
+  document.getElementById('insDayTabs').innerHTML = DSHORT.map((d,i) =>
+    `<button class="day-tab${i===insDay?' active':''}" onclick="switchInsDay(${i})">${d}</button>`
+  ).join('');
+}
+function switchInsDay(d) { insDay=d; renderInsDayTabs(); renderInsTable(); renderInsSummary(); }
+function renderInsTable() {
+  document.getElementById('insBody').innerHTML = SLOTS.map((slot,i) => {
+    const v = state.insights[insDay][slot] ?? '';
+    return `<tr><td class="ins-time">${slot}</td><td>
+      <input type="number" class="ins-inp" value="${v}" placeholder="—" min="0" max="9999"
+        data-i="${i}" data-slot="${slot}"
+        oninput="setIns(${insDay},'${slot}',this.value)"
+        onkeydown="insNav(event,${i})">
+    </td></tr>`;
+  }).join('');
+}
+function setIns(day, slot, val) {
+  const n = parseInt(val);
+  if (isNaN(n) || val==='') delete state.insights[day][slot];
+  else state.insights[day][slot] = n;
+  save(); renderInsSummary();
+}
+function insNav(e, i) {
+  if (e.key==='Enter'||e.key==='ArrowDown') {
+    e.preventDefault();
+    const inp = document.querySelector(`[data-i="${i+1}"]`);
+    if (inp) inp.focus();
+  } else if (e.key==='ArrowUp') {
+    e.preventDefault();
+    const inp = document.querySelector(`[data-i="${i-1}"]`);
+    if (inp) inp.focus();
+  }
+}
+function renderInsSummary() {
+  const d = state.insights[insDay]||{};
+  const vals = SLOTS.map(s => d[s]??0);
+  const filled = SLOTS.filter(s => d[s]!==undefined).length;
+  const peak = Math.max(...vals, 0);
+  const peakSlot = SLOTS.find(s => d[s]===peak)||'—';
+  const avg = filled ? Math.round(vals.reduce((a,b)=>a+b,0)/filled) : 0;
+  document.getElementById('insSummary').innerHTML = `
+    <div class="side-stat"><span class="ss-lbl">Slots filled</span><span class="ss-val">${filled} / ${SLOTS.length}</span></div>
+    <div class="side-stat"><span class="ss-lbl">Peak count</span><span class="ss-val">${peak||'—'}</span></div>
+    <div class="side-stat"><span class="ss-lbl">Peak time</span><span class="ss-val">${peakSlot}</span></div>
+    <div class="side-stat"><span class="ss-lbl">Avg (filled slots)</span><span class="ss-val">${avg||'—'}</span></div>
+  `;
+}
+
+// ── DAILY VIEW ──
+function renderDailyDayTabs() {
+  document.getElementById('dailyDayTabs').innerHTML = DSHORT.map((d,i) =>
+    `<button class="day-tab${i===dailyDay?' active':''}" onclick="switchDailyDay(${i})">${d}</button>`
+  ).join('');
+}
+function switchDailyDay(d) { dailyDay=d; renderDailyDayTabs(); renderDailyTable(); }
+function varClass(v, hasIns) {
+  if (!hasIns) return 'vzero';
+  if (v > 0) return 'vpos';
+  if (v === 0) return 'vzero';
+  if (v >= -3) return 'vlow';
+  if (v >= -7) return 'vmid';
+  return 'vhigh';
+}
+function renderDailyTable() {
+  let totalIns=0, underSlots=0, worstV=0, worstSlot='';
+  const rows = SLOTS.map(slot => {
+    const ins = state.insights[dailyDay][slot];
+    const hasIns = ins !== undefined;
+    const staff = staffing(dailyDay, slot);
+    const v = hasIns ? staff-ins : null;
+    if (hasIns) totalIns += ins;
+    if (v!==null && v<0) { underSlots++; if(v<worstV){worstV=v;worstSlot=slot;} }
+    const vDisp = v===null ? '—' : (v>0?'+'+v:v.toString());
+    return `<tr>
+      <td class="d-time">${slot}</td>
+      <td><div class="d-num">${hasIns?ins:'—'}</div></td>
+      <td><div class="d-num">${staff>0?staff:'—'}</div></td>
+      <td style="text-align:center"><div class="d-var ${varClass(v,hasIns)}">${vDisp}</div></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dailyBody').innerHTML = rows;
+
+  const dayShifts = state.shifts.filter(s=>s.day==dailyDay).length;
+  const filledSlots = SLOTS.filter(s=>state.insights[dailyDay][s]!==undefined).length;
+  document.getElementById('dailyStats').innerHTML = `
+    <div class="side-stat"><span class="ss-lbl">Insights slots</span><span class="ss-val">${filledSlots}</span></div>
+    <div class="side-stat"><span class="ss-lbl">Total ins demand</span><span class="ss-val">${totalIns||'—'}</span></div>
+    <div class="side-stat"><span class="ss-lbl">Shifts rostered</span><span class="ss-val">${dayShifts}</span></div>
+    <div class="side-stat"><span class="ss-lbl">Understaffed slots</span><span class="ss-val ${underSlots>0?'red':'green'}">${underSlots}</span></div>
+    ${worstSlot?`<div class="side-stat"><span class="ss-lbl">Worst gap</span><span class="ss-val red">${worstV} @ ${worstSlot}</span></div>`:''}
+  `;
+}
+
+// ── SHIFTS ──
+function addShift() {
+  const ee   = document.getElementById('sfEE').value.trim();
+  const name = document.getElementById('sfName').value.trim();
+  const shift= normShift(document.getElementById('sfShift').value);
+  const day  = document.getElementById('sfDay').value;
+  if (!name||!shift||day==='') { showToast('Fill in name, shift, and day'); return; }
+  if (!parseShift(shift)) { showToast('Invalid shift — use format 0700-1500'); return; }
+  state.shifts.push({ id:Date.now(), ee, name, shift, day:parseInt(day) });
+  save(); renderShiftsList();
+  ['sfEE','sfShift'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('sfName').value='';
+  document.getElementById('sfDay').value='';
+  document.getElementById('sfName').focus();
+  showToast('Shift added');
+}
+function delShift(id) {
+  state.shifts = state.shifts.filter(s=>s.id!==id);
+  save(); renderShiftsList(); showToast('Shift removed');
+}
+function clearShifts() {
+  if (!confirm('Clear all shifts?')) return;
+  state.shifts=[]; save(); renderShiftsList();
+}
+function renderShiftsList() {
+  const el = document.getElementById('shiftsList');
+  document.getElementById('shiftCount').textContent = `${state.shifts.length} shift${state.shifts.length!==1?'s':''}`;
+  if (!state.shifts.length) { el.innerHTML='<div class="no-data">No shifts added yet.</div>'; return; }
+  let html = '';
+  for (let d=0; d<7; d++) {
+    const ds = state.shifts.filter(s=>s.day===d);
+    if (!ds.length) continue;
+    html += `<div class="day-section-label">${DAYS[d]} — ${ds.length} shift${ds.length!==1?'s':''}</div>
+    <table class="s-tbl"><thead><tr><th></th><th>EE #</th><th>Name</th><th>Shift</th></tr></thead><tbody>
+    ${ds.sort((a,b)=>a.shift.localeCompare(b.shift)).map(s=>`
+      <tr>
+        <td><button class="s-del" onclick="delShift(${s.id})">✕</button></td>
+        <td class="s-mono">${s.ee||'—'}</td>
+        <td>${s.name}</td>
+        <td class="s-mono">${s.shift}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── SUMMARY ──
+function renderSummary() {
+  const hdr = `<th class="th-time">Time</th>` + DSHORT.map((d,i) => {
+    let dt='';
+    if (state.weekStart) {
+      const b=new Date(state.weekStart+'T00:00:00'); b.setDate(b.getDate()+i);
+      dt=`<br><span style="font-size:.55rem;opacity:.6">${(b.getMonth()+1).toString().padStart(2,'0')}/${b.getDate().toString().padStart(2,'0')}</span>`;
+    }
+    return `<th>${d}${dt}</th>`;
+  }).join('');
+
+  const rows = SLOTS.map(slot => {
+    const cells = [0,1,2,3,4,5,6].map(d => {
+      const ins = state.insights[d][slot];
+      const staff = staffing(d, slot);
+      if (ins===undefined && staff===0) return `<td class="sc-empty"><span class="sc" style="color:var(--faint)">—</span></td>`;
+      if (ins===undefined) return `<td class="sc-empty"><span class="sc">${staff}</span></td>`;
+      const v = staff-ins;
+      const vc = v>0?'sc-pos': v===0?'sc-zero': v>=-3?'sc-low': v>=-7?'sc-mid':'sc-high';
+      return `<td class="${vc}"><span class="sc">${v>0?'+'+v:v}</span></td>`;
+    }).join('');
+    return `<tr><td class="td-time">${slot}</td>${cells}</tr>`;
+  }).join('');
+
+  document.getElementById('sumWrap').innerHTML = `
+    <table class="sum-tbl"><thead><tr>${hdr}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── TABS ──
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name==='insights') { renderInsTable(); renderInsSummary(); }
+  if (name==='daily') renderDailyTable();
+  if (name==='shifts') renderShiftsList();
+  if (name==='summary') renderSummary();
+}
+
+// ── MISC ──
+function clearAll() {
+  if (!confirm('Clear ALL data? This cannot be undone.')) return;
+  state={ weekStart:'', insights:{0:{},1:{},2:{},3:{},4:{},5:{},6:{}}, shifts:[] };
+  save();
+  document.getElementById('weekStartInput').value='';
+  renderPills(); renderInsTable(); renderShiftsList();
+  showToast('All data cleared');
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='hush-hush-'+(state.weekStart||'export')+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+let toastT;
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── CLOCK ──
+function tick() {
+  const n=new Date();
+  document.getElementById('headerClock').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+}
+setInterval(tick,1000); tick();
+
+// ── PASSWORD ──
+async function _h(v){const e=new TextEncoder().encode(v),b=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function checkPW() {
+  const val = document.getElementById('pw-inp').value;
+  const h = await _h(val);
+  if (h==='61697e084834fbb2cf9ceebd945b42bdb9cd7cee96e0eaeb3df2232ccc95a3f0') {
+    sessionStorage.setItem('thgot_auth','admin');
+    document.getElementById('pw-gate').style.display='none';
+    initApp();
+  } else {
+    const err=document.getElementById('pw-err'), box=document.querySelector('.pw-box');
+    err.textContent='Incorrect password.';
+    box.classList.add('pw-shake');
+    setTimeout(()=>box.classList.remove('pw-shake'),400);
+  }
+}
+document.getElementById('pw-inp').addEventListener('keydown',e=>{if(e.key==='Enter')checkPW();});
+
+// ── INIT ──
+function initApp() {
+  load();
+  if (state.weekStart) document.getElementById('weekStartInput').value=state.weekStart;
+  renderPills();
+  renderInsDayTabs(); renderInsTable(); renderInsSummary();
+  renderDailyDayTabs(); renderDailyTable();
+  renderShiftsList();
+}
+window.addEventListener('DOMContentLoaded',function(){
+  if (sessionStorage.getItem('thgot_auth')==='admin') {
+    document.getElementById('pw-gate').style.display='none';
+    initApp();
+  }
+});
+</script>
+</body>
+</html>
